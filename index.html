@@ -9,15 +9,19 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: auto; background: white; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
         header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        h1 { margin: 0; font-size: 2.8em; color: var(--primary); letter-spacing: -1px; }
-        .contact { font-size: 0.9em; color: #666; margin-top: 10px; }
+        h1 { margin: 0; font-size: 2.8em; color: var(--primary); letter-spacing: -1px; text-transform: uppercase; }
+        .contact { font-size: 1em; color: #666; margin-top: 10px; font-weight: 500; }
         h2 { font-size: 1.4em; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; margin-top: 35px; text-transform: uppercase; }
-        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; }
+        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; border-left: 4px solid #ddd; padding-left: 20px; }
         .project-highlight { background: #fdfdfd; border: 1px solid #ddd; padding: 25px; margin: 20px 0; border-left: 6px solid var(--accent); }
         .pillar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
         .experience-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: var(--primary); margin-top: 20px; }
-        .tech-tag { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; margin: 4px; }
-        .prior-exp { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dotted #ccc; font-size: 0.95em; }
+        .tech-tag { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin: 4px; font-weight: 600; }
+        .prior-exp { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dotted #ccc; font-size: 1em; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        a { color: var(--primary); text-decoration: none; border-bottom: 1px solid transparent; transition: 0.3s; }
+        a:hover { border-bottom: 1px solid var(--primary); }
     </style>
 </head>
 <body>
@@ -27,12 +31,12 @@
         <h1>Sean Luka Girgis</h1>
         <div class="contact">
             Murphy, TX • 214-315-2190 • seanlgirgis@gmail.com • 
-            <a href="https://github.com/seanlgirgis/HorizonStudy" target="_blank">Project Portfolio: HorizonStudy</a>
+            <a href="https://github.com/seanlgirgis/HorizonStudy" target="_blank">Project Portfolio</a>
         </div>
     </header>
 
     <div class="summary">
-        <strong>Performance and Capacity Specialist</strong> with over 20 years of experience managing large-scale infrastructure. Specialist in architecting high-performance capacity pipelines [cite: 297] and evolving legacy "stub and module" environments into modern AI-driven forecasting engines[cite: 298, 300]. Expert in <strong>Dynatrace</strong>, <strong>CA APM</strong>, and Python-based <strong>multiprocessing</strong> for bypassing the GIL in CPU-bound modeling tasks[cite: 311, 318].
+        <strong>Performance and Capacity Specialist</strong> with over 20 years of experience managing large-scale infrastructure. Specialist in architecting high-performance capacity pipelines and evolving legacy environments into modern AI-driven forecasting engines. Expert in <strong>Dynatrace</strong>, <strong>CA APM</strong>, and <strong>Python-based multiprocessing</strong> for bypassing the GIL in CPU-bound modeling tasks.
     </div>
 
     <h2>Technical Skill Pillars</h2>
@@ -40,28 +44,28 @@
         <div>
             <strong>AI & Predictive Modeling</strong>
             <ul>
-                <li>Prophet Time-Series Forecasting[cite: 296, 305].</li>
-                <li>Algorithm Competition (XGBoost/LSTM)[cite: 313].</li>
-                <li>Synthetic Data Layer Development (Parquet)[cite: 303, 312].</li>
+                <li>Prophet Time-Series Forecasting</li>
+                <li>Algorithm Competition (XGBoost/LSTM)</li>
+                <li>Synthetic Data Layer Development (Parquet)</li>
             </ul>
         </div>
         <div>
             <strong>APM & Observability</strong>
             <ul>
-                <li>Full-stack <strong>Dynatrace</strong> & <strong>CA APM</strong>.</li>
-                <li>Root Cause Analysis & Performance Tuning.</li>
-                <li>Risk Dashboard Logic & Reporting[cite: 317].</li>
+                <li>Full-stack Dynatrace & CA APM</li>
+                <li>Root Cause Analysis & Performance Tuning</li>
+                <li>Risk Dashboard Logic & Strategic Reporting</li>
             </ul>
         </div>
     </div>
 
     <h2>Flagship Architecture: HorizonScale AI</h2>
     <div class="project-highlight">
-        <p>A modern evolution of the legacy "Trenda" system, optimized for forecasting 2,000+ servers[cite: 300].</p>
+        <p>A modern, high-performance successor system optimized for forecasting 2,000+ servers.</p>
         <ul>
-            <li><strong>Turbo Prophet:</strong> Engineered a multiprocessing pipeline to drastically outperform legacy sequential methods[cite: 311, 316].</li>
-            <li><strong>Data Integrity:</strong> Implemented a 3-year historical foundation for robust model training[cite: 305, 315].</li>
-            <li><strong>Confidence Scoring:</strong> Developed logic to assign "High Trust" status to the initial 90-day forecast window[cite: 306, 317].</li>
+            <li><strong>Turbo Prophet:</strong> Engineered a multiprocessing pipeline to drastically outperform legacy sequential methods.</li>
+            <li><strong>Data Integrity:</strong> Implemented a 3-year historical foundation for robust model training.</li>
+            <li><strong>Confidence Scoring:</strong> Developed logic to assign "High Trust" status to the initial 90-day forecast window.</li>
         </ul>
         <div style="margin-top:15px;">
             <span class="tech-tag">Python (Multiprocessing)</span>
@@ -74,17 +78,17 @@
 
     
 
-    <h2>Current Professional Experience</h2>
+    <h2>Professional Experience</h2>
     <div class="experience-header">
         <span>CITI</span>
         <span>2017 – Dec 2025</span>
     </div>
-    <div style="font-style: italic; color: #666; margin-bottom: 10px;">Capacity and Performance Consultant</div>
+    <div style="font-style: italic; color: #666; margin-bottom: 10px; font-weight: bold;">Capacity and Performance Consultant</div>
     <ul>
-        <li>Architected the <strong>Trenda EAP</strong> big-data environment using a "stub and module" model[cite: 322, 325].</li>
-        <li>Automated regional resource forecasting for CPU, Memory, and Storage across global regions[cite: 340, 342].</li>
-        <li>Developed <code>mod_exclude.py</code> for data sanitization, outlier analysis, and interpolation[cite: 338, 339].</li>
-        <li>Leveraged <strong>Dynatrace</strong> and <strong>CA APM</strong> to drive proactive exception reporting and risk mitigation[cite: 346, 379].</li>
+        <li>Architected the big-data environment using a robust "stub and module" model.</li>
+        <li>Automated regional resource forecasting for CPU, Memory, and Storage across global regions.</li>
+        <li>Developed core modules for data sanitization, outlier analysis, and interpolation.</li>
+        <li>Leveraged Dynatrace and CA APM to drive proactive exception reporting and risk mitigation.</li>
     </ul>
 
     <h2>Selected Career Highlights</h2>
@@ -103,9 +107,9 @@
 
     <h2>Technical Stack</h2>
     <p>
-        <strong>Languages:</strong> Python, SQL, C, C++, Java, PL/SQL[cite: 296, 325].<br>
-        <strong>Platforms:</strong> Hadoop, Hive, Spark, HDFS, Parquet, SQLite[cite: 303, 325, 373].<br>
-        <strong>Tools:</strong> Dynatrace, CA APM (Introscope), Prophet, Git[cite: 296, 301].
+        <strong>Languages:</strong> Python, SQL, C, C++, Java, PL/SQL<br>
+        <strong>Platforms:</strong> Hadoop, Hive, Spark, HDFS, Parquet, SQLite<br>
+        <strong>Tools:</strong> Dynatrace, CA APM (Introscope), Prophet, Git
     </p>
 </div>
 
