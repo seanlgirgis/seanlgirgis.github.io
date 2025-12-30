@@ -9,20 +9,20 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; padding: 20px; }
         .container { max-width: 950px; margin: auto; background: white; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
         header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        h1 { margin: 0; font-size: 2.8em; color: var(--primary); letter-spacing: -1px; text-transform: uppercase; }
+        h1 { margin: 0; font-size: 2.6em; color: var(--primary); letter-spacing: -1px; text-transform: uppercase; }
         .contact { font-size: 1em; color: #666; margin-top: 10px; font-weight: 500; }
         h2 { font-size: 1.4em; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; margin-top: 35px; text-transform: uppercase; }
-        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; border-left: 4px solid var(--primary); padding-left: 20px; background: #f9f9f9; padding-top: 10px; padding-bottom: 10px; }
+        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; border-left: 4px solid var(--primary); padding-left: 20px; background: #f9f9f9; padding: 15px; }
         .project-highlight { background: #fff; border: 1px solid #ddd; padding: 25px; margin: 20px 0; border-left: 6px solid var(--accent); box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
         .pillar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
         .experience-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: var(--primary); margin-top: 25px; }
         .tech-tag { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin: 4px; font-weight: 600; }
-        .timeline-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dotted #ccc; font-size: 1em; }
+        .timeline-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dotted #ccc; font-size: 1em; }
         .metric { color: var(--accent); font-weight: bold; }
         ul { padding-left: 20px; }
         li { margin-bottom: 8px; }
         a { color: var(--primary); text-decoration: none; font-weight: bold; }
-        .chart-placeholder { text-align: center; margin: 20px 0; font-style: italic; color: #888; border: 1px dashed #ccc; padding: 40px; background: #fafafa; }
+        .chart-container { text-align: center; margin: 25px 0; background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -37,43 +37,47 @@
     </header>
 
     <div class="summary">
-        <strong>Data Scientist & Machine Learning Engineer</strong> with 20+ years of technical leadership. Specialist in <strong>time-series forecasting</strong> and <strong>predictive utilization modeling</strong> for hyper-scale infrastructure. Expert at bypassing Python's Global Interpreter Lock (GIL) through high-performance multiprocessing to deliver scalable AI solutions.
+        <strong>Data Scientist & Machine Learning Engineer</strong> with 20+ years of technical leadership in enterprise infrastructure. Specialist in <strong>Time-Series Forecasting</strong> and <strong>Predictive Capacity Optimization</strong>. Expert at deploying high-performance ML pipelines that bypass the Python GIL via multiprocessing to manage 2,000+ server environments.
     </div>
 
-    <h2>Core ML & Data Science Pillars</h2>
+    <h2>Primary ML & Data Science Pillars</h2>
     <div class="pillar-grid">
         <div>
             <strong>Predictive Engineering</strong>
             <ul>
-                <li><strong>Forecasting:</strong> Facebook Prophet, LSTM, and XGBoost implementation.</li>
-                <li><strong>Pipeline Optimization:</strong> Bypassing the GIL via Multiprocessing for <span class="metric">10x speedup</span>.</li>
-                <li><strong>Data Engineering:</strong> Parquet, Spark, and SQL for massive-scale feature extraction.</li>
+                <li><strong>Forecasting:</strong> Advanced Prophet, LSTM, and XGBoost implementation for non-linear resource trends.</li>
+                <li><strong>Scalability:</strong> Optimized pipelines using Multiprocessing for <span class="metric">10x forecasting throughput</span>.</li>
+                <li><strong>Data Engineering:</strong> Feature extraction from Parquet/Spark at petabyte scale.</li>
             </ul>
         </div>
         <div>
-            <strong>MLOps & Observability</strong>
+            <strong>MLOps & Intelligent Observability</strong>
             <ul>
-                <li><strong>Model Competition:</strong> Automated challenger/champion model evaluation logic.</li>
-                <li><strong>Drift & Risk:</strong> "High Trust" window logic for 90-day utilization confidence.</li>
-                <li><strong>Platform Expertise:</strong> AppDynamics, BMC TrueSight, and CA APM.</li>
+                <li><strong>Model Competition:</strong> Automated champion/challenger selection based on regional RMSE/MAPE metrics.</li>
+                <li><strong>Visualization:</strong> Real-time risk dashboards built with <strong>Streamlit</strong> and Jupyter.</li>
+                <li><strong>Performance:</strong> Integrating AppDynamics and BMC TrueSight metrics into predictive features.</li>
             </ul>
         </div>
     </div>
 
     <h2>Flagship Project: HorizonScale AI</h2>
     <div class="project-highlight">
-        <p><strong>Predictive Capacity Pipeline for 2,000+ Servers</strong></p>
+        <p><strong>AI-Driven Capacity Utilization Pipeline for 2,000+ Global Servers</strong></p>
         <ul>
-            <li><strong>Turbo Prophet Engine:</strong> Achieved a <span class="metric">90% reduction in processing time</span> for global forecasts using Python multiprocessing.</li>
-            <li><strong>Model Accuracy:</strong> Implemented a 3-year historical synthetic data layer to train and validate 6-month outlooks with <span class="metric">95%+ confidence metrics</span> for the initial 90-day window.</li>
-            <li><strong>Algorithm Competition:</strong> Developed a framework to rank Prophet against LSTM/XGBoost challengers based on regional data variance.</li>
+            <li><strong>Turbo Prophet Engine:</strong> Developed a parallelized execution framework that reduced 6-month forecasting cycles from hours to minutes (<span class="metric">90% performance gain</span>).</li>
+            <li><strong>High-Fidelity Training:</strong> Architected a 3-year historical synthetic data foundation, achieving <span class="metric">95%+ forecast accuracy</span> within the "High Trust" 90-day window.</li>
+            <li><strong>Interactive Risk Reporting:</strong> Built a <strong>Streamlit</strong> dashboard to visualize 6-month outlooks vs. historical baselines for CPU, Memory, and Storage.</li>
         </ul>
         <div style="margin-top:15px;">
-            <span class="tech-tag">Python</span><span class="tech-tag">Scikit-learn</span><span class="tech-tag">Pandas</span><span class="tech-tag">Prophet</span><span class="tech-tag">Multiprocessing</span><span class="tech-tag">Spark</span>
+            <span class="tech-tag">Python (Scikit-learn, Pandas)</span>
+            <span class="tech-tag">Prophet</span>
+            <span class="tech-tag">Streamlit</span>
+            <span class="tech-tag">Spark</span>
+            <span class="tech-tag">Multiprocessing</span>
         </div>
     </div>
 
-    <div class="chart-placeholder">
+    <div class="chart-container">
         
     </div>
 
@@ -84,41 +88,45 @@
     </div>
     <div style="font-style: italic; color: #666; margin-bottom: 10px; font-weight: bold;">Capacity and Performance Consultant (ML & Infrastructure Strategy)</div>
     <ul>
-        <li>Architected big-data forecasting environments managing resource partitions for CPU, Memory, and Storage.</li>
-        <li>Automated high-fidelity data sanitization and outlier analysis (mod_exclude) for 2,000+ server feeds.</li>
-        <li>Utilized <strong>BMC TrueSight</strong> and <strong>AppDynamics</strong> to synthesize real-time performance metrics into predictive risk models.</li>
-        <li>Reduced manual reporting overhead by <span class="metric">85%</span> through automated manager notification and risk-break logic.</li>
+        <li>Architected big-data environments using a "stub and module" model to manage predictive utilization for global server estates.</li>
+        <li>Automated regional resource forecasting across ASIAPAC, EMEA, LATAM, and NA, reducing manual analysis by <span class="metric">85%</span>.</li>
+        <li>Integrated <strong>BMC TrueSight</strong> and <strong>AppDynamics</strong> metrics to identify "Risk-Break" exceptions before outages occurred.</li>
+        <li>Developed Python-based data sanitization and outlier detection logic to ensure model input integrity.</li>
     </ul>
 
-    <h2>Education & Certifications</h2>
+    <h2>Experience History</h2>
     <div class="timeline-item">
-        <span><strong>Technical Focus:</strong> Systems Performance Tuning & Predictive Analytics</span>
-        <span>Advanced Training</span>
-    </div>
-    <div class="timeline-item">
-        <span><strong>Development Core:</strong> C++, Java, and Multi-core Programming</span>
-        <span>Professional Specialization</span>
-    </div>
-
-    <h2>Experience Timeline</h2>
-    <div class="timeline-item">
-        <span><strong>Enterprise Performance Lead</strong> | ML-Driven Capacity Strategy</span>
+        <span><strong>TIAA / CA Technologies</strong> | Senior Performance & APM Lead</span>
         <span>2012 – 2017</span>
     </div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; padding-left: 10px;">
+        Designed enterprise observability architectures using CA APM (Introscope) and provided deep-dive performance tuning for high-transaction financial systems.
+    </div>
+
     <div class="timeline-item">
-        <span><strong>Senior Software Engineer</strong> | High-Performance Backend Architecture</span>
+        <span><strong>Senior Software Engineer</strong> | C++, Java, and Backend Architecture</span>
         <span>2008 – 2012</span>
     </div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; padding-left: 10px;">
+        Led the development of high-concurrency backend services and optimized low-latency data processing engines.
+    </div>
+
     <div class="timeline-item">
-        <span><strong>Software Developer</strong> | System Optimization & C++ Logic</span>
+        <span><strong>Software Developer</strong> | Systems Engineering & Optimization</span>
         <span>Prior Tenure</span>
     </div>
 
+    <h2>Education & Certifications</h2>
+    <p>
+        <strong>Technical Specialization:</strong> Systems Performance Tuning, Predictive Analytics, and Multi-core Programming.<br>
+        <strong>Academic Core:</strong> Computer Science & Development Foundations (C++, Java, SQL).
+    </p>
+
     <h2>Technical Stack</h2>
     <p>
-        <strong>ML & Analysis:</strong> Python (Expert), Scikit-learn, Pandas, NumPy, Prophet, XGBoost, LSTM.<br>
+        <strong>ML & Analysis:</strong> Python (Expert), Scikit-learn, Pandas, NumPy, Prophet, XGBoost, LSTM, Jupyter, Streamlit.<br>
         <strong>Data Platforms:</strong> Spark, Hadoop, Hive, HDFS, Parquet, SQL, PL/SQL.<br>
-        <strong>Performance/Ops:</strong> AppDynamics, BMC TrueSight, CA APM, Git.
+        <strong>Performance/Ops:</strong> AppDynamics, BMC TrueSight, CA APM (Introscope), Git.
     </p>
 </div>
 
