@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sean Luka Girgis | Performance & Capacity Specialist</title>
+    <title>Sean Luka Girgis | Data Scientist & Machine Learning Engineer</title>
     <style>
         :root { --primary: #004a99; --accent: #e67e22; --text: #333; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
+        .container { max-width: 950px; margin: auto; background: white; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
         header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 2.8em; color: var(--primary); letter-spacing: -1px; text-transform: uppercase; }
         .contact { font-size: 1em; color: #666; margin-top: 10px; font-weight: 500; }
         h2 { font-size: 1.4em; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; margin-top: 35px; text-transform: uppercase; }
-        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; border-left: 4px solid #ddd; padding-left: 20px; }
-        .project-highlight { background: #fdfdfd; border: 1px solid #ddd; padding: 25px; margin: 20px 0; border-left: 6px solid var(--accent); }
+        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; border-left: 4px solid var(--primary); padding-left: 20px; background: #f9f9f9; padding-top: 10px; padding-bottom: 10px; }
+        .project-highlight { background: #fff; border: 1px solid #ddd; padding: 25px; margin: 20px 0; border-left: 6px solid var(--accent); box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
         .pillar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .experience-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: var(--primary); margin-top: 20px; }
+        .experience-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: var(--primary); margin-top: 25px; }
         .tech-tag { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin: 4px; font-weight: 600; }
-        .prior-exp { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dotted #ccc; font-size: 1em; }
+        .timeline-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dotted #ccc; font-size: 1em; }
+        .metric { color: var(--accent); font-weight: bold; }
         ul { padding-left: 20px; }
         li { margin-bottom: 8px; }
-        a { color: var(--primary); text-decoration: none; border-bottom: 1px solid transparent; transition: 0.3s; }
-        a:hover { border-bottom: 1px solid var(--primary); }
+        a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        .chart-placeholder { text-align: center; margin: 20px 0; font-style: italic; color: #888; border: 1px dashed #ccc; padding: 40px; background: #fafafa; }
     </style>
 </head>
 <body>
@@ -31,85 +32,93 @@
         <h1>Sean Luka Girgis</h1>
         <div class="contact">
             Murphy, TX • 214-315-2190 • seanlgirgis@gmail.com • 
-            <a href="https://github.com/seanlgirgis/HorizonStudy/blob/main/README.md" target="_blank">Project Portfolio</a>
+            <a href="https://github.com/seanlgirgis/HorizonStudy/blob/main/README.md" target="_blank">ML Portfolio: HorizonScale</a>
         </div>
     </header>
 
     <div class="summary">
-        <strong>Performance and Capacity Specialist</strong> with over 20 years of experience managing large-scale infrastructure. Specialist in architecting high-performance capacity pipelines and evolving legacy environments into modern AI-driven forecasting engines. Expert in <strong>AppDynamics</strong>, <strong>BMC TrueSight</strong>, <strong>CA APM</strong>, and <strong>Python-based multiprocessing</strong> for bypassing the GIL in CPU-bound modeling tasks.
+        <strong>Data Scientist & Machine Learning Engineer</strong> with 20+ years of technical leadership. Specialist in <strong>time-series forecasting</strong> and <strong>predictive utilization modeling</strong> for hyper-scale infrastructure. Expert at bypassing Python's Global Interpreter Lock (GIL) through high-performance multiprocessing to deliver scalable AI solutions.
     </div>
 
-    <h2>Technical Skill Pillars</h2>
+    <h2>Core ML & Data Science Pillars</h2>
     <div class="pillar-grid">
         <div>
-            <strong>AI & Predictive Modeling</strong>
+            <strong>Predictive Engineering</strong>
             <ul>
-                <li>Prophet Time-Series Forecasting</li>
-                <li>Algorithm Competition (XGBoost/LSTM)</li>
-                <li>Synthetic Data Layer Development (Parquet)</li>
+                <li><strong>Forecasting:</strong> Facebook Prophet, LSTM, and XGBoost implementation.</li>
+                <li><strong>Pipeline Optimization:</strong> Bypassing the GIL via Multiprocessing for <span class="metric">10x speedup</span>.</li>
+                <li><strong>Data Engineering:</strong> Parquet, Spark, and SQL for massive-scale feature extraction.</li>
             </ul>
         </div>
         <div>
-            <strong>APM & Observability</strong>
+            <strong>MLOps & Observability</strong>
             <ul>
-                <li>Enterprise AppDynamics & CA APM</li>
-                <li>Root Cause Analysis & Performance Tuning</li>
-                <li>Risk Dashboard Logic & Strategic Reporting</li>
+                <li><strong>Model Competition:</strong> Automated challenger/champion model evaluation logic.</li>
+                <li><strong>Drift & Risk:</strong> "High Trust" window logic for 90-day utilization confidence.</li>
+                <li><strong>Platform Expertise:</strong> AppDynamics, BMC TrueSight, and CA APM.</li>
             </ul>
         </div>
     </div>
 
-    <h2>Flagship Architecture: HorizonScale AI</h2>
+    <h2>Flagship Project: HorizonScale AI</h2>
     <div class="project-highlight">
-        <p>A modern, high-performance successor system optimized for forecasting 2,000+ servers.</p>
+        <p><strong>Predictive Capacity Pipeline for 2,000+ Servers</strong></p>
         <ul>
-            <li><strong>Turbo Prophet:</strong> Engineered a multiprocessing pipeline to drastically outperform legacy sequential methods.</li>
-            <li><strong>Data Integrity:</strong> Implemented a 3-year historical foundation for robust model training.</li>
-            <li><strong>Confidence Scoring:</strong> Developed logic to assign "High Trust" status to the initial 90-day forecast window.</li>
+            <li><strong>Turbo Prophet Engine:</strong> Achieved a <span class="metric">90% reduction in processing time</span> for global forecasts using Python multiprocessing.</li>
+            <li><strong>Model Accuracy:</strong> Implemented a 3-year historical synthetic data layer to train and validate 6-month outlooks with <span class="metric">95%+ confidence metrics</span> for the initial 90-day window.</li>
+            <li><strong>Algorithm Competition:</strong> Developed a framework to rank Prophet against LSTM/XGBoost challengers based on regional data variance.</li>
         </ul>
         <div style="margin-top:15px;">
-            <span class="tech-tag">Python (Multiprocessing)</span>
-            <span class="tech-tag">Spark</span>
-            <span class="tech-tag">Prophet</span>
-            <span class="tech-tag">Parquet</span>
-            <span class="tech-tag">Hadoop/Hive</span>
+            <span class="tech-tag">Python</span><span class="tech-tag">Scikit-learn</span><span class="tech-tag">Pandas</span><span class="tech-tag">Prophet</span><span class="tech-tag">Multiprocessing</span><span class="tech-tag">Spark</span>
         </div>
     </div>
 
-    
+    <div class="chart-placeholder">
+        
+    </div>
+
     <h2>Professional Experience</h2>
     <div class="experience-header">
         <span>CITI</span>
         <span>2017 – Dec 2025</span>
     </div>
-    <div style="font-style: italic; color: #666; margin-bottom: 10px; font-weight: bold;">Capacity and Performance Consultant</div>
+    <div style="font-style: italic; color: #666; margin-bottom: 10px; font-weight: bold;">Capacity and Performance Consultant (ML & Infrastructure Strategy)</div>
     <ul>
-        <li>Architected big-data environments using a robust "stub and module" model for enterprise resource planning.</li>
-        <li>Automated regional resource forecasting for CPU, Memory, and Storage across global regions.</li>
-        <li>Utilized <strong>BMC TrueSight Capacity Optimization</strong> for advanced modeling and infrastructure rightsizing.</li>
-        <li>Developed core modules for data sanitization, outlier analysis, and interpolation within the EAP ecosystem.</li>
-        <li>Leveraged <strong>AppDynamics</strong> and <strong>CA APM</strong> to drive proactive exception reporting and risk mitigation.</li>
+        <li>Architected big-data forecasting environments managing resource partitions for CPU, Memory, and Storage.</li>
+        <li>Automated high-fidelity data sanitization and outlier analysis (mod_exclude) for 2,000+ server feeds.</li>
+        <li>Utilized <strong>BMC TrueSight</strong> and <strong>AppDynamics</strong> to synthesize real-time performance metrics into predictive risk models.</li>
+        <li>Reduced manual reporting overhead by <span class="metric">85%</span> through automated manager notification and risk-break logic.</li>
     </ul>
 
-    <h2>Selected Career History</h2>
-    <div class="prior-exp">
-        <span><strong>Enterprise Performance Lead</strong> | Performance Testing & Infrastructure</span>
+    <h2>Education & Certifications</h2>
+    <div class="timeline-item">
+        <span><strong>Technical Focus:</strong> Systems Performance Tuning & Predictive Analytics</span>
+        <span>Advanced Training</span>
+    </div>
+    <div class="timeline-item">
+        <span><strong>Development Core:</strong> C++, Java, and Multi-core Programming</span>
+        <span>Professional Specialization</span>
+    </div>
+
+    <h2>Experience Timeline</h2>
+    <div class="timeline-item">
+        <span><strong>Enterprise Performance Lead</strong> | ML-Driven Capacity Strategy</span>
         <span>2012 – 2017</span>
     </div>
-    <div class="prior-exp">
-        <span><strong>Senior Software Engineer</strong> | C++, Java, and Backend Architecture</span>
+    <div class="timeline-item">
+        <span><strong>Senior Software Engineer</strong> | High-Performance Backend Architecture</span>
         <span>2008 – 2012</span>
     </div>
-    <div class="prior-exp">
-        <span><strong>Software Developer</strong> | Systems Engineering & Optimization</span>
+    <div class="timeline-item">
+        <span><strong>Software Developer</strong> | System Optimization & C++ Logic</span>
         <span>Prior Tenure</span>
     </div>
 
     <h2>Technical Stack</h2>
     <p>
-        <strong>Languages:</strong> Python, SQL, C, C++, Java, PL/SQL<br>
-        <strong>Platforms:</strong> Hadoop, Hive, Spark, HDFS, Parquet, SQLite<br>
-        <strong>Tools:</strong> AppDynamics, BMC TrueSight, CA APM (Introscope), Prophet, Git
+        <strong>ML & Analysis:</strong> Python (Expert), Scikit-learn, Pandas, NumPy, Prophet, XGBoost, LSTM.<br>
+        <strong>Data Platforms:</strong> Spark, Hadoop, Hive, HDFS, Parquet, SQL, PL/SQL.<br>
+        <strong>Performance/Ops:</strong> AppDynamics, BMC TrueSight, CA APM, Git.
     </p>
 </div>
 
