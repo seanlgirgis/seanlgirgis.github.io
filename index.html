@@ -5,53 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sean Luka Girgis | Performance & Capacity Specialist</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        header { background: linear-gradient(135deg, #007bff, #0056b3); color: white; text-align: center; padding: 120px 20px; }
-        h1 { font-size: 3.5em; margin: 0; }
-        section { padding: 60px 20px; max-width: 1000px; margin: auto; }
-        .container { background: white; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 40px; margin-bottom: 40px; }
-        .btn { display: inline-block; background: #007bff; color: white; padding: 12px 24px; border-radius: 6px; margin: 10px; font-weight: bold; text-decoration: none; }
-        .btn:hover { background: #0056b3; }
-        footer { text-align: center; padding: 30px; background: #343a40; color: white; }
-        ul { columns: 2; list-style: none; padding: 0; }
-        li:before { content: "✔ "; color: #007bff; }
+        :root { --primary: #004a99; --accent: #e67e22; --text: #333; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
+        header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { margin: 0; font-size: 2.8em; color: var(--primary); letter-spacing: -1px; }
+        .contact { font-size: 0.9em; color: #666; margin-top: 10px; }
+        h2 { font-size: 1.4em; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; margin-top: 35px; text-transform: uppercase; }
+        .summary { font-size: 1.1em; line-height: 1.8; color: #444; margin-top: 20px; }
+        .project-highlight { background: #fdfdfd; border: 1px solid #ddd; padding: 25px; margin: 20px 0; border-left: 6px solid var(--accent); }
+        .pillar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        .experience-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: var(--primary); margin-top: 20px; }
+        .tech-tag { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; margin: 4px; }
+        .prior-exp { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dotted #ccc; font-size: 0.95em; }
     </style>
 </head>
 <body>
+
+<div class="container">
     <header>
         <h1>Sean Luka Girgis</h1>
-        <p>Performance and Capacity Specialist | 20+ Years in APM & Cloud Optimization</p>
-        <p>Murphy, TX | 214-315-2190 | seanlgirgis@gmail.com</p>
-        <a href="https://www.linkedin.com/in/sean-girgis" class="btn">LinkedIn</a>
-        <a href="https://github.com/seanlgirgis" class="btn">GitHub Portfolio</a>
-        <a href="/docs/Sean_Girgis_Resume.pdf" class="btn" download>Download CV</a>
+        <div class="contact">
+            Murphy, TX • 214-315-2190 • seanlgirgis@gmail.com • 
+            <a href="https://github.com/seanlgirgis/HorizonStudy" target="_blank">Project Portfolio: HorizonStudy</a>
+        </div>
     </header>
 
-    <section class="container">
-        <h2>About Me</h2>
-        <p>Specialized in architecting high-performance observability and capacity solutions. Expert in resolving critical bottlenecks across AWS and physical environments utilizing CA APM, AppDynamics, and Python-driven forecasting engines.</p>
-    </section>
+    <div class="summary">
+        <strong>Performance and Capacity Specialist</strong> with over 20 years of experience managing large-scale infrastructure. Specialist in architecting high-performance capacity pipelines [cite: 297] and evolving legacy "stub and module" environments into modern AI-driven forecasting engines[cite: 298, 300]. Expert in <strong>Dynatrace</strong>, <strong>CA APM</strong>, and Python-based <strong>multiprocessing</strong> for bypassing the GIL in CPU-bound modeling tasks[cite: 311, 318].
+    </div>
 
-    <section class="container">
-        <h2>Flagship Project: HorizonScale</h2>
-        <p>A high-performance capacity utilization and forecasting pipeline designed for 2,000+ server nodes. Features include parallelized "Turbo" execution, automated "Champion Model" selection, and interactive risk auditing dashboards.</p>
-        <a href="https://github.com/seanlgirgis/HorizonScale" class="btn">View Case Study</a>
-    </section>
+    <h2>Technical Skill Pillars</h2>
+    <div class="pillar-grid">
+        <div>
+            <strong>AI & Predictive Modeling</strong>
+            <ul>
+                <li>Prophet Time-Series Forecasting[cite: 296, 305].</li>
+                <li>Algorithm Competition (XGBoost/LSTM)[cite: 313].</li>
+                <li>Synthetic Data Layer Development (Parquet)[cite: 303, 312].</li>
+            </ul>
+        </div>
+        <div>
+            <strong>APM & Observability</strong>
+            <ul>
+                <li>Full-stack <strong>Dynatrace</strong> & <strong>CA APM</strong>.</li>
+                <li>Root Cause Analysis & Performance Tuning.</li>
+                <li>Risk Dashboard Logic & Reporting[cite: 317].</li>
+            </ul>
+        </div>
+    </div>
 
-    <section class="container">
-        <h2>Technical Expertise</h2>
+    <h2>Flagship Architecture: HorizonScale AI</h2>
+    <div class="project-highlight">
+        <p>A modern evolution of the legacy "Trenda" system, optimized for forecasting 2,000+ servers[cite: 300].</p>
         <ul>
-            <li>Performance Observability (Splunk, Dynatrace)</li>
-            <li>Python Parallel Computing (Multiprocessing)</li>
-            <li>Cloud Optimization (AWS, Virtualization)</li>
-            <li>Time-Series Modeling (Prophet, XGBoost)</li>
-            <li>Enterprise Capacity Optimization</li>
-            <li>Full-Stack Data Pipelines (Parquet, SQL)</li>
+            <li><strong>Turbo Prophet:</strong> Engineered a multiprocessing pipeline to drastically outperform legacy sequential methods[cite: 311, 316].</li>
+            <li><strong>Data Integrity:</strong> Implemented a 3-year historical foundation for robust model training[cite: 305, 315].</li>
+            <li><strong>Confidence Scoring:</strong> Developed logic to assign "High Trust" status to the initial 90-day forecast window[cite: 306, 317].</li>
         </ul>
-    </section>
+        <div style="margin-top:15px;">
+            <span class="tech-tag">Python (Multiprocessing)</span>
+            <span class="tech-tag">Spark</span>
+            <span class="tech-tag">Prophet</span>
+            <span class="tech-tag">Parquet</span>
+            <span class="tech-tag">Hadoop/Hive</span>
+        </div>
+    </div>
 
-    <footer>
-        <p>© 2025 Sean Luka Girgis | Murphy, Texas | Powered by GitHub Pages</p>
-    </footer>
+    
+
+    <h2>Current Professional Experience</h2>
+    <div class="experience-header">
+        <span>CITI</span>
+        <span>2017 – Dec 2025</span>
+    </div>
+    <div style="font-style: italic; color: #666; margin-bottom: 10px;">Capacity and Performance Consultant</div>
+    <ul>
+        <li>Architected the <strong>Trenda EAP</strong> big-data environment using a "stub and module" model[cite: 322, 325].</li>
+        <li>Automated regional resource forecasting for CPU, Memory, and Storage across global regions[cite: 340, 342].</li>
+        <li>Developed <code>mod_exclude.py</code> for data sanitization, outlier analysis, and interpolation[cite: 338, 339].</li>
+        <li>Leveraged <strong>Dynatrace</strong> and <strong>CA APM</strong> to drive proactive exception reporting and risk mitigation[cite: 346, 379].</li>
+    </ul>
+
+    <h2>Selected Career Highlights</h2>
+    <div class="prior-exp">
+        <span><strong>Enterprise Performance Lead</strong> | High-Performance Infrastructure</span>
+        <span>Tier 1 Financial Sector</span>
+    </div>
+    <div class="prior-exp">
+        <span><strong>Software Engineer</strong> | C++, Java, and PL/SQL Backend Systems</span>
+        <span>Global Tech Operations</span>
+    </div>
+    <div class="prior-exp">
+        <span><strong>APM Architect</strong> | Observability & Monitoring Solutions</span>
+        <span>Large-Scale Distributed Systems</span>
+    </div>
+
+    <h2>Technical Stack</h2>
+    <p>
+        <strong>Languages:</strong> Python, SQL, C, C++, Java, PL/SQL[cite: 296, 325].<br>
+        <strong>Platforms:</strong> Hadoop, Hive, Spark, HDFS, Parquet, SQLite[cite: 303, 325, 373].<br>
+        <strong>Tools:</strong> Dynatrace, CA APM (Introscope), Prophet, Git[cite: 296, 301].
+    </p>
+</div>
+
 </body>
 </html>
