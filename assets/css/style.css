@@ -100,3 +100,20 @@ h2 { font-size: 1.4em; color: var(--primary); border-bottom: 2px solid var(--acc
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
+
+/* Sidebar Nav Updates */
+.nav-menu li {
+    margin-bottom: 15px;
+    padding: 10px; /* Matching the anchor padding for alignment */
+}
+
+/* Specific style for the current page highlight */
+/* Styling for the current page link in the sidebar */
+.nav-menu li.active-page {
+    color: var(--accent);             /* The standard orange highlight */
+    background: rgba(255,255,255,0.1); /* The standard highlight background */
+    font-weight: bold;                /* Bold as requested */
+    padding: 10px;                    /* Matching link padding for alignment */
+    border-radius: 4px;               /* Matching site border radius */
+    cursor: default;                  /* Makes it clear it's not clickable */
+}
