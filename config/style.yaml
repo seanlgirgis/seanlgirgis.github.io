@@ -1,0 +1,38 @@
+# Generic Style Configuration
+# Defines the visual system (Colors, Fonts, Spacing)
+
+theme:
+  primary_color: "#004a99"   # Dark Blue
+  accent_color: "#E07000"    # Orange
+  text_color: "#333333"      # Dark Gray
+  background_color: "#ffffff"
+  
+  font_header: "Segoe UI"
+  font_header: "Segoe UI"
+  font_body: "Segoe UI"
+  
+  # Font Sizing (in pt)
+  font_size_base: 10      # Web/DOCX standard
+  font_size_pdf: 7.5      # Ultra Compact for PDF
+  font_size_h1: 16        # Main Header (Reduced)
+  font_size_h2: 10        # Section Headers (Reduced)
+  
+  # Page Margins (in mm)
+  margins:
+    top: 6.35      # 0.25 inch
+    bottom: 6.35   # 0.25 inch
+    left: 12.7
+    right: 12.7
+
+  # Stripe Element (Top of page)
+  stripe:
+    enabled: true
+    thickness: 4
+    color: "primary_color"
+    full_width: true
+
+  # Footer Settings
+  footer:
+    font_size: 8
+    font_name: "Arial"
+    text_color: "#666666"

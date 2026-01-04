@@ -1,0 +1,128 @@
+sections:
+  - type: header_block
+    config:
+      title: "SEAN LUKA GIRGIS"
+      # subtitle: "Enterprise Architect & ML Specialist" # Removed based on HTML
+  
+  - type: compound_text_block
+    config:
+      font_size: 10
+      font_alignment: "center"
+      separator: " • "
+      items:
+        - text: "Murphy, TX"
+        - text: "214-315-2190"
+        - text: "seanlgirgis@gmail.com"
+        - text: "GitHub"
+          link: "https://github.com/seanlgirgis"
+        - text: "LinkedIn"
+          link: "https://www.linkedin.com/in/sean-girgis-43bb1b5/"
+
+  - type: grid_block
+    config:
+      title: "Core Competencies & Expertise"
+      columns: 3 # Matches HTML structure
+      style: "shaded" # This triggers the summary styling in the template
+      items:
+        - header: "Modern Stack"
+          content:
+            - "Python (Pandas, Scikit-Learn), ML Forecasting (Prophet), RAG Architectures, Spark, AWS Cloud."
+        - header: "Infrastructure & APM"
+          content:
+            - "BMC TrueSight, AppDynamics, CA APM (Wily), Dynatrace, Capacity Optimization."
+        - header: "Legacy Engineering"
+          content:
+            - "C/C++, Java/J2EE, Pro*C, Unix (HPUX, Solaris, AIX), Shell Scripting, Oracle/SQL."
+
+  - type: list_block
+    config:
+      title: "Professional Experience"
+      style: "timeline"
+      items:
+        - left_text: "CITI"
+          right_text: "Nov 2017 – Dec 2025"
+          sub_text: "Senior Performance & Capacity Consultant"
+          details:
+            - "**AI-Driven Forecasting:** Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines:** Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale:** Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+            - "**Cost Optimization:** Identified underutilized patterns, leading to significant hardware consolidation and budget savings."
+
+        - left_text: "G6 HOSPITALITY LLC"
+          right_text: "Mar 2017 – Nov 2017"
+          sub_text: "Performance Engineer"
+          details:
+            - "Managed end-to-end monitoring for Brand.com using Dynatrace AppMon and Synthetics."
+            - "Led the \"FAST\" project, data mining user performance metrics to optimize critical money-generating systems."
+
+        - left_text: "HCL / ENTERGY"
+          right_text: "Jan 2017 – Mar 2017"
+          sub_text: "APM Consultant"
+          details:
+            - "Supported enterprise-wide CA APM, CEM, and ADA solutions for utility grid systems."
+
+  - type: list_block
+    config:
+      page_break_before: true
+      style: "timeline"
+      items:
+        - left_text: "CA TECHNOLOGIES"
+          right_text: "Mar 2014 – Aug 2016"
+          sub_text: "Senior Consultant"
+          details:
+            - "Architected and implemented CA APM (Introscope) solutions for Fortune 500 clients."
+            - "Created \"Golden Images\" for standardized agent rollouts and custom Power Packs for specialized monitoring."
+
+        - left_text: "ENTERPRISE IRON (TIAA-CREF)"
+          right_text: "Aug 2011 – Dec 2013"
+          sub_text: "SME for CA APM"
+          details:
+            - "Managed a massive cluster environment consisting of 50+ Enterprise Managers and 6,000+ Agents."
+            - "Developed custom data extraction scripts for EM health monitoring and regional business reporting."
+
+        - left_text: "SABRE"
+          right_text: "May 2008 – Jan 2010"
+          sub_text: "Senior Software Engineer (C++)"
+          details:
+            - "Led the Shopping Engine conversion from MySQL to Oracle, replacing 200 Linux boxes with 6 high-performance servers."
+            - "Developed robust C++ solutions using OCCI/OCI on RedHat Linux for high-throughput travel transactions."
+
+  - type: list_block
+    config:
+      title: "Earlier Experience (2001 - 2008)"
+      style: "timeline"
+      items:
+        - left_text: "Computer Science Corporation"
+          right_text: "2007 – 2008"
+          sub_text: "CADE Project (IRS Modernization) - C++, CICS, MQ Series"
+          details: []
+        - left_text: "Corpus Inc. / AT&T"
+          right_text: "2005 – 2007"
+          sub_text: "Flexible Bill Formatter - C, C++, Pro*C, Amdocs APIs"
+          details: []
+        - left_text: "Sprint"
+          right_text: "2001 – 2005"
+          sub_text: "High Availability Interfaces - C++, POSIX Threads, Marconi APIs"
+          details: []
+
+  - type: grid_block
+    config:
+      title: "Technical Skills Inventory"
+      columns: 3
+      items:
+        - content: 
+             - "**Languages:** Python, C/C++, Java, C#, SQL, Perl, Korn Shell, Awk."
+        - content:
+             - "**Tools:** Prophet, Spark, BMC TrueSight, AppDynamics, CA APM, Dynatrace, Git, CVS."
+        - content:
+             - "**Platforms:** Linux (RedHat), Unix (HPUX, Sun Solaris), AWS, CICS, USS."
+
+  - type: list_block
+    config:
+      title: "Education & Certifications"
+      items:
+        - details:
+          - "**High Diploma: Computer Engineering Technology** - Humber College, Canada"
+          - "**Bachelor of Science: Civil Engineering** - Zagazig University, Egypt"
+          - "_" # Spacer/Note
+          - "Brainbench Certified: C++ Fundamentals, Java 2.0, OOD, C, and Mathematics."

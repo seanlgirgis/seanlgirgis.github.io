@@ -1,0 +1,63 @@
+# Test Content for Block Development
+# Use this file to test each block type before applying to Resume/CV
+
+sections:
+  # 1. Header Block (Standard Name + Contact Info)
+  - type: header_block
+    config:
+      title: "Sean Luka Girgis"
+#      subtitle: "Generic Document Generator Test"
+      contact_items:
+        - text: "City, State"
+        - text: "555-0199"
+        - text: "email@example.com"
+          link: "mailto:email@example.com"
+        - text: "Website"
+          link: "https://example.com"
+
+  # 2. Text Block (Simple Paragraph)
+  - type: text_block
+    config:
+      content: "This is a standard text block. It is useful for introductions, summaries, or general statements."
+      style: "normal" # or 'shaded', 'quote'
+
+  # 3. Text Block (Shaded / Highlight Box)
+  - type: text_block
+    config:
+      content: "This is a **shaded text block**. It draws attention to key information or summaries. It supports **markdown bolding**."
+      style: "shaded"
+      border_color: "accent_color"
+
+  # 4. Grid Block (Two Columns)
+  - type: grid_block
+    config:
+      title: "TWO COLUMN GRID"
+      columns: 2
+      items:
+        - header: "Column 1 Header"
+          content: 
+            - "Item 1.1: Simple text item"
+            - "Item 1.2: Another item"
+        - header: "Column 2 Header"
+          content:
+            - "Item 2.1: **Bold item** support"
+            - "Item 2.2: Link support [Click Me](https://google.com)"
+
+  # 5. List Block (Timeline / Experience)
+  - type: list_block
+    config:
+      title: "TIMELINE LIST (EXPERIENCE)"
+      style: "timeline"
+      items:
+        - left_text: "JOB TITLE 1"
+          right_text: "2023 - Present"
+          sub_text: "Company Name | Location"
+          details:
+            - "Accomplishment one with **bold text**."
+            - "Accomplishment two."
+        - left_text: "JOB TITLE 2"
+          right_text: "2020 - 2023"
+          sub_text: "Previous Company"
+          details:
+            - "Legacy system maintenance."
+            - "Team leadership."

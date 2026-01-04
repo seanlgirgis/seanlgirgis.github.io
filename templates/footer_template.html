@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script>
+        function subst() {
+            var vars = {};
+            var x = document.location.search.substring(1).split('&');
+            for (var i in x) { var z = x[i].split('=', 2); vars[z[0]] = unescape(z[1]); }
+            var x = ['frompage', 'topage', 'page', 'webpage', 'section', 'subsection', 'subsubsection'];
+            for (var i in x) {
+                var y = document.getElementsByClassName(x[i]);
+                for (var j = 0; j < y.length; ++j) y[j].textContent = vars[x[i]];
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 8pt;
+            color: #666;
+        }
+
+        .footer-container {
+            padding-right: 12.7mm;
+            /* Match Document Margins */
+            padding-left: 12.7mm;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .center-text {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            width: 100%;
+            pointer-events: none;
+            /* Let clicks pass through if overlaps */
+        }
+
+        .right-text {
+            position: relative;
+            z-index: 10;
+            margin-left: auto;
+            /* Push to right */
+        }
+    </style>
+</head>
+
+<body onload="subst()">
+    <div class="footer-container">
+        <div class="center-text">
+            {{ footer_text }}
+        </div>
+        <div class="right-text" style="{{ display_pages_style }}">
+            Page <span class="page"></span> of <span class="topage"></span>
+        </div>
+    </div>
+</body>
+
+</html>

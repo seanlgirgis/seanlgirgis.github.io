@@ -1,0 +1,12 @@
+output_*
+__pycache__/
+*.pd
+*.pdf
+*.docx
+*.html
+!templates/*.html
+!index.html
+venv/
+.env
+.idea/
+.vscode/

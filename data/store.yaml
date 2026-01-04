@@ -1,0 +1,93 @@
+
+  # 1. Page Break + Header Block
+  - type: header_block
+    config:
+      title: "Capability Matrix"
+      subtitle: "Verifying DOCX, PDF, HTML, and Markdown Parity"
+
+  # 2. Compound Text Block (Links/Colors/Alignment)
+  - type: compound_text_block
+    config:
+      font_alignment: center
+      separator: " | "
+      items:
+        - text: "Blue Link"
+          link: "https://google.com"
+          font_color: "primary_color"
+        - text: "Red Text"
+          font_color: "accent_color"
+        - text: "Standard Text"
+
+  # 3. Text Block (Normal)
+  - type: text_block
+    config:
+      style: "normal"
+      content: "This is a **normal text block** with markdown support. It should flow across full width."
+
+  # 4. Text Block (Shaded)
+  - type: text_block
+    config:
+      style: "shaded"
+      border_color: "accent_color"
+      content: |
+        **Shaded Block**: This block should have a grey background and an accent border on the left (except in MD).
+        It supports multi-line content.
+
+  # 5. Grid Block (2 Columns, Shaded Container)
+  - type: grid_block
+    config:
+      title: "Grid Block (Shaded Container)"
+      style: "shaded"
+      columns: 2
+      items:
+        - header: "Left Column"
+          content: ["Item A", "Item B"]
+        - header: "Right Column"
+          content: ["Item C", "Item D"]
+
+  # 6. List Block (Timeline Style)
+  - type: list_block
+    config:
+      title: "List Block (Timeline)"
+      items:
+        - left_text: "Role Title"
+          right_text: "2020 - Present"
+          sub_text: "Company Name"
+          details:
+            - "Bullet point 1"
+            - "Bullet point 2 with **bold** text"
+  
+  # 7. Plain List (Accented Title)
+  - type: plain_list_block
+    config:
+      title: "Plain List (Accented Title)"
+      title_style: "accented"
+      items:
+        - "Simple Plain Item 1"
+        - "Simple Plain Item 2"
+
+  # 8. Compact List Block
+  - type: compact_list_block
+    config:
+      title: "Compact List"
+      items:
+        - content: "Compact Entry A"
+          date: "2024"
+        - content: "Compact Entry B"
+          date: "2023"
+
+  # 9. Text Grid Block (Paragraphs, no bullets)
+  - type: text_grid_block
+    config:
+      title: "Text Grid (No Bullets)"
+      columns: 2
+      items:
+        - content: ["Paragraph 1 Left", "Paragraph 2 Left"]
+        - content: ["Paragraph 1 Right"]
+
+  # 10. Page Break Check
+  - type: header_block
+    config:
+      page_break_before: true
+      title: "Page 2 (Forced Break)"
+      subtitle: "If you see this on a new page, the break worked."

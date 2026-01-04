@@ -1,0 +1,110 @@
+sections:
+  - type: header_block
+    config:
+      title: "Sean Luka Girgis"
+      subtitle: "Murphy, TX  •  214-315-2190  •  seanlgirgis@gmail.com  •  GitHub  •  LinkedIn"
+
+  - type: compound_text_block
+    config:
+      separator: "•"
+      font_size: 10
+      items:
+        - text: "example.com"
+          link: "https://example.com"
+          color: "primary"
+        - text: "Another Link"
+          link: "#"
+
+  - type: text_block
+    config:
+      style: "shaded"
+      content: |
+        **SUMMARY:** This is a shaded text block. It should have a light gray background and a **thick orange border** on the left.
+        It verifies that the accent color is working and the markdown bolding is correct.
+
+  - type: grid_block
+    config:
+      title: "Core Competencies (Grid Check)"
+      style: "shaded"
+      items:
+        - header: "Column 1"
+          content:
+            - "Item 1.1"
+            - "Item 1.2"
+        - header: "Column 2"
+          content:
+            - "Item 2.1"
+            - "Item 2.2"
+        - header: "Column 3"
+          content:
+            - "Item 3.1"
+            - "Item 3.2"
+
+  - type: list_block
+    config:
+      title: "Professional Experience (List Check)"
+      style: "normal"
+      items:
+        - left_text: "Senior Developer"
+          right_text: "2020 - Present"
+          sub_text: "Tech Corp • Remote"
+          details:
+            - "Led the team in **bold** initiatives."
+            - "Fixed the CSS rendering engine."
+
+  - type: grid_block
+    config:
+      title: "Example 2 Grid (2-Column Check)"
+      columns: 2
+      items:
+        - header: "Item 1 (Row 1, Col 1)"
+          content: ["Content for item 1"]
+        - header: "Item 2 (Row 1, Col 2)"
+          content: ["Content for item 2"]
+        - header: "Item 3 (Row 2, Col 1)"
+          content: ["Content for item 3 - This should wrap to the next row"]
+
+  - type: list_block
+    config:
+      title: "Core ML Engineering Pillars (Accented Title)"
+      title_style: "accented"
+      style: "normal"
+      items:
+        - left_text: "Pillar Item 1"
+          right_text: "Details"
+          details: ["Some details here"]
+
+
+  - type: plain_list_block
+    config:
+      title: EDUCATION & CERTIFICATIONS
+      title_style: accented
+      items:
+        - '**High Diploma: Computer Engineering Technology** - Humber College, Canada'
+        - '**Bachelor of Science: Civil Engineering** - Zagazig University, Egypt'
+        - 'Brainbench Certified: C++ Fundamentals, Java 2.0, OOD, C, and Mathematics.'
+
+  - type: compact_list_block
+    config:
+      title: EARLIER EXPERIENCE (2001 - 2008)
+      title_style: accented
+      items:
+        - content: "**Computer Science Corporation** | CADE Project (IRS Modernization) - C++, CICS, MQ Series"
+          date: "2007 - 2008"
+        - content: "**Corpus Inc. / AT&T** | Flexible Bill Formatter - C, C++, Pro*C, Amdocs APIs"
+          date: "2005 - 2007"
+        - content: "**Sprint** | High Availability Interfaces - C++, POSIX Threads, Marconi APIs"
+          date: "2001 - 2005"
+
+  - type: text_grid_block
+    config:
+      title: TECHNICAL SKILLS INVENTORY
+      title_style: accented
+      page_break_before: true
+      columns: 2
+      items:
+        - content:
+            - "**Languages:** Python, C/C++, Java, C#, SQL, Perl, Korn Shell, Awk."
+            - "**Platforms:** Linux (RedHat), Unix (HPUX, Sun Solaris), AWS, CICS, USS."
+        - content:
+            - "**Tools:** Prophet, Spark, BMC TrueSight, AppDynamics, CA APM, Dynatrace, Git, CVS."
