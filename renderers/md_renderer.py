@@ -32,6 +32,8 @@ class MdRenderer:
                 self.render_compact_list_block(config)
             elif block_type == 'text_grid_block':
                 self.render_text_grid_block(config)
+            elif block_type == 'project_block':
+                self.render_project_block(config)
             elif block_type == 'stripe_block':
                 pass # Ignore stripe in Markdown
             else:
@@ -167,4 +169,23 @@ class MdRenderer:
             for line in item.get('content', []):
                 self.output.append(line)
             self.output.append("")
+        self.output.append("")
+
+    def render_project_block(self, config):
+        title = config.get('title', '')
+        if title:
+            # Using H3 or Bold? H3 seems appropriate for a project
+            self.output.append(f"### {title}")
+            
+        # Tags
+        tags = config.get('tags', [])
+        if tags:
+            # Render tags as `Code` style
+            tag_str = " ".join([f"`{t}`" for t in tags])
+            self.output.append(tag_str + "\n")
+            
+        # Items
+        items = config.get('items', [])
+        for item in items:
+             self.output.append(f"- {item}")
         self.output.append("")

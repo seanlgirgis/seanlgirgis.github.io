@@ -1,93 +1,379 @@
+# Global Content Store
+# Keys are referenced by 'content_key' in layout YAMLs (resume.yaml, word_test.yaml)
 
-  # 1. Page Break + Header Block
-  - type: header_block
-    config:
-      title: "Capability Matrix"
-      subtitle: "Verifying DOCX, PDF, HTML, and Markdown Parity"
+# -- HEADERS & CONTACT --
+header_capability_matrix:
+  title: "Capability Matrix"
+  subtitle: "Verifying DOCX, PDF, HTML, and Markdown Parity"
 
-  # 2. Compound Text Block (Links/Colors/Alignment)
-  - type: compound_text_block
-    config:
-      font_alignment: center
-      separator: " | "
-      items:
-        - text: "Blue Link"
-          link: "https://google.com"
-          font_color: "primary_color"
-        - text: "Red Text"
-          font_color: "accent_color"
-        - text: "Standard Text"
-
-  # 3. Text Block (Normal)
-  - type: text_block
-    config:
-      style: "normal"
-      content: "This is a **normal text block** with markdown support. It should flow across full width."
-
-  # 4. Text Block (Shaded)
-  - type: text_block
-    config:
-      style: "shaded"
-      border_color: "accent_color"
-      content: |
-        **Shaded Block**: This block should have a grey background and an accent border on the left (except in MD).
-        It supports multi-line content.
-
-  # 5. Grid Block (2 Columns, Shaded Container)
-  - type: grid_block
-    config:
-      title: "Grid Block (Shaded Container)"
-      style: "shaded"
-      columns: 2
-      items:
-        - header: "Left Column"
-          content: ["Item A", "Item B"]
-        - header: "Right Column"
-          content: ["Item C", "Item D"]
-
-  # 6. List Block (Timeline Style)
-  - type: list_block
-    config:
-      title: "List Block (Timeline)"
-      items:
-        - left_text: "Role Title"
-          right_text: "2020 - Present"
-          sub_text: "Company Name"
-          details:
-            - "Bullet point 1"
-            - "Bullet point 2 with **bold** text"
+header_resume_sean:
+  title: "SEAN LUKA GIRGIS"
   
-  # 7. Plain List (Accented Title)
-  - type: plain_list_block
-    config:
-      title: "Plain List (Accented Title)"
-      title_style: "accented"
-      items:
-        - "Simple Plain Item 1"
-        - "Simple Plain Item 2"
+contact_info_main:
+  separator: " | "
+  font_size: 10
+  items:
+    - text: "Murphy, TX"
+    - text: "214-315-2190"
+    - text: "seanlgirgis@gmail.com"
+      link: "mailto:seanlgirgis@gmail.com"
+    - text: "GitHub"
+      link: "https://github.com/seanlgirgis"
+      font_color: "primary_color"
+    - text: "LinkedIn"
+      link: "https://www.linkedin.com/in/sean-girgis-43bb1b5/"
+      font_color: "primary_color"
 
-  # 8. Compact List Block
-  - type: compact_list_block
-    config:
-      title: "Compact List"
-      items:
-        - content: "Compact Entry A"
-          date: "2024"
-        - content: "Compact Entry B"
-          date: "2023"
+# -- SUMMARIES --
+# The specific one used in the Resume
+summary_enterprise_ml:
+  content: |
+    **Enterprise ML Engineer & Time-Series Specialist** with 20+ years of technical leadership.
+    Specialist in deploying high-performance **Predictive Capacity Pipelines** for 10,000+ servers.
+    Expert at bypassing the Python GIL to achieve **10x forecasting throughput**.
 
-  # 9. Text Grid Block (Paragraphs, no bullets)
-  - type: text_grid_block
-    config:
-      title: "Text Grid (No Bullets)"
-      columns: 2
-      items:
-        - content: ["Paragraph 1 Left", "Paragraph 2 Left"]
-        - content: ["Paragraph 1 Right"]
+summary_profile:
+  content: |
+    **Senior Performance Engineer** with 10+ years of experience in **high-scale distributed systems**. 
+    Proven track record of optimizing cloud infrastructure and building predictive analytics tools. 
+    Expert in **Python**, **Java**, and **System Design**.
 
-  # 10. Page Break Check
-  - type: header_block
-    config:
-      page_break_before: true
-      title: "Page 2 (Forced Break)"
-      subtitle: "If you see this on a new page, the break worked."
+header_page_2:
+  title: "Page 2 (Forced Break)"
+  subtitle: "If you see this on a new page, the break worked."
+
+# -- PROFESSIONAL EXPERIENCE --
+# Job 1: Infra
+exp_infra_arch:
+  left_text: "Infrastructure Architect"
+  right_text: "2020 - Present"
+  sub_text: "Tech Corp Global"
+  details:
+    - "**Cloud Migration**: Lead architect for moving 500+ on-prem servers to AWS."
+    - "**Cost Reduction**: optimized instance sizing resulting in 20% savings."
+
+# Job 2: Performance
+exp_perf_eng:
+  left_text: "Performance Engineer"
+  right_text: "MAR 2017 – NOV 2017"
+  sub_text: "G6 Hospitality LLC"
+  details:
+    - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn."
+    - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts."
+
+# -- PROJECTS --
+proj_predictive_pipeline:
+  title: "Predictive Utilization Pipeline (2,000+ Nodes)"
+  tags: ["Python", "Prophet", "Streamlit", "Spark", "Multiprocessing"]
+  items:
+    - "**Turbo Prophet**: Parallel execution framework reducing cycles by **90%**."
+    - "**High-Fidelity Training**: 3-year historical synthetic foundation."
+    - "**Interactive Dashboard**: 6-month outlooks vs. historical baselines."
+
+# -- PILLARS --
+core_ml_pillars:
+  title: "CORE ML ENGINEERING PILLARS"
+  columns: 2
+  items:
+    - header: "Predictive Engineering"
+      content:
+        - "**Advanced Forecasting**: Prophet, LSTM, XGBoost."
+        - "**High-Performance Data**: Feature extraction from Parquet/Spark."
+        - "**Visualization**: Interactive Streamlit dashboards."
+    - header: "MLOps & Strategy"
+      content:
+        - "**Model Competition**: Automated champion/challenger selection."
+        - "**Confidence Modeling**: \"High Trust\" 90-day utilization logic."
+        - "**Domain Expertise**: BMC TrueSight & AppDynamics synthesis."
+
+# -- SKILLS & LISTS --
+skills_technical:
+  title: "Technical Skills"
+  columns: 2
+  items:
+    - header: "Languages"
+      content: ["Python", "Java", "C++", "SQL", "JavaScript"]
+    - header: "Tools"
+      content: ["Docker", "Kubernetes", "AWS", "Azure", "Git"]
+
+education_masters:
+  items:
+    - "**M.S. Computer Science** | University of Technology | 2016"
+    - "**B.S. Information Systems** | State College | 2014"
+
+# -- EXPERIENCE (Detailed) --
+exp_citi_consultant:
+  title: "PROFESSIONAL EXPERIENCE"
+  items:
+    - left_text: "Capacity and Performance Consultant (ML & Strategy)"
+      right_text: "2017 – Dec 2025"
+      sub_text: "CITI"
+      details:
+        - "Architected big-data forecasting for 10,000+ global servers."
+        - "Automated regional forecasting, reducing manual analysis by **85%**."
+        - "Used BMC TrueSight and AppDynamics for proactive outage detection."
+
+    - left_text: "Performance Engineer"
+      right_text: "2017 – 2017"
+      sub_text: "G6 Hospitality LLC & HCL/ENTERGY"
+      details:
+        - "Managed end-to-end monitoring for Brand.com using Dynatrace AppMon and Synthetics."
+        - 'Led the "FAST" project, data mining user performance metrics to optimize critical money-generating systems.'
+
+
+# -- Continued Experience (For Page 2) --
+exp_ca_consultant:
+  # No title so it flows from previous page
+  style: "timeline"
+  items:
+    - left_text: "Senior Consultant (CA APM Consulting)"
+      right_text: "2012 – 2017"
+      sub_text: "CA Technologies & TIAA-CREF"
+      details:
+        - "Led enterprise CA APM implementations and upgrades (v9.1 → v10.1) for financial clients, managing 4,000–6,000 agents across multi-cluster environments."
+        - "Served as CA APM SME, handling daily operations, cluster maintenance, agent/Power Pack rollouts, and performance bottleneck resolution in J2EE/.NET stacks."
+        - "Designed custom dashboards, alerts, reports, and Perl/Ksh data-extraction scripts to deliver actionable insights for business-critical monitoring."
+        - "Provided architectural sizing recommendations, Golden Image creation, client training, and technical team leadership for APM deployments."
+        - "Optimized large-scale CA Wily Introscope installations, resolving complex issues in high-stakes financial services environments."
+
+
+
+exp_history_summary:
+  title: "EXPERIENCE HISTORY"
+  style: "timeline"
+  items:
+    - left_text: "AT&T"
+      right_text: "2010 – 2011"
+      sub_text: "Senior performance Test Engineer"
+    - left_text: "Sabre"
+      right_text: "2008 – 2012"
+      sub_text: "Senior Developer - C++, Java, Backend Architecture"
+    - left_text: "Software Engineer"
+      right_text: "2000 – 2008"
+      sub_text: "Full-Stack Development"
+
+education_certifications_detailed:
+  title: "EDUCATION & CERTIFICATIONS"
+  style: "timeline"
+  items:
+    - left_text: "Post-Graduate Diploma, Computer Science"
+      right_text: ""
+      sub_text: "Humber College"
+    - left_text: "Bachelor of Science, Engineering"
+      right_text: ""
+      sub_text: "Zagazig University"
+
+# -- CV SPECIFIC CONTENT --
+
+cv_core_competencies:
+  title: 'Core Competencies & Expertise'
+  title_style: 'accented'
+  columns: 3
+  style: 'shaded'
+  items:
+    - header: 'Modern Stack'
+      content:
+        - 'Python (Pandas, Scikit-Learn), ML Forecasting (Prophet), RAG Architectures, Spark, AWS Cloud.'
+    - header: 'Infrastructure & APM'
+      content:
+        - 'BMC TrueSight, AppDynamics, CA APM (Wily), Dynatrace, Capacity Optimization.'
+    - header: 'Legacy Engineering'
+      content:
+        - 'C/C++, Java/J2EE, Pro*C, Unix (HPUX, Solaris, AIX), Shell Scripting, Oracle/SQL.'
+
+cv_exp_citi:
+  title: 'Professional Experience'
+  title_style: 'accented'
+  style: 'timeline'
+  items:
+    - left_text: 'CITI'
+      right_text: 'Nov 2017 – Dec 2025'
+      sub_text: 'Senior Performance & Capacity Consultant'
+      details:
+        - '**AI-Driven Forecasting:** Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance.'
+        - '**Data Pipelines:** Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes.'
+        - '**HorizonScale:** Led the transition from "Trenda" legacy scripts to a parallelized, high-throughput forecasting engine.'
+        - '**Cost Optimization:** Identified underutilized patterns, leading to significant hardware consolidation and budget savings.'
+        - '**Administered and configured BMC TrueSight:** Optimized platform, setting thresholds, alerts, baselines, and integrating data for proactive resource management across diverse applications.'
+        - '**Built automated Python/pandas data pipelines** extract, cleanse, and consolidate capacity metrics from BMC TrueSight into centralized analytics for accurate forecasting and reporting.'
+
+cv_exp_mid_career:
+  # Continued from previous block, no title
+  style: 'timeline'
+  items:
+    - left_text: 'G6 HOSPITALITY LLC'
+      right_text: 'Mar 2017 – Nov 2017'
+      sub_text: 'Performance Engineer'
+      details:
+        - 'Managed end-to-end monitoring for Brand.com using Dynatrace AppMon and Synthetics.'
+        - 'Led the "FAST" project, data mining user performance metrics to optimize critical money-generating systems.'
+        - 'Upgraded DynaTrace from v6.5 to v7.0, enforced TLS 1.2 security, and integrated Performance Center with DynaTrace.'
+        - 'Implemented custom dashboards, alerts, and reports for business-critical monitoring.'
+        - 'Supported cloud migration to AWS, evaluated mobile monitoring tools, and delivered before/after dashboards for performance tracking.'
+        - 'Optimized large-scale DynaTrace installations, resolving complex issues in high-stakes financial services environments.'
+
+    - left_text: 'HCL / ENTERGY'
+      right_text: 'Jan 2017 – Mar 2017'
+      sub_text: 'APM Consultant'
+      details:
+        - 'Supported enterprise-wide CA APM, CEM, and ADA solutions for utility grid systems.'
+
+cv_exp_ca_tech:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'CA TECHNOLOGIES'
+      right_text: 'Mar 2014 – Aug 2016'
+      sub_text: 'Senior Consultant'
+      details:
+        - 'Led planning, implementation, and upgrades of CA APM solutions for enterprise clients, ensuring seamless integration and performance scalability. '
+        - 'Reviewed client architectures, provided sizing recommendations, and optimized agent/Enterprise Manager installations for maximum efficiency.'
+        - 'Designed and deployed custom Management Modules, including advanced reports, alerts, and dashboards tailored to business needs.'
+        - 'Delivered client training, knowledge transfer, and comprehensive documentation to enable long-term self-sufficiency in CA APM operations.'
+
+cv_exp_tiaa:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'ENTERPRISE IRON (TIAA-CREF)'
+      right_text: 'Aug 2011 – Dec 2013'
+      sub_text: 'SME for CA APM'
+      details:
+        - 'Served as CA APM SME for TIAA-CREF, managing day-to-day operations of a large-scale enterprise environment with 4 regions, 50+ Enterprise Managers, and ~4,000–6,000 agents.'
+        - 'Led upgrade of CA Wily Introscope from v9.1 to v9.50, ensuring minimal disruption across multi-cluster financial services infrastructure.'
+        - 'Designed and implemented custom Management Modules, including specialized dashboards, alerts, reports, and Perl/Ksh data-extraction scripts for business-specific insights.'
+        - 'Oversaw agent installations, Power Pack deployments, and cluster maintenance (e.g., resolving clamps) to maintain high-availability monitoring.'
+        - 'Collaborated with IT teams to troubleshoot performance issues in J2EE/WebLogic/WebSphere environments, leveraging JMX monitoring for bottleneck resolution.'
+cv_exp_att:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'AT&T'
+      right_text: 'Aug 2010 – Jul 2011'
+      sub_text: 'Telecom Applications Performance Testing'
+      details:
+        - 'Analyzed performance of J2EE telecom web applications to identify optimal loads, break points, and resource bottlenecks.'
+        - 'Documented key metrics (JDBC connections, threads, memory, CPU, GC) and installed JMX Monitoring, Thread Dumps, and Wily Introscope.'
+        - 'Created and modified automation/testing scripts for performance validation.'
+        
+cv_exp_sabre:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'SABRE'
+      right_text: 'May 2008 – Jan 2010'
+      sub_text: 'Senior Software Engineer (C++)'
+      details:
+        - 'Designed and implemented high-performance conversion of global travel Shopping Engine from MySQL to Oracle, reducing server footprint dramatically.'
+        - 'Converted SQL queries, achieved superior DSS performance, and automated conversion process.'
+        - 'Built testing framework using CPPUNIT in C++/OCCI/OCI environment.'
+
+cv_exp_csc:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'Computer Science Corporation (CSC)'
+      right_text: 'OCT 2007 – May 2008'
+      sub_text: 'Architect/Developer'
+      details:
+        - 'Performed UML-based unit design, created class/sequence diagrams, and developed modules for IRS modernization.'
+        - 'Worked on CICS/MQSeries/XML messaging architecture with VC++ and DB2.'
+
+cv_exp_corpus_inc:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'Corpus Inc. (CenturyTel -AT&T)'
+      right_text: 'May 2005 – Oct 2007'
+      sub_text: 'Developer / Support Engineer (AMDOCS telecom billing systems)'
+      details:
+        - 'Delivered performance enhancements in billing processes (C/C++/Pro*C/PL/SQL), reducing memory usage 75% and improving throughput 20%.'
+        - 'Developed and troubleshot Flexible Bill Formatter, EDI interfaces, and Enabler/EMS/CSM modules.'
+        - 'Automated system administration tasks (WebLogic/WebSphere) with Korn Shell scripts, saving 60% reboot time.'
+
+cv_exp_sprint:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'Sprint'
+      right_text: '2001 – 2005'
+      sub_text: 'High Availability Interfaces - C++, POSIX Threads, Marconi APIs'
+      details:
+        - 'Developed high-availability multithreaded interfaces (C++/POSIX threads/sockets/IPC) for EAMS/AMS-PRMS integration.'
+        - 'Led PRMS maintenance, upgrade (PowerBuilder → Web), and enhancements; improved DB performance 10x via PL/SQL optimizations.'
+        - 'Reverse-engineered AMDOCS APIs, implemented interfaces, and supported CSM production troubleshooting.'
+
+cv_exp_simplex:
+  # Using page_break_before logic in layout, but content here
+  style: 'timeline'
+  items:
+    - left_text: 'Simplex International - Canada'
+      right_text: '1999 – 2001'
+      sub_text: 'Developer'
+      details:
+        - 'Developed interfaces and MRC to the time and attendence system using VB6.'
+        - 'Developed extension for Client GM on the security and alert system Using VC++.'
+
+
+cv_exp_early:
+  title: 'Earlier Experience (2001 - 2008)'
+  title_style: 'accented'
+  style: 'timeline'
+  items:
+    - left_text: 'Computer Science Corporation'
+      right_text: '2007 – 2008'
+      sub_text: 'CADE Project (IRS Modernization) - C++, CICS, MQ Series'
+      details: []
+    - left_text: 'Corpus Inc. / AT&T'
+      right_text: '2005 – 2007'
+      sub_text: 'Flexible Bill Formatter - C, C++, Pro*C, Amdocs APIs'
+      details: []
+    - left_text: 'Sprint'
+      right_text: '2001 – 2005'
+      sub_text: 'High Availability Interfaces - C++, POSIX Threads, Marconi APIs'
+      details: []
+
+cv_technical_skills:
+  title: 'Technical Skills Inventory'
+  title_style: 'accented'
+  columns: 3
+  items:
+    - content: 
+         - '**Languages:** Python, C/C++, Java, C#, SQL, Perl, Korn Shell, Awk.'
+    - content:
+         - '**Tools:** Prophet, Spark, BMC TrueSight, AppDynamics, CA APM, Dynatrace, Git, CVS.'
+    - content:
+         - '**Platforms:** Linux (RedHat), Unix (HPUX, Sun Solaris), AWS, CICS, USS.'
+
+cv_education:
+  title: 'Education & Certifications'
+  title_style: 'accented'
+  items:
+    - details:
+      - '**High Diploma: Computer Engineering Technology** - Humber College, Canada'
+      - '**Bachelor of Science: Civil Engineering** - Zagazig University, Egypt'
+      - 'Brainbench Certified: C++ Fundamentals, Java 2.0, OOD, C, and Mathematics.'
+
+cv_exp_G6:
+  # Continued from previous block, no title
+  style: 'timeline'
+  items:
+    - left_text: 'G6 HOSPITALITY LLC'
+      right_text: 'Mar 2017 – Nov 2017'
+      sub_text: 'Performance Engineer'
+      details:
+        - 'Managed end-to-end monitoring for Brand.com using Dynatrace AppMon and Synthetics.'
+        - 'Led the "FAST" project, data mining user performance metrics to optimize critical money-generating systems.'
+        - 'Upgraded DynaTrace from v6.5 to v7.0, enforced TLS 1.2 security, and integrated Performance Center with DynaTrace.'
+        - 'Implemented custom dashboards, alerts, and reports for business-critical monitoring.'
+        - 'Supported cloud migration to AWS, evaluated mobile monitoring tools, and delivered before/after dashboards for performance tracking.'
+        - 'Optimized large-scale DynaTrace installations, resolving complex issues in high-stakes financial services environments.'
+cv_exp_HCL:
+  # Continued from previous block, no title
+  style: 'timeline'
+  items:
+    - left_text: 'HCL / ENTERGY'
+      right_text: 'Jan 2017 – Mar 2017'
+      sub_text: 'APM Consultant'
+      details:
+        - 'Supported enterprise-wide CA APM, CEM, and ADA solutions for utility grid systems.'

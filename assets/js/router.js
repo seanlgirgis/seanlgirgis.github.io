@@ -21,7 +21,7 @@ async function loadPage(pageName) {
 
     // Clear current content
     mainContent.innerHTML = '';
-    
+
     // Scroll to top
     mainContent.scrollTop = 0;
 
@@ -30,10 +30,11 @@ async function loadPage(pageName) {
 
     try {
         for (const componentPath of components) {
-            const response = await fetch(componentPath);
+            // Cache busting for development
+            const response = await fetch(`${componentPath}?v=${new Date().getTime()}`);
             if (!response.ok) throw new Error(`Failed to load ${componentPath}`);
             const html = await response.text();
-            
+
             // Create a wrapper div or append directly
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html;
@@ -46,6 +47,9 @@ async function loadPage(pageName) {
 
     // Update Active Navigation State
     updateActiveNav(pageName);
+
+    // Update Download Links based on page context (Resume vs CV)
+    updateDownloadLinks(pageName);
 }
 
 function updateActiveNav(pageName) {
@@ -56,6 +60,22 @@ function updateActiveNav(pageName) {
             link.classList.add('active');
         }
     });
+}
+
+function updateDownloadLinks(pageName) {
+    // Determine target based on page
+    const target = (pageName === 'cv') ? 'cv' : 'resume';
+    const label = (pageName === 'cv') ? 'CV' : 'Resume';
+
+    // Select buttons
+    const btnPdf = document.querySelector('.btn-download.pdf');
+    const btnWord = document.querySelector('.btn-download.word');
+    const btnMd = document.querySelector('.btn-download.markdown');
+
+    // Update hrefs (only if buttons exist on this page)
+    if (btnPdf) btnPdf.href = `${target}.pdf`;
+    if (btnWord) btnWord.href = `${target}.docx`;
+    if (btnMd) btnMd.href = `${target}.md`;
 }
 
 // Initial Load

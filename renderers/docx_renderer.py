@@ -610,9 +610,18 @@ class DocxRenderer:
                 table = self.doc.add_table(rows=1, cols=2)
                 table.autofit = False
                 
-                # Widths (80/20 approx)
-                table.columns[0].width = Mm(150)
-                table.columns[1].width = Mm(40)
+                # Widths (75% / 25% approx)
+                # Total Page Body: 210mm - 25.4mm (12.7*2 margins) = ~184.6mm
+                # We target 184mm total
+                w_left = Mm(138)
+                w_right = Mm(46)
+                
+                table.columns[0].width = w_left
+                table.columns[1].width = w_right
+                
+                # Force cell widths for first row (helps Word rendering significantly)
+                table.cell(0, 0).width = w_left
+                table.cell(0, 1).width = w_right
                 
                 # Left: Job Title
                 c1 = table.cell(0, 0)
@@ -627,6 +636,7 @@ class DocxRenderer:
                 p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 r2 = p2.add_run(item.get('right_text', ''))
                 r2.bold = True
+                r2.font.size = Pt(10) # Reduced to fit in narrower column
                 r2.font.color.rgb = hex_to_rgb(get_theme_color(self.theme, 'accent_color'))
                 
                 # Subtext (Company)
@@ -1096,6 +1106,128 @@ class DocxRenderer:
                 run.font.size = font_size_override
             if color_override and not part.startswith('<span'): # Don't override explicit spans
                 run.font.color.rgb = color_override
+
+    def render_project_block(self, config):
+        # 1. Render Items (Highlights)
+        style = config.get('style', 'simple')
+        items = config.get('items', [])
+        tags = config.get('tags', [])
+        title = config.get('title') # New: Title inside block
+        
+        # If left_border style, wrap in table
+        if style == 'left_border':
+            self.doc.add_paragraph().paragraph_format.space_after = Pt(6)
+            table = self.doc.add_table(rows=1, cols=1)
+            table.autofit = False
+            table.allow_autofit = False
+            table.columns[0].width = Mm(190)
+            
+            cell = table.cell(0,0)
+            target = cell
+            
+            # Border & Padding
+            tcPr = cell._tc.get_or_add_tcPr()
+            
+            # Padding
+            tcMar = OxmlElement('w:tcMar')
+            for side in ['top', 'bottom', 'left', 'right']:
+                width = '220' if side == 'left' else '0' # 11pt left padding
+                node = OxmlElement(f'w:{side}')
+                node.set(qn('w:w'), width)
+                node.set(qn('w:type'), 'dxa')
+                tcMar.append(node)
+            tcPr.append(tcMar)
+            
+            # Border
+            tcBorders = tcPr.find(qn('w:tcBorders'))
+            if tcBorders is None:
+                tcBorders = OxmlElement('w:tcBorders')
+                tcPr.append(tcBorders)
+                
+            left = OxmlElement('w:left')
+            left.set(qn('w:val'), 'single')
+            left.set(qn('w:sz'), '32')
+            left.set(qn('w:space'), '0')
+            c_hex = get_theme_color(self.theme, config.get('border_color', 'primary_color'))
+            left.set(qn('w:color'), c_hex.lstrip('#'))
+            tcBorders.append(left)
+            
+            # Clear default paragraph
+            target.paragraphs[0]._element.getparent().remove(target.paragraphs[0]._element)
+            
+        else:
+            target = self.doc
+            
+        # 1. Render Title (if exists)
+        if title:
+            if hasattr(target, 'add_paragraph'):
+                p_title = target.add_paragraph()
+            else:
+                p_title = target.add_paragraph()
+            
+            p_title.paragraph_format.space_after = Pt(4)
+            r = p_title.add_run(title)
+            r.bold = True
+            r.font.size = Pt(11) # Slightly larger?
+            # r.font.color.rgb? Keep black or dark grey as per PDF?
+            # PDF image looked black/dark.
+
+        # 2. Render Items (Bullets)
+        for item in items:
+            if isinstance(item, str):
+                details = [item]
+            else:
+                details = item.get('details', [])
+                
+            for line in details:
+                if hasattr(target, 'add_paragraph'):
+                    p = target.add_paragraph()
+                else: 
+                    p = target.add_paragraph()
+                    
+                p.style = 'List Bullet'
+                if style == 'left_border':
+                    p.paragraph_format.space_after = Pt(2)
+                    
+                self.add_markdown_text(p, line)
+                
+        # 3. Render Tags (Pills)
+        if tags:
+            if hasattr(target, 'add_paragraph'):
+                p_tags = target.add_paragraph()
+            else:
+                p_tags = target.add_paragraph()
+                
+            p_tags.paragraph_format.space_before = Pt(8)
+            
+            for i, tag in enumerate(tags):
+                # Add spacing run between pills
+                if i > 0:
+                    r_space = p_tags.add_run("  ") # Visual gap
+                    r_space.font.size = Pt(9)
+
+                # Pill Run
+                # We can't do rounded corners easily in pure DOCX runs without Graphic Objects.
+                # But we can do Background Shading + White Text.
+                run = p_tags.add_run(f" {tag} ") # Spaces for padding approximation
+                run.font.size = Pt(9)
+                run.font.color.rgb = RGBColor(255, 255, 255) # White text
+                run.bold = True
+                
+                # Apply Shading (Highlight)
+                rPr = run._r.get_or_add_rPr()
+                shd = OxmlElement('w:shd')
+                shd.set(qn('w:val'), 'clear')
+                shd.set(qn('w:color'), 'auto')
+                # Use primary color for background
+                match_color = get_theme_color(self.theme, 'primary_color').lstrip('#')
+                shd.set(qn('w:fill'), match_color)
+                rPr.append(shd)
+
+        # Spacer after block if it was a table
+        if style == 'left_border':
+            spacer = self.doc.add_paragraph()
+            spacer.paragraph_format.space_after = Pt(12)
 
     # --- HELPER: HYPERLINK ---
     def add_hyperlink(self, paragraph, url, text, color="#0000FF"):

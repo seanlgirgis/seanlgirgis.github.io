@@ -14,7 +14,7 @@ theme:
   # Typography & Sizing
   typography:
     default:
-      font_size_base: 10
+      font_size_base: 11
       font_size_h1: 16
       font_size_h2: 12
       font_size_small: 9
@@ -22,13 +22,13 @@ theme:
       
     docx:
       font_size_base: 11
-      font_size_h1: 18
-      font_size_h2: 12
+      font_size_h1: 16
+      font_size_h2: 11
       font_size_small: 9
       font_size_footer: 8
 
     pdf:
-      font_size_base: 7.5
+      font_size_base: 10
       font_size_h1: 14
       font_size_h2: 10
       font_size_small: 7

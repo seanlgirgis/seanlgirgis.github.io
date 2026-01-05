@@ -68,7 +68,8 @@
             </center>
         </div>
         {% elif section.type == 'text_block' %}
-        <div class="text-block {{ section.config.style }} {{ pb_class }}">
+        <div class="text-block {{ section.config.style }} {{ pb_class }}" {% if section.config.border_color
+            %}style="border-left-color: {{ section.config.border_color }} !important;" {% endif %}>
             {{ section.config.content | markdown | safe }}
         </div>
         {% elif section.type == 'grid_block' %}
@@ -101,9 +102,11 @@
             <div style="clear: both;"></div>
         </div>
         {% elif section.type == 'list_block' %}
+        {% if section.config.title %}
         <h2 class="section-title {% if section.config.title_style == 'accented' %}accented{% endif %} {{ pb_class }}">
             <span>{{ section.config.title }}</span>
         </h2>
+        {% endif %}
         <div class="list-block {{ section.config.style }}">
             {% for item in section.config['items'] %}
             <div class="list-item" style="margin-bottom: 15px;">
@@ -163,7 +166,7 @@
         </div>
         {% elif section.type == 'text_grid_block' %}
         <div class="grid-section-wrapper {{ section.config.style }} {{ pb_class }}" {% if section.config.border_color
-            %}style="border-left: 5px solid {{ section.config.border_color }} !important;" {% endif %}>
+            %}style="border-left: 3px solid {{ section.config.border_color }} !important;" {% endif %}>
             {% if section.config.title %}
             <h2 class="section-title {% if section.config.title_style == 'accented' %}accented{% endif %}"><span>{{
                     section.config.title }}</span></h2>
@@ -189,7 +192,7 @@
         </div>
         {% elif section.type == 'project_block' %}
         <div class="project-block {{ section.config.style }} {{ pb_class }}" {% if section.config.border_color
-            %}style="border-left: 5px solid {{ section.config.border_color }} !important;" {% endif %}>
+            %}style="border-left: 3px solid {{ section.config.border_color }} !important;" {% endif %}>
             <!-- Title -->
             {% if section.config.title %}
             <div class="project-title">{{ section.config.title | markdown | safe }}</div>

@@ -1,6 +1,4 @@
-# Generic Block Resume Content (Web/HTML Optimized)
-# Synchronized with DOCX/PDF structure
-
+# Generic Block Resume Content (DOCX Optimized)
 config:
   footer:
     text: "Sean Luka Girgis"
@@ -48,9 +46,11 @@ sections:
     config:
       content_key: "exp_citi_consultant"
       style: "timeline"
-      title: "PROFESSIONAL EXPERIENCE"
+      title: "PROFESSIONAL EXPERIENCE" # Override title for DOCX if needed, usually pulled from key if inside
 
   # 6b. Continued Experience (CA APM)
+  # DOCX handles pagination automatically, but we include this split 
+  # to match PDF structure for consistency of content.
   - type: list_block
     config:
       content_key: "exp_ca_consultant"

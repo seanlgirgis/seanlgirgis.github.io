@@ -108,9 +108,13 @@ class HtmlRenderer:
         .content-wrapper {{
             padding: 25mm 25mm; 
             width: 100%;
+            max-width: 216mm; /* Letter width constraint */
+            margin: 0 auto;   /* Center on screen */
             box-sizing: border-box;
             position: relative;
             z-index: 2;
+            background: #fff; /* Ensure white background for page look */
+            box-shadow: 0 0 15px rgba(0,0,0,0.1); /* Subtle drop shadow */
         }}
         
         a {{
@@ -189,7 +193,7 @@ class HtmlRenderer:
     }}
             
             .text-block.shaded, .shaded-border {{
-                border-left-width: 10px !important;
+                border-left-width: 3px !important;
                 border-left-style: solid !important;
                 border-left-color: {t.get('accent_color', 'orange')} !important;
                 -webkit-print-color-adjust: exact;
@@ -201,7 +205,7 @@ class HtmlRenderer:
         }}
         
         .shaded-border {{
-             border-left-width: 10px !important;
+             border-left-width: 3px !important;
              border-left-style: solid !important;
              border-left-color: {t.get('accent_color', 'orange')} !important;
              padding-left: 15px;
@@ -224,14 +228,14 @@ class HtmlRenderer:
         .text-block.normal {{ font-size: 1em; line-height: 1.4; }}
         .text-block.shaded {{
             background-color: #f2f2f2 !important; padding: 10px;
-            border-left: 8px solid {t.get('accent_color', 'orange')} !important;
+            border-left: 3px solid {t.get('accent_color', 'orange')} !important;
             color: #444; font-size: 1.0em;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
         
         .text-block.left_border {{
             background-color: transparent !important; padding: 10px; padding-left: 15px;
-            border-left: 5px solid {t.get('primary_color', 'blue')} !important;
+            border-left: 3px solid {t.get('primary_color', 'blue')} !important;
             color: {t.get('text_color', '#000')}; font-size: 1.0em;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
@@ -246,7 +250,7 @@ class HtmlRenderer:
         
         .grid-section-wrapper.left_border {{
             background-color: transparent !important; padding: 10px; padding-left: 15px;
-            border-left: 5px solid {t.get('primary_color', 'blue')} !important;
+            border-left: 3px solid {t.get('primary_color', 'blue')} !important;
             margin-bottom: 20px;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
@@ -261,7 +265,7 @@ class HtmlRenderer:
         }}
         
         .section-title.accented span {{
-            border-bottom-width: 2px;
+            border-bottom-width: 1px;
             border-bottom-style: solid;
             border-bottom-color: {t.get('accent_color', 'orange')} !important;
             padding-bottom: 5px;
@@ -270,7 +274,7 @@ class HtmlRenderer:
         .text-block.shaded_primary {{
             background-color: #f2f2f2 !important; 
             padding: 5px 15px; /* Tight vertical padding */
-            border-left: 5px solid {t.get('primary_color', 'blue')} !important;
+            border-left: 3px solid {t.get('primary_color', 'blue')} !important;
             color: {t.get('text_color', '#000')}; font-size: 1.0em;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
@@ -278,7 +282,7 @@ class HtmlRenderer:
         .grid-section-wrapper.shaded_primary {{
             background-color: #f2f2f2 !important; 
             padding: 5px 15px; /* Tight vertical padding */
-            border-left: 5px solid {t.get('primary_color', 'blue')} !important;
+            border-left: 3px solid {t.get('primary_color', 'blue')} !important;
             margin-bottom: 20px;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
@@ -288,7 +292,7 @@ class HtmlRenderer:
         .project-block.left_border {{
             background-color: transparent !important; 
             padding: 5px 15px; 
-            border-left: 5px solid {t.get('primary_color', 'blue')} !important;
+            border-left: 3px solid {t.get('accent_color', 'orange')} !important;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
         .project-title {{ font-weight: bold; margin-bottom: 5px; color: #000; font-size: 1.05em; }}
@@ -308,6 +312,9 @@ class HtmlRenderer:
         }}
         
         strong {{ font-weight: bold; color: #000; }}
+        
+        /* Force remove unwanted separators in timeline/list blocks */
+        .list-item, .timeline-item {{ border: none !important; border-top: none !important; border-bottom: none !important; }}
         </style>
         """
     

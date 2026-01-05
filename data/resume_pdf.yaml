@@ -1,6 +1,4 @@
-# Generic Block Resume Content (Web/HTML Optimized)
-# Synchronized with DOCX/PDF structure
-
+# Generic Block Resume Content
 config:
   footer:
     text: "Sean Luka Girgis"
@@ -10,14 +8,14 @@ sections:
   # 1. Header Block
   - type: header_block
     config:
-      content_key: "header_resume_sean" 
+      content_key: "header_resume_sean" # Pulls "SEAN LUKA GIRGIS"
 
-  # 2. Contact Info 
+  # 2. Contact Info (Compound)
   - type: compound_text_block
     config:
       content_key: "contact_info_main"
 
-  # 3. Summary (Shaded)
+  # 3. Summary (Shaded Text)
   - type: text_block
     config:
       style: "shaded"
@@ -28,7 +26,6 @@ sections:
   - type: grid_block
     config:
       content_key: "core_ml_pillars"
-      columns: 2
 
   # 5. Flagship Project (Headline)
   - type: section_title_block
@@ -43,20 +40,24 @@ sections:
       style: "left_border"
       border_color: "accent_color" 
 
+
   # 6. Professional Experience (Timeline List)
   - type: list_block
     config:
       content_key: "exp_citi_consultant"
       style: "timeline"
-      title: "PROFESSIONAL EXPERIENCE"
+  # 6. Page Break Example
+  - type: header_block
+    config:
+      page_break_before: true
 
-  # 6b. Continued Experience (CA APM)
+  # 6b. Continued Experience
   - type: list_block
     config:
       content_key: "exp_ca_consultant"
       style: "timeline"
 
-  # 7. Experience History 
+  # 7. Experience History (Timeline List - Simplified)
   - type: list_block
     config:
       content_key: "exp_history_summary"
@@ -66,4 +67,4 @@ sections:
   - type: list_block
     config:
       content_key: "education_certifications_detailed"
-      style: "timeline"
+      style: "timeline" # Using timeline style for left/right split

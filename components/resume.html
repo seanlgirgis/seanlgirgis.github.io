@@ -1,66 +1,651 @@
-<div class="container">
-    <h1 class="name">Sean Luka Girgis</h1>
-    <div class="contact">
-        Murphy, TX • 214-315-2190 • seanlgirgis@gmail.com • 
-        <a href="https://github.com/seanlgirgis" target="_blank">GitHub</a> • 
-        <a href="https://www.linkedin.com/in/sean-girgis-43bb1b5/" target="_blank">LinkedIn</a>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
 
-    <div class="summary">
-        <strong>Enterprise ML Engineer & Time-Series Specialist</strong> with 20+ years of technical leadership. 
-        Specialist in deploying high-performance <strong>Predictive Capacity Pipelines</strong> for 10,000+ servers. 
-        Expert at bypassing the Python GIL to achieve <span class="metric">10x forecasting throughput</span>.
-    </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume</title>
 
-    <h2>Core ML Engineering Pillars</h2>
-    <div class="pillar-grid">
-        <div>
-            <strong>Predictive Engineering</strong>
-            <ul>
-                <li>Advanced Forecasting: Prophet, LSTM, XGBoost.</li>
-                <li>High-Performance Data: Feature extraction from Parquet/Spark.</li>
-                <li>Visualization: Interactive Streamlit dashboards.</li>
+    <!-- CSS Injection Point - Bypasses auto-formatters -->
+    
+        <style>
+        body {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            color: #333333;
+            background: #fff;
+            font-size: 11pt;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            line-height: 1.5; 
+        }
+        
+        /* STATIC STRIPE STRATEGY */
+        /* Just a normal block div at the top. No positioning. */
+        .page-stripe {
+            display: block !important;
+            width: 100% !important;
+            height: 8px !important;
+            background-color: #004a99 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            /* Ensure it doesn't get pushed by anything */
+            position: relative; 
+            z-index: 9999;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        /* Default Screen Wrapper */
+        .content-wrapper {
+            padding: 25mm 25mm; 
+            width: 100%;
+            max-width: 216mm; /* Letter width constraint */
+            margin: 0 auto;   /* Center on screen */
+            box-sizing: border-box;
+            position: relative;
+            z-index: 2;
+            background: #fff; /* Ensure white background for page look */
+            box-shadow: 0 0 15px rgba(0,0,0,0.1); /* Subtle drop shadow */
+        }
+        
+        a {
+            color: #004a99;
+            text-decoration: none;
+            font-weight: 500;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        a:hover { text-decoration: underline; }
+        
+        @media print {
+        @page {
+            size: Letter;
+            margin: 0mm; /* Reset default @page margins since we control layout with padding */
+        }
+
+        html, body {
+            font-size: 10pt !important;
+            width: 100%;
+            height: 100%;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            /* Do not force margin/padding 0 on body if not needed, but safe to keep 0 for layout control */
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* 
+           Wrapper Logic:
+           - padding-top (Page 1): Handles space below stripe.
+           - padding-left/right/bottom: Handles global margins.
+           - This ensures Left/Right/Bottom are NEVER destroyed.
+        */
+        /* 
+           Wrapper Logic:
+           - padding-top (Page 1): Handles space below stripe.
+           - padding-left/right/bottom: REMOVED. We now set specific PDF margins in pdf_renderer.py
+             so the footer aligns correctly.
+        */
+        /* 
+           Wrapper Logic:
+           - padding-top (Page 1): Handles space below stripe.
+           - padding-left/right/bottom: Handles global margins.
+           - This ensures Left/Right/Bottom are NEVER destroyed.
+        */
+        .content-wrapper {
+            padding-top: 6.35mm !important; 
+            padding-left: 12.7mm !important; 
+            padding-right: 12.7mm !important;
+            padding-bottom: 6.35mm !important;
+            width: 100% !important;
+        }
+        
+        .page-stripe {
+            display: block !important;
+            width: 100% !important;
+            height: 8px !important;
+            background-color: #004a99 !important;
+            position: relative !important; 
+            z-index: 10000 !important;
+        }
+        
+        /* 
+           Manual Page Break Spacer 
+           - Adds extra padding at the top of the new page to simulate margin.
+           - We use padding-top because margin-top is often ignored at page start.
+           - We double the standard top margin for 'Page 2+' effect.
+        */
+        .page-break { 
+            page-break-before: always; 
+            display: block;
+            padding-top: 12.7mm !important;
+            position: relative;
+        }
+    }
+            
+            .text-block.shaded, .shaded-border {
+                border-left-width: 3px !important;
+                border-left-style: solid !important;
+                border-left-color: #E07000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .text-block.shaded { background-color: #f2f2f2 !important; }
+            .shaded-border { padding-left: 15px; }
+            .page-break { page-break-before: always; }
+        }
+        
+        .shaded-border {
+             border-left-width: 3px !important;
+             border-left-style: solid !important;
+             border-left-color: #E07000 !important;
+             padding-left: 15px;
+             -webkit-print-color-adjust: exact;
+             print-color-adjust: exact;
+        }
+        
+        .header-block { width: 100%; text-align: center !important; margin-bottom: 10px; display: block; }
+        .header-block h1 {
+            color: #004a99;
+            margin: 0; font-size: 2.5em; text-transform: uppercase; letter-spacing: -1px; text-align: center; display: block; width: 100%;
+        }
+        .header-block p.subtitle { color: #666; margin-top: 2px; font-size: 1.1em; text-align: center; }
+        
+        .compound-text-block { margin-bottom: 20px; padding-bottom: 5px; line-height: 1.3; text-align: center; }
+        .compound-item { display: inline-block; }
+        .compound-separator { margin: 0 4px; color: #ccc; }
+        
+        .text-block { margin-bottom: 10px; display: block; }
+        .text-block.normal { font-size: 1em; line-height: 1.4; }
+        .text-block.shaded {
+            background-color: #f2f2f2 !important; padding: 10px;
+            border-left: 3px solid #E07000 !important;
+            color: #444; font-size: 1.0em;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        
+        .text-block.left_border {
+            background-color: transparent !important; padding: 10px; padding-left: 15px;
+            border-left: 3px solid #004a99 !important;
+            color: #333333; font-size: 1.0em;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        
+        /* Grid Styles */
+        .grid-section-wrapper.shaded {
+            background-color: #f2f2f2 !important; padding: 20px;
+            border-left: 8px solid #E07000 !important;
+            margin-bottom: 20px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        
+        .grid-section-wrapper.left_border {
+            background-color: transparent !important; padding: 10px; padding-left: 15px;
+            border-left: 3px solid #004a99 !important;
+            margin-bottom: 20px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        
+        .section-title {
+            color: #004a99;
+            font-size: 1.25em; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-top: 15px; margin-bottom: 10px;
+        }
+        
+        .section-title.accented {
+            border-bottom: none !important;
+        }
+        
+        .section-title.accented span {
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+            border-bottom-color: #E07000 !important;
+            padding-bottom: 5px;
+        }
+        
+        .text-block.shaded_primary {
+            background-color: #f2f2f2 !important; 
+            padding: 5px 15px; /* Tight vertical padding */
+            border-left: 3px solid #004a99 !important;
+            color: #333333; font-size: 1.0em;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+
+        .grid-section-wrapper.shaded_primary {
+            background-color: #f2f2f2 !important; 
+            padding: 5px 15px; /* Tight vertical padding */
+            border-left: 3px solid #004a99 !important;
+            margin-bottom: 20px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        
+        /* Project Block Styles */
+        .project-block { margin-bottom: 20px; }
+        .project-block.left_border {
+            background-color: transparent !important; 
+            padding: 5px 15px; 
+            border-left: 3px solid #E07000 !important;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .project-title { font-weight: bold; margin-bottom: 5px; color: #000; font-size: 1.05em; }
+        .project-details { padding-left: 20px; margin-bottom: 10px; margin-top: 5px; }
+        .project-details li { margin-bottom: 2px; }
+        .project-tags { margin-top: 8px; }
+        .project-tag { 
+            display: inline-block; 
+            background-color: #004a99; 
+            color: #fff !important; 
+            padding: 3px 10px; 
+            border-radius: 12px; 
+            font-size: 0.85em; 
+            margin-right: 5px; 
+            font-weight: bold;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        
+        strong { font-weight: bold; color: #000; }
+        
+        /* Force remove unwanted separators in timeline/list blocks */
+        .list-item, .timeline-item { border: none !important; border-top: none !important; border-bottom: none !important; }
+        </style>
+        
+
+    <style>
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- DEBUG: PIPELINE CHECK 3 -->
+    
+    
+    <div class="page-stripe">&nbsp;</div>
+    
+
+    <div class="content-wrapper">
+        
+        
+
+        
+        <div class="header-block ">
+            <center>
+                <h1 style="text-align: center;">SEAN LUKA GIRGIS</h1>
+                
+            </center>
+        </div>
+        
+        
+        
+
+        
+        <div class="compound-text-block "
+            style="text-align: center">
+            <center>
+                
+                
+                <span class="compound-item">
+                    
+                    <span style="font-size: 10pt; color: #333333;">Murphy, TX</span>
+                    
+                </span>
+                
+                
+                <span class="compound-separator" style="font-size: 10pt;"> | </span>
+                
+                <span class="compound-item">
+                    
+                    <span style="font-size: 10pt; color: #333333;">214-315-2190</span>
+                    
+                </span>
+                
+                
+                <span class="compound-separator" style="font-size: 10pt;"> | </span>
+                
+                <span class="compound-item">
+                    
+                    <a href="mailto:seanlgirgis@gmail.com"
+                        style="font-size: 10pt; color: #333333;">seanlgirgis@gmail.com</a>
+                    
+                </span>
+                
+                
+                <span class="compound-separator" style="font-size: 10pt;"> | </span>
+                
+                <span class="compound-item">
+                    
+                    <a href="https://github.com/seanlgirgis"
+                        style="font-size: 10pt; color: #004a99;">GitHub</a>
+                    
+                </span>
+                
+                
+                <span class="compound-separator" style="font-size: 10pt;"> | </span>
+                
+                <span class="compound-item">
+                    
+                    <a href="https://www.linkedin.com/in/sean-girgis-43bb1b5/"
+                        style="font-size: 10pt; color: #004a99;">LinkedIn</a>
+                    
+                </span>
+                
+            </center>
+        </div>
+        
+        
+        
+
+        
+        <div class="text-block shaded " style="border-left-color: #004a99 !important;" >
+            <strong>Enterprise ML Engineer & Time-Series Specialist</strong> with 20+ years of technical leadership.
+Specialist in deploying high-performance <strong>Predictive Capacity Pipelines</strong> for 10,000+ servers.
+Expert at bypassing the Python GIL to achieve <strong>10x forecasting throughput</strong>.
+
+        </div>
+        
+        
+        
+
+        
+        <div class="grid-section-wrapper  ">
+            <h2 class="section-title "><span>CORE ML ENGINEERING PILLARS</span></h2>
+            
+            
+            
+            
+
+            <div class="grid-block" style="overflow: hidden; width: 100%;">
+                
+                
+                <div class="grid-column"
+                    style="float: left; width: 48%; margin-bottom: 20px; box-sizing: border-box; margin-right: 4%;">
+                    
+                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">Predictive Engineering
+                    </h3>
+                    
+                    <ul style="padding-left: 20px; list-style-type: disc;">
+                        
+                        <li><strong>Advanced Forecasting</strong>: Prophet, LSTM, XGBoost.</li>
+                        
+                        <li><strong>High-Performance Data</strong>: Feature extraction from Parquet/Spark.</li>
+                        
+                        <li><strong>Visualization</strong>: Interactive Streamlit dashboards.</li>
+                        
+                    </ul>
+                </div>
+                
+                
+                <div class="grid-column"
+                    style="float: left; width: 48%; margin-bottom: 20px; box-sizing: border-box; ">
+                    
+                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">MLOps & Strategy
+                    </h3>
+                    
+                    <ul style="padding-left: 20px; list-style-type: disc;">
+                        
+                        <li><strong>Model Competition</strong>: Automated champion/challenger selection.</li>
+                        
+                        <li><strong>Confidence Modeling</strong>: "High Trust" 90-day utilization logic.</li>
+                        
+                        <li><strong>Domain Expertise</strong>: BMC TrueSight & AppDynamics synthesis.</li>
+                        
+                    </ul>
+                </div>
+                
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        
+        
+        
+
+        
+        <div class="section-title-wrapper ">
+            <h2 class="section-title accented">
+                <span>FLAGSHIP PROJECT: HORIZONSCALE AI</span>
+            </h2>
+        </div>
+        
+        
+        
+
+        
+        <div class="project-block left_border " style="border-left: 3px solid #E07000 !important;" >
+            <!-- Title -->
+            
+            <div class="project-title">Predictive Utilization Pipeline (2,000+ Nodes)</div>
+            
+            <!-- Content (List) -->
+            <ul class="project-details">
+                
+                <li><strong>Turbo Prophet</strong>: Parallel execution framework reducing cycles by <strong>90%</strong>.</li>
+                
+                <li><strong>High-Fidelity Training</strong>: 3-year historical synthetic foundation.</li>
+                
+                <li><strong>Interactive Dashboard</strong>: 6-month outlooks vs. historical baselines.</li>
+                
             </ul>
+            <!-- Tags -->
+            
+            <div class="project-tags">
+                
+                <span class="project-tag">Python</span>
+                
+                <span class="project-tag">Prophet</span>
+                
+                <span class="project-tag">Streamlit</span>
+                
+                <span class="project-tag">Spark</span>
+                
+                <span class="project-tag">Multiprocessing</span>
+                
+            </div>
+            
         </div>
-        <div>
-            <strong>MLOps & Strategy</strong>
-            <ul>
-                <li>Model Competition: Automated champion/challenger selection.</li>
-                <li>Confidence Modeling: "High Trust" 90-day utilization logic.</li>
-                <li>Domain Expertise: BMC TrueSight & AppDynamics synthesis.</li>
-            </ul>
+        
+        
+        
+
+        
+        
+        <h2 class="section-title  ">
+            <span>PROFESSIONAL EXPERIENCE</span>
+        </h2>
+        
+        <div class="list-block timeline">
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Capacity and Performance Consultant (ML & Strategy)</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;">2017 – Dec 2025</span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">CITI
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                    <li>Architected big-data forecasting for 10,000+ global servers.</li>
+                    
+                    <li>Automated regional forecasting, reducing manual analysis by <strong>85%</strong>.</li>
+                    
+                    <li>Used BMC TrueSight and AppDynamics for proactive outage detection.</li>
+                    
+                </ul>
+            </div>
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Performance Engineer</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;">2017 – 2017</span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">G6 Hospitality LLC & HCL/ENTERGY
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                    <li>Managed end-to-end monitoring for Brand.com using Dynatrace AppMon and Synthetics.</li>
+                    
+                    <li>Led the "FAST" project, data mining user performance metrics to optimize critical money-generating systems.</li>
+                    
+                </ul>
+            </div>
+            
         </div>
+        
+        
+        
+
+        
+        
+        <div class="list-block timeline">
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Senior Consultant (CA APM Consulting)</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;">2012 – 2017</span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">CA Technologies & TIAA-CREF
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                    <li>Led enterprise CA APM implementations and upgrades (v9.1 → v10.1) for financial clients, managing 4,000–6,000 agents across multi-cluster environments.</li>
+                    
+                    <li>Served as CA APM SME, handling daily operations, cluster maintenance, agent/Power Pack rollouts, and performance bottleneck resolution in J2EE/.NET stacks.</li>
+                    
+                    <li>Designed custom dashboards, alerts, reports, and Perl/Ksh data-extraction scripts to deliver actionable insights for business-critical monitoring.</li>
+                    
+                    <li>Provided architectural sizing recommendations, Golden Image creation, client training, and technical team leadership for APM deployments.</li>
+                    
+                    <li>Optimized large-scale CA Wily Introscope installations, resolving complex issues in high-stakes financial services environments.</li>
+                    
+                </ul>
+            </div>
+            
+        </div>
+        
+        
+        
+
+        
+        
+        <h2 class="section-title  ">
+            <span>EXPERIENCE HISTORY</span>
+        </h2>
+        
+        <div class="list-block timeline">
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">AT&T</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;">2010 – 2011</span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior performance Test Engineer
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                </ul>
+            </div>
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Sabre</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;">2008 – 2012</span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior Developer - C++, Java, Backend Architecture
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                </ul>
+            </div>
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Software Engineer</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;">2000 – 2008</span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Full-Stack Development
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                </ul>
+            </div>
+            
+        </div>
+        
+        
+        
+
+        
+        
+        <h2 class="section-title  ">
+            <span>EDUCATION & CERTIFICATIONS</span>
+        </h2>
+        
+        <div class="list-block timeline">
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Post-Graduate Diploma, Computer Science</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;"></span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Humber College
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                </ul>
+            </div>
+            
+            <div class="list-item" style="margin-bottom: 15px;">
+                
+                <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
+                    <h3 style="float: left; margin: 0; font-size: 1.1em;">Bachelor of Science, Engineering</h3>
+                    <span style="float: right; color: #E07000; font-weight: bold;"></span>
+                </div>
+                
+                
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Zagazig University
+                </div>
+                
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    
+                </ul>
+            </div>
+            
+        </div>
+        
+        
     </div>
+</body>
 
-    <h2>Flagship Project: HorizonScale AI</h2>
-    <div class="project-highlight">
-        <p><strong>Predictive Utilization Pipeline (2,000+ Nodes)</strong></p>
-        <ul>
-            <li>Turbo Prophet: Parallel execution framework reducing cycles by <span class="metric">90%</span>.</li>
-            <li>High-Fidelity Training: 3-year historical synthetic foundation.</li>
-            <li>Interactive Dashboard: 6-month outlooks vs. historical baselines.</li>
-        </ul>
-        <div style="margin-top: 15px;">
-            <span class="tech-tag">Python</span> <span class="tech-tag">Prophet</span> 
-            <span class="tech-tag">Streamlit</span> <span class="tech-tag">Spark</span> <span class="tech-tag">Multiprocessing</span>
-        </div>
-    </div>
-
-    <h2>Professional Experience</h2>
-    <div class="experience-header"><span>CITI</span><span>2017 – Dec 2025</span></div>
-    <div style="font-style: italic; color: #666; margin-bottom: 10px; font-weight: bold;">Capacity and Performance Consultant (ML & Infrastructure Strategy)</div>
-    <ul>
-        <li>Architected big-data forecasting for 10,000+ global servers.</li>
-        <li>Automated regional forecasting, reducing manual analysis by <span class="metric">85%</span>.</li>
-        <li>Used BMC TrueSight and AppDynamics for proactive outage detection.</li>
-    </ul>
-
-    <h2>Experience History</h2>
-    <div class="timeline-item"><span><strong>TIAA / CA Technologies</strong> | Senior Performance & APM Lead</span><span>2012 – 2017</span></div>
-    <div class="timeline-item"><span><strong>Senior Software Engineer</strong> | C++, Java, Backend Architecture</span><span>2008 – 2012</span></div>
-    <div class="timeline-item"><span><strong>Software Engineer</strong> | Full-Stack Development</span><span>2000 – 2008</span></div>
-
-    <h2>Education & Certifications</h2>
-    <div class="edu-item"><strong>Humber College</strong> | Post-Graduate Diploma, Computer Science</div>
-    <div class="edu-item"><strong>Zagazig University</strong> | Bachelor of Science, Engineering</div>
-</div>
+</html>

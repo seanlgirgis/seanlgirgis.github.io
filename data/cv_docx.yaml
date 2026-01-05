@@ -29,6 +29,7 @@ sections:
       content_key: "cv_exp_HCL"
 
 
+  # 6. Page Break Example
   - type: list_block
     config:
       content_key: "cv_exp_ca_tech"
@@ -37,7 +38,10 @@ sections:
     config:
       content_key: "cv_exp_tiaa"
 
-
+    # 6. Page Break Example
+  - type: header_block
+    config:
+      page_break_before: true
 
 
   - type: list_block
@@ -59,7 +63,10 @@ sections:
     config:
       content_key: "cv_exp_sprint"
 
-
+  # 6. Page Break Example
+  - type: header_block
+    config:
+      page_break_before: true
 
   - type: list_block
     config:
