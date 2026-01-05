@@ -10,14 +10,34 @@ from renderers.md_renderer import MdRenderer
 # --- 1. CONFIG & UTILS ---
 
 def load_yaml(path):
+    """
+    Safely loads a YAML file with UTF-8 encoding.
+    Args:
+        path (Path): The pathlib Path to the file.
+    Returns:
+        dict: The parsed YAML content.
+    """
     with open(path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
 
 def resolve_references(content_list, store_data):
     """
+    Merging Logic (The "Decentralized Engine"):
     Iterates through the content list (layout).
-    If a block has 'content_key' in its config, fetches data from store_data
-    and merges it into the config.
+    If a block has 'content_key' in its config, fetches the corresponding data 
+    from the global 'store.yaml' and merges it into the block's config.
+
+    Merge Strategy:
+    1. Base: The data from store.yaml (e.g., job title, bullets).
+    2. Override: The config from the layout file (e.g., page_break_before).
+    3. Result: Layout settings overwrite store data if conflicts exist.
+    
+    Args:
+        content_list (list): The 'sections' list from a layout YAML.
+        store_data (dict): The global content store.
+    
+    Returns:
+        list: A new list of section blocks with content resolved.
     """
     if not store_data:
         return content_list
@@ -51,6 +71,13 @@ def resolve_references(content_list, store_data):
 # --- MAIN EXECUTION ---
 
 def main():
+    """
+    The Build Orchestrator.
+    1. Parses arguments (--target resume/cv/all).
+    2. Loads Global Style (style.yaml) and Content Store (store.yaml).
+    3. Iterates through selected targets.
+    4. Calls specific renderers (DocxRenderer, HtmlRenderer, PdfRenderer) for each format.
+    """
     parser = argparse.ArgumentParser(description="Multi-Format Generator")
     parser.add_argument('--target', choices=['resume', 'cv', 'all', 'word_test'], default='resume', help='Target document to generate')
     parser.add_argument('--format', choices=['html', 'pdf', 'docx', 'md', 'all'], default='all', help='Output format')
@@ -99,6 +126,7 @@ def main():
         selected_targets = [args.target]
 
     def load_and_resolve(path):
+        """Helper to load a YAML layout file and resolve its references against store.yaml"""
         if not path.exists():
             print(f"Error: Layout file not found: {path}")
             return None

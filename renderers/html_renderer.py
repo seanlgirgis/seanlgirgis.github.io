@@ -7,18 +7,35 @@ def get_theme_color(theme, color_key):
     return color_key # logic to handle direct hex codes if passed
 
 class HtmlRenderer:
-    # --- HTML RENDERER ---
-    # Register Filter in Init before loading template
+    """
+    Renders content into HTML using Jinja2 templates.
+    Responsible for generating dynamic CSS based on the theme (style.yaml).
+    """
+
     def __init__(self, theme, base_dir):
+        """
+        Initialize with theme data and setup Jinja2 environment.
+        Args:
+            theme (dict): The resolved theme configuration.
+            base_dir (Path): Root directory to locate 'templates/'.
+        """
         self.theme = theme
         self.env = Environment(loader=FileSystemLoader(str(base_dir / 'templates')))
         
-        # Register Markdown Filter
+        # Register Markdown Filter for converting bold/links in text blocks
         self.env.filters['markdown'] = self.markdown_filter
         
         self.template = self.env.get_template('base.html')
 
     def render(self, content_data):
+        """
+        Main rendering workflow:
+        1. Pre-process colors (resolve hex codes).
+        2. Determine Stripe configuration (Theme fallback or Section override).
+        3. Process sections (color resolution for text blocks).
+        4. Generate Dynamic CSS (injecting theme colors).
+        5. Render the 'base.html' template with data.
+        """
         # Pre-process content for colors
         self.preprocess_theme_colors()
         

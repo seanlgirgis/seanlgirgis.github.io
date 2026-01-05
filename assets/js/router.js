@@ -53,6 +53,10 @@ async function loadPage(pageName) {
 }
 
 function updateActiveNav(pageName) {
+    /**
+     * Updates the CSS class of the navigation menu.
+     * Highlights the link corresponding to the current page.
+     */
     document.querySelectorAll('.nav-menu li a').forEach(link => {
         link.classList.remove('active');
         // Simple check: matches exact data-page attribute
@@ -63,6 +67,11 @@ function updateActiveNav(pageName) {
 }
 
 function updateDownloadLinks(pageName) {
+    /**
+     * Dynamically updates the "Offline Access" download buttons.
+     * Since 'components/downloads.html' is shared, we must toggle the HREFs
+     * depending on whether we are viewing the Resume (Home) or the CV.
+     */
     // Determine target based on page
     const target = (pageName === 'cv') ? 'cv' : 'resume';
     const label = (pageName === 'cv') ? 'CV' : 'Resume';
@@ -72,10 +81,27 @@ function updateDownloadLinks(pageName) {
     const btnWord = document.querySelector('.btn-download.word');
     const btnMd = document.querySelector('.btn-download.markdown');
 
-    // Update hrefs (only if buttons exist on this page)
-    if (btnPdf) btnPdf.href = `${target}.pdf`;
-    if (btnWord) btnWord.href = `${target}.docx`;
-    if (btnMd) btnMd.href = `${target}.md`;
+    // Update Description Text
+    const desc = document.querySelector('.download-center p');
+    if (desc) {
+        desc.innerText = (pageName === 'cv')
+            ? "Download a copy of my detailed Curriculum Vitae for your records:"
+            : "Download a copy of my targeted ML & Performance resume for your records:";
+    }
+
+    // Update hrefs and labels (only if buttons exist on this page)
+    if (btnPdf) {
+        btnPdf.href = `${target}.pdf`;
+        btnPdf.innerText = `Download ${label} (PDF)`;
+    }
+    if (btnWord) {
+        btnWord.href = `${target}.docx`;
+        btnWord.innerText = `Download ${label} (.docx)`;
+    }
+    if (btnMd) {
+        btnMd.href = `${target}.md`;
+        btnMd.innerText = `Download ${label} (.md)`;
+    }
 }
 
 // Initial Load

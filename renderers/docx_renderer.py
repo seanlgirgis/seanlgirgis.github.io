@@ -18,6 +18,10 @@ def get_theme_color(theme, color_key):
     return color_key # logic to handle direct hex codes if passed
 
 class DocxRenderer:
+    """
+    Renders content into a Microsoft Word (.docx) document using python-docx.
+    Manually handles layout, fonts, and table structures to mimic the design.
+    """
     def get_font_size(self, size_key, default_pt=10):
         """
         Resolves font size from theme['typography']['docx'] -> theme['typography']['default']
@@ -47,6 +51,7 @@ class DocxRenderer:
         self.setup_page_layout()
 
     def setup_page_layout(self):
+        """Sets up global page margins based on style.yaml configuration."""
         sections = self.doc.sections
         margins = self.theme.get('margins', {})
         for section in sections:
@@ -60,6 +65,11 @@ class DocxRenderer:
         print(f"Saved DOCX to: {output_path}")
 
     def render(self, content_data):
+        """
+        Main Render Loop:
+        Iterates through sections and calls specific render methods based on 'type'.
+        Handles manual 'page_break_before' logic by inserting Section Breaks.
+        """
         # 1. Sections
         for section in content_data.get('sections', []):
             block_type = section.get('type')
@@ -611,15 +621,18 @@ class DocxRenderer:
                 table.autofit = False
                 
                 # Widths (75% / 25% approx)
-                # Total Page Body: 210mm - 25.4mm (12.7*2 margins) = ~184.6mm
-                # We target 184mm total
+                # Total Page Body: 210mm (A4/Letter width approx) - 25.4mm (12.7mm * 2 margins) = ~184.6mm
+                # We target 184mm total table width to fill the printable area.
+                # Left Column (Title): 138mm (~75%)
+                # Right Column (Date): 46mm (~25%)
+                # This ensures long job titles don't wrap prematurely while keeping dates aligned.
                 w_left = Mm(138)
                 w_right = Mm(46)
                 
                 table.columns[0].width = w_left
                 table.columns[1].width = w_right
                 
-                # Force cell widths for first row (helps Word rendering significantly)
+                # Force cell widths for first row explicitly (helps Word rendering engine respect widths)
                 table.cell(0, 0).width = w_left
                 table.cell(0, 1).width = w_right
                 
