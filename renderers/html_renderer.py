@@ -65,13 +65,21 @@ class HtmlRenderer:
              
         stripe_display = 'block' if s_conf.get('enabled', False) else 'none'
         
+        # Resolve Typography
+        typo = t.get('typography', {})
+        default_typo = typo.get('default', {})
+        pdf_typo = typo.get('pdf', {})
+        
+        base_font_size = default_typo.get('font_size_base', 11)
+        pdf_font_size = pdf_typo.get('font_size_base', 8)
+        
         return f"""
         <style>
         body {{
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
             color: {t.get('text_color', '#000')};
             background: #fff;
-            font-size: {t.get('font_size_base', 11)}pt;
+            font-size: {base_font_size}pt;
             margin: 0;
             padding: 0;
             width: 100%;
@@ -121,7 +129,7 @@ class HtmlRenderer:
         }}
 
         html, body {{
-            font-size: {t.get('font_size_pdf', 8)}pt !important;
+            font-size: {pdf_font_size}pt !important;
             width: 100%;
             height: 100%;
             -webkit-print-color-adjust: exact;

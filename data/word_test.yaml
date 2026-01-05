@@ -1,0 +1,213 @@
+# Capability Verification Matrix
+# This file contains one example of EVERY implemented block type and configuration.
+
+sections:
+  # 0. Global Layout Directives
+  - type: stripe_block
+    config:
+      color: "primary_color"
+      height: "8px" # Visual thickness
+      enabled: true
+    # 1. Page Break + Header Block
+  - type: header_block
+    config:
+      title: "Sean Luka Girgis"
+    #  subtitle: "Verifying DOCX, PDF, HTML, and Markdown Parity"
+    # 2. Compound Text Block (Links/Colors/Alignment)
+  # 2. Contact Info (Compound)
+  - type: compound_text_block
+    config:
+      separator: " | "
+      font_size: 10
+      items:
+        - text: "Murphy, TX"
+        - text: "214-315-2190"
+        - text: "seanlgirgis@gmail.com"
+          link: "mailto:seanlgirgis@gmail.com"
+        - text: "GitHub"
+          link: "https://github.com/seanlgirgis"
+          font_color: "primary_color"
+        - text: "LinkedIn"
+          link: "https://www.linkedin.com/in/sean-girgis-43bb1b5/"
+          font_color: "primary_color"
+  # 3. Summary (Shaded Text)
+  # 2b. Summary (Left Border Style)
+  - type: text_block
+    config:
+      style: "shaded_primary"
+      content: >
+        **Enterprise ML Engineer & Time-Series Specialist** with 20+ years of technical leadership. Specialist in deploying high-performance **Predictive Capacity Pipelines** for 10,000+ servers. Expert at bypassing the Python GIL to achieve <span style="color: #E65100">**10x forecasting throughput**</span>.
+
+  # 3. Core Competencies Header
+  - type: section_title_block
+    config:
+      content: "CORE COMPETENCIES & EXPERTISE"
+      style: "accented" # This creates the orange underline
+
+  # 4. Competencies Grid (Columns with Left Border)
+  - type: text_grid_block
+    config:
+      style: "left_border" # Unshaded, white background
+      border_color: "accent_color" # Custom override (Orange)
+      columns: 2
+      items:
+        - content: 
+          - "**Modern Stack**"
+          - "Python (Pandas, Scikit-Learn), ML Forecasting (Prophet), RAG Architectures, Spark, AWS Cloud."
+          - "**Legacy Engineering**"
+          - "C/C++, Java/J2EE, Pro*C, Unix (HPUX, Solaris, AIX), Shell Scripting, Oracle/SQL."
+        - content: 
+          - "**Infrastructure & APM**"
+          - "BMC TrueSight, AppDynamics, CA APM (Wily), Dynatrace, Capacity Optimization."
+
+  # 5. Professional Experience
+  - type: section_title_block
+    config:
+      content: "PROFESSIONAL EXPERIENCE"
+      style: "accented"
+
+  - type: list_block
+    config:
+      items:
+        - left_text: "CITI"
+          right_text: "Nov 2017 – Dec 2025"
+          sub_text: "Senior Performance & Capacity Consultant"
+          details:
+            - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines**: Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+            - "**Cost Optimization**: Identified underutilized patterns, leading to significant hardware consolidation and budget savings."
+  # 6. Page Break Example
+  - type: header_block
+    config:
+      page_break_before: true
+#      title: "Page 2"
+
+
+
+
+
+  - type: list_block
+    config:
+      items:
+        - left_text: "The page after"
+          right_text: "Nov 2017 – Dec 2025"
+          sub_text: "Senior Performance & Capacity Consultant"
+          details:
+            - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines**: Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+            - "**Cost Optimization**: Identified underutilized patterns, leading to significant hardware consolidation and budget savings."
+
+        - left_text: "G6 Hospitality LLC"
+          right_text: "MAR 2017 – NOV2017"
+          sub_text: "Performance Engineer"
+          details:
+            - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines**: Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+            - "**Cost Optimization**: Identified underutilized patterns, leading to significant hardware consolidation and budget savings."
+
+        - left_text: "G6 Hospitality LLC"
+          right_text: "MAR 2017 – NOV2017"
+          sub_text: "Performance Engineer"
+          details:
+            - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines**: Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+           
+
+
+
+
+  # 6. Page Break Example
+  - type: header_block
+    config:
+      page_break_before: true
+#      title: "Page 2"
+  - type: list_block
+    config:
+      items:
+        - left_text: "The third page"
+          right_text: "Nov 2017 – Dec 2025"
+          sub_text: "Senior Performance & Capacity Consultant"
+          details:
+            - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines**: Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+            - "**Cost Optimization**: Identified underutilized patterns, leading to significant hardware consolidation and budget savings."
+
+        - left_text: "G6 Hospitality LLC"
+          right_text: "MAR 2017 – NOV2017"
+          sub_text: "Performance Engineer"
+          details:
+            - "**AI-Driven Forecasting**: Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance."
+            - "**Data Pipelines**: Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes."
+            - "**HorizonScale**: Led the transition from \"Trenda\" legacy scripts to a parallelized, high-throughput forecasting engine."
+            - "**Cost Optimization**: Identified underutilized patterns, leading to significant hardware consolidation and budget savings."
+  # 6. Page Break Example
+  - type: header_block
+    config:
+      page_break_before: true
+
+      
+  # 7. Earlier Experience (Compact)
+  - type: compact_list_block
+    config:
+      title: "EARLIER EXPERIENCE (2001 - 2008)"
+      title_style: "accented"
+      items:
+        - content: "**Computer Science Corporation** | CADE Project (IRS Modernization) - C++, CICS, MQ Series"
+          date: "2007 – 2008"
+        - content: "**Corpus Inc. / AT&T** | Flexible Bill Formatter - C, C++, Pro*C, Amdocs APIs"
+          date: "2005 – 2007"
+        - content: "**Sprint** | High Availability Interfaces - C++, POSIX Threads, Marconi APIs"
+          date: "2001 – 2005"
+
+  # 8. Technical Skills Inventory (2-Column Grid)
+  - type: text_grid_block
+    config:
+      title: "TECHNICAL SKILLS INVENTORY"
+      title_style: "accented"
+      columns: 2
+      items:
+        - content:
+            - "**Languages:** Python, C/C++, Java, C#, SQL, Perl, Korn Shell, Awk."
+            - "" # Spacer
+            - "**Platforms:** Linux (RedHat), Unix (HPUX, Sun Solaris), AWS, CICS, USS."
+        - content:
+            - "**Tools:** Prophet, Spark, BMC TrueSight, AppDynamics, CA APM, Dynatrace, Git, CVS."
+
+  # 8b. Highlight Project (Project Block)
+  - type: project_block
+    config:
+      title: "Predictive Utilization Pipeline (2,000+ Nodes)"
+      style: "left_border"
+      border_color: "accent_color"
+      items:
+        - "**Turbo Prophet**: Parallel execution framework reducing cycles by **90%**."
+        - "**High-Fidelity Training**: 3-year historical synthetic foundation."
+        - "**Interactive Dashboard**: 6-month outlooks vs. historical baselines."
+      tags:
+        - "Python"
+        - "Prophet"
+        - "Streamlit"
+        - "Spark"
+        - "Multiprocessing"
+
+  # 9. Education & Certifications (Mixed Fonts)
+  - type: plain_list_block
+    config:
+      title: "EDUCATION & CERTIFICATIONS"
+      title_style: "accented"
+      items:
+        - text: "**High Diploma: Computer Engineering Technology** - Humber College, Canada"
+        - text: "**Bachelor of Science: Civil Engineering** - Zagazig University, Egypt"
+        - text: "Brainbench Certified: C++ Fundamentals, Java 2.0, OOD, C, and Mathematics."
+          style: "small"
+
+# Global Config
+config:
+  footer:
+    text: "Sean Luka Girgis | Senior Performance & Capacity Consultant"
+    show_pages: true

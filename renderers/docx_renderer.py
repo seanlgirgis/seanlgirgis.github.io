@@ -18,6 +18,29 @@ def get_theme_color(theme, color_key):
     return color_key # logic to handle direct hex codes if passed
 
 class DocxRenderer:
+    def get_font_size(self, size_key, default_pt=10):
+        """
+        Resolves font size from theme['typography']['docx'] -> theme['typography']['default']
+        Returns a Pt object.
+        size_key example: 'base', 'h1', 'h2', 'small', 'footer'
+        """
+        typography = self.theme.get('typography', {})
+        docx_typo = typography.get('docx', {})
+        default_typo = typography.get('default', {})
+        
+        full_key = f"font_size_{size_key}"
+        
+        # 1. Check DOCX specific
+        if full_key in docx_typo:
+            return Pt(docx_typo[full_key])
+            
+        # 2. Check Default
+        if full_key in default_typo:
+            return Pt(default_typo[full_key])
+            
+        # 3. Fallback
+        return Pt(default_pt)
+
     def __init__(self, theme):
         self.theme = theme
         self.doc = Document()
@@ -77,6 +100,8 @@ class DocxRenderer:
                 self.render_compact_list_block(config)
             elif block_type == 'text_grid_block':
                 self.render_text_grid_block(config)
+            elif block_type == 'project_block':
+                self.render_project_block(config)
             else:
                 print(f"Warning: Unknown block type '{block_type}'")
             
@@ -129,19 +154,17 @@ class DocxRenderer:
         text = footer_config.get('text', '')
         show_pages = footer_config.get('show_pages', False)
         theme_footer = self.theme.get('footer', {})
-        font_size = Pt(theme_footer.get('font_size', 8))
+        font_size = self.get_font_size('footer', 8)
         color_hex = theme_footer.get('text_color', '#666666').replace('#', '')
         
-        # Iterate all sections to apply footer
-        for section in self.doc.sections:
-            footer = section.footer
-            footer.is_linked_to_previous = False # Unlink to ensure it applies
+        def _set_footer_content(footer_obj):
+            footer_obj.is_linked_to_previous = False 
             
             # Clear existing
-            for p in footer.paragraphs:
+            for p in footer_obj.paragraphs:
                 p._element.getparent().remove(p._element)
                 
-            p = footer.add_paragraph()
+            p = footer_obj.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
             # Footer Text
@@ -152,32 +175,27 @@ class DocxRenderer:
                 
             # Page Numbers
             if show_pages:
-                # Separator if text exists
                 if text:
                     run = p.add_run(" | ")
                     run.font.size = font_size
                     run.font.color.rgb = RGBColor.from_string(color_hex)
                 
-                # Format: Page X of Y
-                # Instead of manually adding runs, we need to inject the complex fields
-                # But we want to style them too.
-                # Simplified approach: Add "Page " run, then Field, then " of " run, then Field
-                
-                # Note: Styling fields in python-docx is tricky. They inherit paragraph style usually.
-                # Let's try to set paragraph defaults?
-                
-                # run page
                 run = p.add_run("Page ")
                 run.font.size = font_size
                 run.font.color.rgb = RGBColor.from_string(color_hex)
-                
                 self.add_page_number(p)
                 
                 run = p.add_run(" of ")
                 run.font.size = font_size
                 run.font.color.rgb = RGBColor.from_string(color_hex)
-                
                 self.add_num_pages(p)
+
+        # Iterate all sections
+        for section in self.doc.sections:
+            _set_footer_content(section.footer)
+            
+            if section.different_first_page_header_footer:
+                _set_footer_content(section.first_page_footer)
 
     # --- BLOCK RENDERERS ---
 
@@ -837,7 +855,141 @@ class DocxRenderer:
                 current_p.paragraph_format.space_after = Pt(6)
                 self.add_markdown_text(current_p, line)
 
-    def add_section_title(self, text, style='normal', target=None):
+    def render_project_block(self, config):
+        # Configuration
+        title = config.get('title', '')
+        items = config.get('items', [])
+        tags = config.get('tags', [])
+        style = config.get('style', 'left_border') # Default to left border
+        border_color_key = config.get('border_color', 'primary_color')
+        
+        # Colors
+        border_color_val = self.resolve_color(border_color_key if border_color_key else 'primary_color')
+        
+        # Use a Container Table (1x1) for Border/Shading
+        table = self.doc.add_table(rows=1, cols=1)
+        table.autofit = False
+        table.allow_autofit = False
+        table.columns[0].width = Mm(190) # Full width
+        
+        # Table Properties (Borders, Margins)
+        tbl_pr = table._element.tblPr
+        
+        # Borders
+        tblBorders = OxmlElement('w:tblBorders')
+        
+        # Left Border (Always on for project block usually)
+        if style == 'left_border':
+            left_border = OxmlElement('w:left')
+            left_border.set(qn('w:val'), 'single')
+            left_border.set(qn('w:sz'), '40') # 5px approx
+            left_border.set(qn('w:space'), '0')
+            left_border.set(qn('w:color'), border_color_val.replace('#', ''))
+            tblBorders.append(left_border)
+            
+        # Add borders to properties
+        tbl_pr.append(tblBorders)
+        
+        # Cell Properties (Padding)
+        # Use cell to control content padding
+        cell = table.cell(0, 0)
+        tcPr = cell._element.get_or_add_tcPr()
+        
+        # Margins (Padding)
+        tcMar = OxmlElement('w:tcMar')
+        
+        # Top/Bottom Padding (Tight: 2px ~ 30-40 dx equivalent)
+        top_mar = OxmlElement('w:top')
+        top_mar.set(qn('w:w'), '40') 
+        top_mar.set(qn('w:type'), 'dxa')
+        
+        bottom_mar = OxmlElement('w:bottom')
+        bottom_mar.set(qn('w:w'), '40') 
+        bottom_mar.set(qn('w:type'), 'dxa')
+        
+        # Left Padding (15px ~ 225 dxa)
+        left_mar = OxmlElement('w:left')
+        left_mar.set(qn('w:w'), '225') 
+        left_mar.set(qn('w:type'), 'dxa')
+        
+        tcMar.append(top_mar)
+        tcMar.append(bottom_mar)
+        tcMar.append(left_mar)
+        
+        tcPr.append(tcMar)
+        
+        # Render Content inside Cell
+        # 1. Title
+        if title:
+            p = cell.paragraphs[0]
+            self.add_markdown_text(p, title)
+            # Find the run and bold/size it (add_markdown_text adds runs)
+            # Just enforcing bold on all runs for title
+            for run in p.runs:
+                run.bold = True
+                run.font.size = Pt(11) 
+            p.paragraph_format.space_after = Pt(3)
+        else:
+            # If no title, clear the first paragraph or reuse it
+            p = cell.paragraphs[0]
+            p.clear()
+
+        # 2. Items (Bullets)
+        for item in items:
+            p = cell.add_paragraph() # New paragraph for item
+            p.style = 'List Bullet' # Use default bullet style
+            
+            # Reduce indentation for bullet
+            p_format = p.paragraph_format
+            p_format.left_indent = Mm(5)
+            p_format.first_line_indent = Mm(-5)
+            p_format.space_after = Pt(2)
+            
+            self.add_markdown_text(p, item)
+            
+        # 3. Tags (Pills)
+        if tags:
+            # Add spacer
+            p_tags = cell.add_paragraph()
+            p_tags.paragraph_format.space_before = Pt(6)
+            
+            theme_color_hex = self.resolve_color('primary_color').replace('#', '')
+            
+            for tag in tags:
+                # Spacer between pills
+                if tag != tags[0]:
+                    run_space = p_tags.add_run("  ") 
+                
+                # Tag Text
+                run = p_tags.add_run(f" {tag} ") # Pad with spaces
+                run.font.color.rgb = RGBColor.from_string('FFFFFF') # White Text
+                run.font.size = self.get_font_size('small', 9)
+                run.bold = True
+                
+                # Shading (Background Color)
+                shd = OxmlElement('w:shd')
+                shd.set(qn('w:val'), 'clear')
+                shd.set(qn('w:color'), 'auto')
+                shd.set(qn('w:fill'), theme_color_hex)
+                
+                # Append to rPr (Run Properties), NOT the Run itself
+                run._element.get_or_add_rPr().append(shd)
+
+        # 4. Add spacer after block
+        self.doc.add_paragraph().paragraph_format.space_after = Pt(6)
+        
+    def resolve_color(self, color_name):
+        # Same as HTML logic
+        if color_name.startswith('#'):
+            return color_name
+            
+        color_map = {
+            'primary_color': self.theme.get('primary_color', '#004a99'),
+            'accent_color': self.theme.get('accent_color', '#E07000'),
+            'text_color': self.theme.get('text_color', '#333333')
+        }
+        return color_map.get(color_name, '#000000')
+    def add_section_title(self, title, style='normal', target=None):
         if target is None:
             target = self.doc
         p = target.add_paragraph()
@@ -845,43 +997,40 @@ class DocxRenderer:
         # If accented, we might want a different look. 
         # For now, let's keep font same but handle underline.
         
-        run = p.add_run(text)
+        run = p.add_run(title)
         run.bold = True
-        run.font.size = Pt(12)
+        run.font.size = self.get_font_size('h1', 16)
         run.font.name = self.theme.get('font_header', 'Arial')
         run.font.color.rgb = hex_to_rgb(get_theme_color(self.theme, 'primary_color'))
        
         p.paragraph_format.space_before = Pt(12)
         p.paragraph_format.space_after = Pt(6)
         
-        # Border Logic
-        pPr = p._p.get_or_add_pPr()
-        pBdr = OxmlElement('w:pBdr')
-        pPr.insert(0, pBdr) # borders usually near top of pPr props
-        
-        bottom = OxmlElement('w:bottom')
-        bottom.set(qn('w:val'), 'single')
-        bottom.set(qn('w:sz'), '12') # 1.5pt approx
-        bottom.set(qn('w:space'), '1')
-        
         if style == 'accented':
-            # Orange underline
+            # Orange underline on text only (mimic span behavior)
             color_hex = get_theme_color(self.theme, 'accent_color').lstrip('#')
-            bottom.set(qn('w:color'), color_hex)
             
-            # In HTML we made it span text only. 
-            # In Word, Paragraph Border spans width. 
-            # Text-only border is 'w:u' (underline) but controlling color/thickness is harder.
-            # Let's stick to full width paragraph border for consistency with standard Word styles,
-            # OR try to replicate the "span" look.
-            # Replicating "span" look in Word requires applying border to run? No, Run doesn't have border (except shading).
-            # It has Underline.
-            # Let's just use the Paragraph Border with accent color.
+            # Apply underline to the run
+            rPr = run._r.get_or_add_rPr()
+            u = OxmlElement('w:u')
+            u.set(qn('w:val'), 'single') # or 'thick'
+            u.set(qn('w:color'), color_hex)
+            rPr.append(u)
+            
         else:
-            # Standard Grey
+            # Standard Grey Full-Width Border
+            # Border Logic
+            pPr = p._p.get_or_add_pPr()
+            pBdr = OxmlElement('w:pBdr')
+            pPr.insert(0, pBdr) 
+            
+            bottom = OxmlElement('w:bottom')
+            bottom.set(qn('w:val'), 'single')
+            bottom.set(qn('w:sz'), '6') # 0.75pt (thinner than accent)
+            bottom.set(qn('w:space'), '1')
             bottom.set(qn('w:color'), 'EEEEEE')
-
-        pBdr.append(bottom)
+            
+            pBdr.append(bottom)
 
     def add_markdown_text(self, paragraph, text, font_size_override=None, color_override=None):
         # Improved parser: Handle **Bold** and <color hex="..."></color>
@@ -897,10 +1046,18 @@ class DocxRenderer:
         pattern = r'(\*\*.*?\*\*|<span style="color:.*?">.*?</span>)'
         parts = re.split(pattern, text)
         
+        # Determine base font size
+        base_font_size = self.get_font_size('base', 10)
+        
         for part in parts:
             if not part: continue
             
             run = paragraph.add_run()
+            
+            # Defaults
+            run.font.name = self.theme.get('font_body', 'Arial')
+            run.font.size = font_size_override if font_size_override else base_font_size
+            run.font.color.rgb = hex_to_rgb(self.theme.get('text_color', '#333333'))
             
             # 1. Bold
             if part.startswith('**') and part.endswith('**'):

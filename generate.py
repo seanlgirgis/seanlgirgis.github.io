@@ -21,7 +21,7 @@ def load_yaml(path):
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Format Generator")
-    parser.add_argument('--target', choices=['test', 'resume', 'cv', 'matrix', 'all'], default='test')
+    parser.add_argument('--target', choices=['test', 'resume', 'cv', 'matrix', 'word_test', 'all'], default='test')
     args = parser.parse_args()
 
     # Paths
@@ -45,6 +45,8 @@ def main():
             data_path = base_dir / 'data' / 'resume.yaml'
         elif target == 'cv':
             data_path = base_dir / 'data' / 'cv.yaml'
+        elif target == 'word_test':
+            data_path = base_dir / 'data' / 'word_test.yaml'
         else:
             data_path = base_dir / 'data' / 'test_matrix.yaml'
 
