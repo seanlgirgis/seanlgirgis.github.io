@@ -13,7 +13,8 @@ contact_info_main:
   separator: " | "
   font_size: 10
   items:
-    - text: "Murphy, TX"
+    - text: "seanlgirgis.github.io"
+      link: "https://seanlgirgis.github.io"
     - text: "214-315-2190"
     - text: "seanlgirgis@gmail.com"
       link: "mailto:seanlgirgis@gmail.com"

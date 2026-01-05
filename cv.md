@@ -1,5 +1,5 @@
 # SEAN LUKA GIRGIS
-Murphy, TX 214-315-2190 [seanlgirgis@gmail.com](mailto:seanlgirgis@gmail.com) [GitHub](https://github.com/seanlgirgis) [LinkedIn](https://www.linkedin.com/in/sean-girgis-43bb1b5/)
+[seanlgirgis.github.io](https://seanlgirgis.github.io) 214-315-2190 [seanlgirgis@gmail.com](mailto:seanlgirgis@gmail.com) [GitHub](https://github.com/seanlgirgis) [LinkedIn](https://www.linkedin.com/in/sean-girgis-43bb1b5/)
 
 ## Core Competencies & Expertise
 ### Modern Stack
