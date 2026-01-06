@@ -3,6 +3,7 @@
  */
 const routes = {
     'home': ['components/resume.html', 'components/downloads.html'],
+    'resume': ['components/resume.html', 'components/downloads.html'], // Alias for home
     'cv': ['components/cv.html', 'components/downloads.html'],
     'projects': ['components/projects.html'],
     'articles': ['components/articles.html'],
@@ -63,10 +64,13 @@ function updateActiveNav(pageName) {
      * Updates the CSS class of the navigation menu.
      * Highlights the link corresponding to the current page.
      */
+    // Map 'resume' alias to 'home' for highlighting
+    const targetPage = (pageName === 'resume') ? 'home' : pageName;
+
     document.querySelectorAll('.nav-menu li a').forEach(link => {
         link.classList.remove('active');
         // Simple check: matches exact data-page attribute
-        if (link.getAttribute('data-page') === pageName) {
+        if (link.getAttribute('data-page') === targetPage) {
             link.classList.add('active');
         }
     });
