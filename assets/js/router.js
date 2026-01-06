@@ -45,12 +45,18 @@ async function loadPage(pageName) {
         mainContent.innerHTML = '<div class="container"><p>Error loading content.</p></div>';
     }
 
+    // Update URL hash without triggering scroll
+    if (window.location.hash.substring(1) !== pageName) {
+        window.location.hash = pageName;
+    }
+
     // Update Active Navigation State
     updateActiveNav(pageName);
 
     // Update Download Links based on page context (Resume vs CV)
     updateDownloadLinks(pageName);
 }
+
 
 function updateActiveNav(pageName) {
     /**
@@ -104,7 +110,22 @@ function updateDownloadLinks(pageName) {
     }
 }
 
+
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {
-    loadPage('home');
+    // Check for hash in URL (e.g. #about)
+    const hash = window.location.hash.substring(1);
+
+    // Validate hash against routes, default to 'home'
+    const page = routes[hash] ? hash : 'home';
+
+    loadPage(page);
+});
+
+// Handle Back/Forward Browser Buttons
+window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.substring(1);
+    if (routes[hash]) {
+        loadPage(hash);
+    }
 });
