@@ -98,5 +98,12 @@ def generate_blog():
         
     print(f"Successfully generated {len(posts)} posts.")
 
+    # 4. Update Sitemap
+    try:
+        from generate_sitemap import generate_sitemap
+        generate_sitemap()
+    except Exception as e:
+        print(f"Warning: Failed to generate sitemap: {e}")
+
 if __name__ == "__main__":
     generate_blog()

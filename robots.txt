@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://seanlgirgis.github.io/sitemap.xml
