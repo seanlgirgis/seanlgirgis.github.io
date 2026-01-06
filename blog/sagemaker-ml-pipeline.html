@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building an Enterprise ML Pipeline with SageMaker | Sean Luka Girgis</title>
+    <meta name="description" content="A deep dive into architecting resilient ML pipelines using AWS SageMaker, focused on enterprise scale and automation.">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Standalone Page Overrides */
+        body {
+            overflow: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100vh;
+        }
+
+        .blog-content {
+            margin-left: 300px;
+            padding: 40px;
+            max-width: 900px;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+
+            .blog-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        .blog-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .blog-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Markdown Content Styles */
+        .post-body h2 {
+            margin-top: 1.5em;
+            color: var(--primary);
+        }
+
+        .post-body p {
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .post-body code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .post-body pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .post-body pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .post-body ul {
+            margin-bottom: 1.5em;
+        }
+
+        .post-body li {
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h1>Sean Luka Girgis</h1>
+        <p style="font-size: 0.85rem; opacity: 0.8;">Enterprise Architect & ML Specialist</p>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="../#home">Home (Resume)</a></li>
+                <li><a href="../#cv">Detailed C.V.</a></li>
+                <li><a href="../#projects">Projects Showcase</a></li>
+                <li><a href="../#articles">Technical Articles</a></li>
+                <li><a href="../#tutorials">Tutorials</a></li>
+                <li><a href="../#blog" class="active">Blog</a></li>
+                <li><a href="../#about">About & Contact</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="blog-content">
+        <a href="../#blog" class="back-link">← Back to Blog List</a>
+
+        <article>
+            <header class="blog-header">
+                <h1>Building an Enterprise ML Pipeline with SageMaker</h1>
+                <div class="blog-meta">
+                    <span>2026-01-06</span> •
+                    
+                    <span class="tag">Machine Learning</span>
+                    
+                    <span class="tag">AWS</span>
+                    
+                    <span class="tag">SageMaker</span>
+                    
+                    <span class="tag">Python</span>
+                    
+                </div>
+            </header>
+
+            <div class="post-body">
+                <h1>Building an Enterprise ML Pipeline with SageMaker</h1>
+<p>In the world of enterprise machine learning, the challenge often isn't just building a good model—it's building a reliable, scalable system that can retrain, deploy, and monitor that model automatically. In this post, I'll share how we architected a forecasting pipeline using AWS SageMaker.</p>
+<h2>The Challenge</h2>
+<p>We needed to forecast resource utilization for over 2,000 servers. Manual modeling was impossible. We required:
+*   <strong>Automation</strong>: End-to-end training and deployment.
+*   <strong>Scalability</strong>: Parallel processing of thousands of time series.
+*   <strong>Monitoring</strong>: Drift detection and performance tracking.</p>
+<h2>The Architecture</h2>
+<p>We essentially built a factory pattern using SageMaker Pipelines.</p>
+<h3>1. Data Ingestion</h3>
+<p>Data is ingested from our metrics store into S3. We use <strong>Glue Jobs</strong> for the heavy lifting—cleaning, aggregating, and preparing the raw time-series data.</p>
+<h3>2. The Training Step</h3>
+<p>We utilize <strong>SageMaker Processing Jobs</strong> to run our custom Python containers.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sagemaker.processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScriptProcessor</span>
+
+<span class="n">processor</span> <span class="o">=</span> <span class="n">ScriptProcessor</span><span class="p">(</span>
+    <span class="n">image_uri</span><span class="o">=</span><span class="n">my_ecr_image</span><span class="p">,</span>
+    <span class="n">command</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;python3&#39;</span><span class="p">],</span>
+    <span class="n">instance_type</span><span class="o">=</span><span class="s1">&#39;ml.c5.2xlarge&#39;</span><span class="p">,</span>
+    <span class="n">instance_count</span><span class="o">=</span><span class="mi">5</span>  <span class="c1"># Parallel processing!</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>By leveraging <code>instance_count</code>, we can shard the 2,000 servers across 5 nodes, reducing training time from hours to minutes.</p>
+<h3>3. Model Registration &amp; Deployment</h3>
+<p>Successful models are registered in the <strong>SageMaker Model Registry</strong>. This gives us version control for our ML assets. We use a CI/CD approval step before a model is promoted to 'Approved' status and deployed to an endpoint.</p>
+<h2>Key Takeaways</h2>
+<ol>
+<li><strong>Decouple steps</strong>: Keep your preprocessing separate from training.</li>
+<li><strong>Use specific instances</strong>: Don't use a GPU instance for simple data wrangling.</li>
+<li><strong>Monitor everything</strong>: SageMaker Model Monitor is essential for catching concept drift early.</li>
+</ol>
+<p>In future posts, I will dive deeper into the specific code for the champion/challenger logic we implemented. Stay tuned!</p>
+            </div>
+        </article>
+    </main>
+
+</body>
+
+</html>

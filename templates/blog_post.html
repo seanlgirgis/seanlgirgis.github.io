@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Sean Luka Girgis</title>
+    <meta name="description" content="{{ summary }}">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Standalone Page Overrides */
+        body {
+            overflow: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100vh;
+        }
+
+        .blog-content {
+            margin-left: 300px;
+            padding: 40px;
+            max-width: 900px;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+
+            .blog-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        .blog-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .blog-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Markdown Content Styles */
+        .post-body h2 {
+            margin-top: 1.5em;
+            color: var(--primary);
+        }
+
+        .post-body p {
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .post-body code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .post-body pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .post-body pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .post-body ul {
+            margin-bottom: 1.5em;
+        }
+
+        .post-body li {
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h1>Sean Luka Girgis</h1>
+        <p style="font-size: 0.85rem; opacity: 0.8;">Enterprise Architect & ML Specialist</p>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="../#home">Home (Resume)</a></li>
+                <li><a href="../#cv">Detailed C.V.</a></li>
+                <li><a href="../#projects">Projects Showcase</a></li>
+                <li><a href="../#articles">Technical Articles</a></li>
+                <li><a href="../#tutorials">Tutorials</a></li>
+                <li><a href="../#blog" class="active">Blog</a></li>
+                <li><a href="../#about">About & Contact</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="blog-content">
+        <a href="../#blog" class="back-link">← Back to Blog List</a>
+
+        <article>
+            <header class="blog-header">
+                <h1>{{ title }}</h1>
+                <div class="blog-meta">
+                    <span>{{ date }}</span> •
+                    {% for tag in tags %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </header>
+
+            <div class="post-body">
+                {{ content }}
+            </div>
+        </article>
+    </main>
+
+</body>
+
+</html>

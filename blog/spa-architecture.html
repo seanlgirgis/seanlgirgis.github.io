@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How I Built This Portfolio: A Serverless SPA Architecture | Sean Luka Girgis</title>
+    <meta name="description" content="A deep dive into the vanilla JavaScript architecture powering this portfolio, featuring a custom client-side router and zero backend dependencies.">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Standalone Page Overrides */
+        body {
+            overflow: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100vh;
+        }
+
+        .blog-content {
+            margin-left: 300px;
+            padding: 40px;
+            max-width: 900px;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+
+            .blog-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        .blog-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .blog-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Markdown Content Styles */
+        .post-body h2 {
+            margin-top: 1.5em;
+            color: var(--primary);
+        }
+
+        .post-body p {
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .post-body code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .post-body pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .post-body pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .post-body ul {
+            margin-bottom: 1.5em;
+        }
+
+        .post-body li {
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h1>Sean Luka Girgis</h1>
+        <p style="font-size: 0.85rem; opacity: 0.8;">Enterprise Architect & ML Specialist</p>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="../#home">Home (Resume)</a></li>
+                <li><a href="../#cv">Detailed C.V.</a></li>
+                <li><a href="../#projects">Projects Showcase</a></li>
+                <li><a href="../#articles">Technical Articles</a></li>
+                <li><a href="../#tutorials">Tutorials</a></li>
+                <li><a href="../#blog" class="active">Blog</a></li>
+                <li><a href="../#about">About & Contact</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="blog-content">
+        <a href="../#blog" class="back-link">← Back to Blog List</a>
+
+        <article>
+            <header class="blog-header">
+                <h1>How I Built This Portfolio: A Serverless SPA Architecture</h1>
+                <div class="blog-meta">
+                    <span>2026-01-06</span> •
+                    
+                    <span class="tag">Web Architecture</span>
+                    
+                    <span class="tag">JavaScript</span>
+                    
+                    <span class="tag">SPA</span>
+                    
+                    <span class="tag">Serverless</span>
+                    
+                </div>
+            </header>
+
+            <div class="post-body">
+                <h1>Web Architecture &amp; Frontend Documentation</h1>
+<p>This website is a <strong>Single Page Application (SPA)</strong> built with vanilla HTML, CSS, and JavaScript. It does not rely on a backend framework (like React or Vue) or a server-side runtime. Instead, it simulates a dynamic application using a custom-built client-side router.</p>
+<p><img alt="SPA Architecture Diagram" src="../assets/img/blog/spa_flow.png" />
+<em>Figure 1: High-Level Architecture Flow</em></p>
+<h2>Directory Structure</h2>
+<ul>
+<li><strong><code>index.html</code></strong>: The main entry point. It contains the sidebar navigation (<code>&lt;nav&gt;</code>) and a <code>&lt;main id="content-area"&gt;</code> container where pages are injected.</li>
+<li><strong><code>assets/js/router.js</code></strong>: The core logic engine. It handles navigation clicks, fetches HTML content, and updates the view without reloading the page.</li>
+<li><strong><code>components/</code></strong>: Contains HTML fragments for each "page" (e.g., <code>resume.html</code>, <code>cv.html</code>, <code>projects.html</code>). These are partials, not full HTML documents.</li>
+<li><strong><code>assets/css/style.css</code></strong>: Global styles for the sidebar, layout, and responsiveness.</li>
+</ul>
+<h2>The Router (<code>router.js</code>)</h2>
+<p>The <code>router.js</code> file is the heart of the SPA behavior. It intercepts navigation actions and orchestrates the content loading process.</p>
+<p><img alt="Router Logic Flowchart" src="../assets/img/blog/router_flow.png" />
+<em>Figure 2: Router Decision Logic</em></p>
+<h3>1. Route Definitions</h3>
+<p>Routes are defined as a mapping of page names to a list of HTML components to load. This simple map allows us to compose pages from multiple reusable parts.</p>
+<div class="codehilite"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">routes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s1">&#39;home&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;components/resume.html&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;components/downloads.html&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="s1">&#39;cv&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;components/cv.html&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;components/downloads.html&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p>Note how <code>downloads.html</code> is reused across multiple pages.</p>
+<h3>2. Loading Pages (<code>loadPage</code>)</h3>
+<p>When a user clicks a nav link, the following sequence occurs:
+1.  <strong>Event Capture</strong>: The <code>loadPage(pageName)</code> function is triggered.
+2.  <strong>Lookup</strong>: It looks up the list of components for that route in the <code>routes</code> object.
+3.  <strong>Fetch</strong>: It asynchronously fetches each HTML file using <code>fetch()</code>. A timestamp <code>?v=...</code> is added to prevent aggressive browser caching during development.
+4.  <strong>Injection</strong>: It injects the fetched HTML into the <code>#content-area</code>, replacing the previous content.</p>
+<h3>3. Dynamic Download Links (<code>updateDownloadLinks</code>)</h3>
+<p>The website features an "Offline Access" section (<code>components/downloads.html</code>). Since this is a static file shared between the Resume and CV pages, the links (resume.pdf vs cv.pdf) must be updated dynamically based on context.</p>
+<p>The function <code>updateDownloadLinks(pageName)</code> in <code>router.js</code> checks the active page and modifies the <code>href</code> attributes of the download buttons:
+- <strong>Home/Resume Page</strong>: Links point to <code>resume.pdf</code>, <code>resume.docx</code>.
+- <strong>CV Page</strong>: Links point to <code>cv.pdf</code>, <code>cv.docx</code>.</p>
+<h2>Running Locally</h2>
+<p>Because the router uses <code>fetch()</code>, you cannot open <code>index.html</code> directly from the file system (<code>file://</code>) due to CORS security policies. You must run a local server:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">8000</span>
+</code></pre></div>
+
+<p>Then access the site at <code>http://localhost:8000</code>.</p>
+            </div>
+        </article>
+    </main>
+
+</body>
+
+</html>

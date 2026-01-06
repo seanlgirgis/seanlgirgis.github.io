@@ -5,6 +5,7 @@ __pycache__/
 *.docx
 *.html
 !components/*.html
+!blog/*.html
 !templates/*.html
 !index.html
 venv/

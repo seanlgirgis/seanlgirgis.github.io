@@ -291,6 +291,70 @@ h2 {
     text-decoration: underline;
 }
 
+
 .about-section {
     line-height: 1.6;
+}
+
+/* Blog Listing Styles */
+.blog-list {
+    display: grid;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.blog-card {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 25px;
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 5px solid var(--accent);
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.blog-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.blog-card h3 a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.blog-card .meta {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.blog-card .tag {
+    background: #f4f4f4;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    margin-left: 5px;
+    color: #333;
+}
+
+.blog-card p {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.read-more {
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95em;
+}
+
+.read-more:hover {
+    text-decoration: underline;
 }
