@@ -1,5 +1,5 @@
 # SEAN LUKA GIRGIS
-[seanlgirgis.github.io](https://seanlgirgis.github.io) 214-315-2190 [seanlgirgis@gmail.com](mailto:seanlgirgis@gmail.com) [GitHub](https://github.com/seanlgirgis) [LinkedIn](https://www.linkedin.com/in/sean-girgis-43bb1b5/)
+[seanlgirgis.github.io](https://seanlgirgis.github.io) 214-315-2190 [seanlgirgis@gmail.com](mailto:seanlgirgis@gmail.com) [GitHub](https://github.com/seanlgirgis) [LinkedIn](https://www.linkedin.com/in/sean-girgis-43bb1b5/) [X / Twitter](https://x.com/SeanLuka22249)
 
 > **Enterprise ML Engineer & Time-Series Specialist** with 20+ years of technical leadership.
 > Specialist in deploying high-performance **Predictive Capacity Pipelines** for 10,000+ servers.

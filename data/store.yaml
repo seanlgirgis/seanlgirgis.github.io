@@ -24,6 +24,9 @@ contact_info_main:
     - text: "LinkedIn"
       link: "https://www.linkedin.com/in/sean-girgis-43bb1b5/"
       font_color: "primary_color"
+    - text: "X / Twitter"
+      link: "https://x.com/SeanLuka22249"
+      font_color: "primary_color"
 
 # -- SUMMARIES --
 # The specific one used in the Resume
