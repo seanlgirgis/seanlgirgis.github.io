@@ -79,7 +79,7 @@ def main():
     4. Calls specific renderers (DocxRenderer, HtmlRenderer, PdfRenderer) for each format.
     """
     parser = argparse.ArgumentParser(description="Multi-Format Generator")
-    parser.add_argument('--target', choices=['resume', 'cv', 'all', 'word_test'], default='resume', help='Target document to generate')
+    parser.add_argument('--target', choices=['resume', 'cv', 'all', 'word_test', 'data_eng'], default='resume', help='Target document to generate')
     parser.add_argument('--format', choices=['html', 'pdf', 'docx', 'md', 'all'], default='all', help='Output format')
     args = parser.parse_args()
 
@@ -116,6 +116,11 @@ def main():
             'pdf': base_dir / 'data' / 'word_test.yaml',
             'docx': base_dir / 'data' / 'word_test.yaml',
             'web': base_dir / 'data' / 'word_test.yaml'
+        },
+        'data_eng': {
+            'pdf': base_dir / 'data' / 'resume_data_eng.yaml',
+            'docx': base_dir / 'data' / 'resume_data_eng.yaml',
+            'web': base_dir / 'data' / 'resume_data_eng.yaml'
         }
     }
 

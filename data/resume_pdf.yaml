@@ -20,32 +20,37 @@ sections:
     config:
       style: "shaded"
       border_color: "primary_color"
-      content_key: "summary_enterprise_ml"
-      
+      content_key: "summary_data_eng"
+
   # 4. Core Pillars (Grid)
   - type: grid_block
     config:
-      content_key: "core_ml_pillars"
+      content_key: "skills_technical"
+      columns: 2
 
   # 5. Flagship Project (Headline)
   - type: section_title_block
     config:
-      content: "FLAGSHIP PROJECT: HORIZONSCALE AI"
+      content: "FLAGSHIP PROJECT: SERVERLESS DATA PLATFORM"
       style: "accented"
 
   # 5b. Flagship Highlights (Project Block)
   - type: project_block
     config:
+      content_key: "proj_cloud_intelligence"
+      style: "left_border"
+      border_color: "accent_color"
+
+  - type: project_block
+    config:
       content_key: "proj_predictive_pipeline"
       style: "left_border"
-      border_color: "accent_color" 
-
+      border_color: "primary_color"
 
   # 6. Professional Experience (Timeline List)
   - type: list_block
     config:
       content_key: "exp_citi_consultant"
-      style: "timeline"
   # 6. Page Break Example
   - type: header_block
     config:
