@@ -1,35 +1,36 @@
 # SEAN LUKA GIRGIS
+**Senior Data Engineer | Capacity & Infrastructure Optimization**
+
 [seanlgirgis.github.io](https://seanlgirgis.github.io) 214-315-2190 [seanlgirgis@gmail.com](mailto:seanlgirgis@gmail.com) [GitHub](https://github.com/seanlgirgis) [LinkedIn](https://www.linkedin.com/in/sean-girgis-43bb1b5/) [X / Twitter](https://x.com/SeanLuka22249)
 
-> **Enterprise ML Engineer & Time-Series Specialist** with 20+ years of technical leadership.
-> Specialist in deploying high-performance **Predictive Capacity Pipelines** for 10,000+ servers.
-> Expert at bypassing the Python GIL to achieve **10x forecasting throughput**.
+> **Senior Data Engineer** with 20+ years of experience specializing in **high-throughput systems** and **large-scale data migration** (Sabre, Citi). Expert in building **automated ETL pipelines** to transform massive telemetry streams into **predictive capacity models**. Proven track record of optimizing distributed environments with **6,000+ endpoints** using **Python**, **SQL**, and **PySpark**.
 
-## CORE ML ENGINEERING PILLARS
-### Predictive Engineering
-- **Advanced Forecasting**: Prophet, LSTM, XGBoost.
-- **High-Performance Data**: Feature extraction from Parquet/Spark.
-- **Visualization**: Interactive Streamlit dashboards.
-### MLOps & Strategy
-- **Model Competition**: Automated champion/challenger selection.
-- **Confidence Modeling**: "High Trust" 90-day utilization logic.
-- **Domain Expertise**: BMC TrueSight & AppDynamics synthesis.
+## CORE SKILLS MATRIX
+### Data Engineering & Cloud
+- **Pipeline:** Python (Pandas/Generators), SQL (Oracle/Postgres), PySpark.
+- **Cloud:** AWS S3 (Lifecycle Rules), Glue, Athena.
+- **Big Data:** Oracle Partitioning, Parquet Optimization.
+### High-Performance Systems & AI
+- **Forecasting:** Prophet, Scikit-learn, Time-Series Modeling.
+- **Backend:** C++, OCCI, Java, Multiprocessing, Linux/Shell.
+- **Tools:** Airflow, Git, Docker, BMC TrueSight, AppDynamics.
 
 ## FLAGSHIP PROJECT: HORIZONSCALE AI
-### Predictive Utilization Pipeline (2,000+ Nodes)
+### Project: HorizonScale — Modernizing Enterprise Capacity with AI & PySpark
 `Python` `Prophet` `Streamlit` `Spark` `Multiprocessing`
 
-- **Turbo Prophet**: Parallel execution framework reducing cycles by **90%**.
-- **High-Fidelity Training**: 3-year historical synthetic foundation.
-- **Interactive Dashboard**: 6-month outlooks vs. historical baselines.
+- **Why I built this:** To replace legacy, manual 'Trenda' processes with a modern, agentic data pipeline capable of handling banking-scale telemetry.
+- **Turbo Prophet:** Architected parallel generator-based pipeline reducing forecasting cycles by **90%**.
+- **Visual Analytics:** Built interactive Streamlit dashboard serving real-time capacity insights and 'High Trust' utilization scores.
 
 ## PROFESSIONAL EXPERIENCE
 
-**Capacity and Performance Consultant (ML & Strategy)** | *2017 – Dec 2025*
+**Senior Capacity & Data Engineer** | *2017 – Dec 2025*
 _CITI_
-- Architected big-data forecasting for 10,000+ global servers.
-- Automated regional forecasting, reducing manual analysis by **85%**.
-- Used BMC TrueSight and AppDynamics for proactive outage detection.
+- Architected automated **ETL pipelines** using **Python** and **Pandas** to ingest P95 performance telemetry from 6,000+ endpoints (**BMC TrueSight/TSCO**), replacing manual Trenda processes.
+- Designed and optimized **Oracle Database** schemas for historical data retention, enabling long-term trend analysis and seasonal risk forecasting.
+- Developed **ML-driven forecasting models** using Prophet and scikit-learn to predict infrastructure bottlenecks 6 months in advance, improving provisioning accuracy.
+- Integrated disparate data feeds (CSV, Excel, TSCO) into a unified **Oracle** reporting framework, providing executive dashboards with real-time utilization insights.
 
 **Performance Engineer** | *2017 – 2017*
 _G6 Hospitality LLC & HCL/ENTERGY_
@@ -43,18 +44,14 @@ _CA Technologies & TIAA-CREF_
 - Served as CA APM SME, handling daily operations, cluster maintenance, agent/Power Pack rollouts, and performance bottleneck resolution in J2EE/.NET stacks.
 - Designed custom dashboards, alerts, reports, and Perl/Ksh data-extraction scripts to deliver actionable insights for business-critical monitoring.
 - Provided architectural sizing recommendations, Golden Image creation, client training, and technical team leadership for APM deployments.
-- Optimized large-scale CA Wily Introscope installations, resolving complex issues in high-stakes financial services environments.
 
 ## EXPERIENCE HISTORY
 
-**AT&T** | *2010 – 2011*
-_Senior performance Test Engineer_
-
 **Sabre** | *2008 – 2012*
-_Senior Developer - C++, Java, Backend Architecture_
+_Senior Systems & Data Migration Engineer_
 
-**Software Engineer** | *2000 – 2008*
-_Full-Stack Development_
+**Sprint/Corpus** | *2001 – 2008*
+_Developer - High Availability Interfaces (C++)_
 
 ## EDUCATION & CERTIFICATIONS
 

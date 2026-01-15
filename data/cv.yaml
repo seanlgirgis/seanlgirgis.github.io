@@ -22,23 +22,15 @@ sections:
 
   - type: list_block
     config:
-      content_key: "cv_exp_G6"
-
-  - type: list_block
-    config:
-      content_key: "cv_exp_HCL"
-
+      content_key: "cv_exp_mid_career"
 
   - type: list_block
     config:
       content_key: "cv_exp_ca_tech"
- 
+
   - type: list_block
     config:
       content_key: "cv_exp_tiaa"
-
-
-
 
   - type: list_block
     config:
@@ -50,7 +42,6 @@ sections:
     config:
       content_key: "cv_exp_csc"
 
-
   - type: list_block
     config:
       content_key: "cv_exp_corpus_inc"
@@ -59,12 +50,9 @@ sections:
     config:
       content_key: "cv_exp_sprint"
 
-
-
   - type: list_block
     config:
       content_key: "cv_exp_simplex"
-
 
   - type: list_block
     config:

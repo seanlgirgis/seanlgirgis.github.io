@@ -58,10 +58,10 @@ exp_citi_consultant:
       right_text: "2017 – Dec 2025"
       sub_text: "CITI"
       details:
-        - "Architected automated **ETL pipelines** using **Python** and **Pandas** to ingest P95 performance telemetry from 6,000+ endpoints, eliminating manual processing for ASIAPAC, EMEA, and LATAM regions."
-        - "Designed and implemented **Hive/Hadoop** partitioning strategies for 2+ years of historical data retention, enabling long-term trend analysis and seasonal risk forecasting."
+        - "Architected automated **ETL pipelines** using **Python** and **Pandas** to ingest P95 performance telemetry from 6,000+ endpoints (**BMC TrueSight/TSCO**), replacing manual Trenda processes."
+        - "Designed and optimized **Oracle Database** schemas for historical data retention, enabling long-term trend analysis and seasonal risk forecasting."
         - "Developed **ML-driven forecasting models** using Prophet and scikit-learn to predict infrastructure bottlenecks 6 months in advance, improving provisioning accuracy."
-        - "Integrated disparate data feeds from BMC TrueSight and AppDynamics into a unified **Snowflake/Redshift** reporting framework, providing executive dashboards with real-time utilization insights."
+        - "Integrated disparate data feeds (CSV, Excel, TSCO) into a unified **Oracle** reporting framework, providing executive dashboards with real-time utilization insights."
 
     - left_text: "Performance Engineer"
       right_text: "2017 – 2017"
@@ -116,9 +116,9 @@ core_ml_pillars:
   items:
     - header: "Data Engineering & Cloud"
       content:
-        - "**Pipeline:** Python (Pandas/Generators), SQL (Window Functions), PySpark."
-        - "**Cloud:** AWS S3 (Lifecycle Rules), Glue, Athena, Snowflake/Redshift."
-        - "**Big Data:** Hive/Hadoop Partitioning, Parquet Optimization."
+        - "**Pipeline:** Python (Pandas/Generators), SQL (Oracle/Postgres), PySpark."
+        - "**Cloud:** AWS S3 (Lifecycle Rules), Glue, Athena."
+        - "**Big Data:** Oracle Partitioning, Parquet Optimization."
     - header: "High-Performance Systems & AI"
       content:
         - "**Forecasting:** Prophet, Scikit-learn, Time-Series Modeling."
@@ -183,10 +183,10 @@ cv_exp_citi:
       right_text: "Nov 2017 – Dec 2025"
       sub_text: "Senior Capacity & Data Engineer"
       details:
-        - "**Automated ETL Pipelines:** Architected ingestion pipelines using **Python** and **Pandas** for P95 performance telemetry from 6,000+ endpoints, eliminating manual processing for ASIAPAC, EMEA, and LATAM regions."
-        - "**Big Data Strategy:** Designed and implemented **Hive/Hadoop** partitioning strategies for 2+ years of historical data retention, enabling long-term trend analysis and seasonal risk forecasting."
+        - "**Automated ETL Pipelines:** Architected ingestion pipelines using **Python** and **Pandas** for P95 performance telemetry from 6,000+ endpoints (**BMC TrueSight/TSCO**), replacing manual Trenda processes."
+        - "**Data Strategy:** Designed and optimized **Oracle Database** schemas for historical data retention, enabling long-term trend analysis and seasonal risk forecasting."
         - "**Predictive Modeling:** Developed **ML-driven forecasting models** using Prophet and scikit-learn to predict infrastructure bottlenecks 6 months in advance."
-        - "**Unified Reporting:** Integrated disparate data feeds from BMC TrueSight and AppDynamics into a unified **Snowflake/Redshift** reporting framework, providing executive dashboards."
+        - "**Unified Reporting:** Integrated disparate data feeds (CSV, Excel) into a unified **Oracle** reporting framework, providing executive dashboards."
         - "**Cost Optimization:** Identified underutilized patterns through data mining, leading to significant hardware consolidation."
 
 cv_exp_sabre:
@@ -299,7 +299,7 @@ cv_exp_early:
     - left_text: "Software Engineering Roles"
       right_text: "1999 – 2008"
       sub_text: "Sprint, Corpus Inc, CSC, Simplex"
-      details: 
+      details:
         - "See Experience History or LinkedIn for full details of early C++/Java development roles."
 
 cv_technical_skills:

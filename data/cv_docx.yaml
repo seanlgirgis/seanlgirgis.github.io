@@ -22,18 +22,13 @@ sections:
 
   - type: list_block
     config:
-      content_key: "cv_exp_G6"
-
-  - type: list_block
-    config:
-      content_key: "cv_exp_HCL"
-
+      content_key: "cv_exp_mid_career"
 
   # 6. Page Break Example
   - type: list_block
     config:
       content_key: "cv_exp_ca_tech"
- 
+
   - type: list_block
     config:
       content_key: "cv_exp_tiaa"
@@ -42,7 +37,6 @@ sections:
   - type: header_block
     config:
       page_break_before: true
-
 
   - type: list_block
     config:
@@ -53,7 +47,6 @@ sections:
   - type: list_block
     config:
       content_key: "cv_exp_csc"
-
 
   - type: list_block
     config:
@@ -71,7 +64,6 @@ sections:
   - type: list_block
     config:
       content_key: "cv_exp_simplex"
-
 
   - type: list_block
     config:
