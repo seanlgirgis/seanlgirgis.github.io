@@ -7,8 +7,8 @@
     <title>Resume</title>
 
     <!-- CSS Injection Point - Bypasses auto-formatters -->
-    
-        <style>
+
+    <style>
         body {
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
             color: #333333;
@@ -19,9 +19,9 @@
             width: 100%;
             height: 100%;
             box-sizing: border-box;
-            line-height: 1.5; 
+            line-height: 1.5;
         }
-        
+
         /* STATIC STRIPE STRATEGY */
         /* Just a normal block div at the top. No positioning. */
         .page-stripe {
@@ -32,25 +32,29 @@
             margin: 0 !important;
             padding: 0 !important;
             /* Ensure it doesn't get pushed by anything */
-            position: relative; 
+            position: relative;
             z-index: 9999;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-        
+
         /* Default Screen Wrapper */
         .content-wrapper {
-            padding: 25mm 25mm; 
+            padding: 25mm 25mm;
             width: 100%;
-            max-width: 216mm; /* Letter width constraint */
-            margin: 0 auto;   /* Center on screen */
+            max-width: 216mm;
+            /* Letter width constraint */
+            margin: 0 auto;
+            /* Center on screen */
             box-sizing: border-box;
             position: relative;
             z-index: 2;
-            background: #fff; /* Ensure white background for page look */
-            box-shadow: 0 0 15px rgba(0,0,0,0.1); /* Subtle drop shadow */
+            background: #fff;
+            /* Ensure white background for page look */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            /* Subtle drop shadow */
         }
-        
+
         a {
             color: #004a99;
             text-decoration: none;
@@ -58,199 +62,305 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-        a:hover { text-decoration: underline; }
-        
-        @media print {
-        @page {
-            size: Letter;
-            margin: 0mm; /* Reset default @page margins since we control layout with padding */
+
+        a:hover {
+            text-decoration: underline;
         }
 
-        html, body {
-            font-size: 10pt !important;
-            width: 100%;
-            height: 100%;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            /* Do not force margin/padding 0 on body if not needed, but safe to keep 0 for layout control */
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        
-        /* 
+        @media print {
+            @page {
+                size: Letter;
+                margin: 0mm;
+                /* Reset default @page margins since we control layout with padding */
+            }
+
+            html,
+            body {
+                font-size: 10pt !important;
+                width: 100%;
+                height: 100%;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                /* Do not force margin/padding 0 on body if not needed, but safe to keep 0 for layout control */
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* 
            Wrapper Logic:
            - padding-top (Page 1): Handles space below stripe.
            - padding-left/right/bottom: Handles global margins.
            - This ensures Left/Right/Bottom are NEVER destroyed.
         */
-        /* 
+            /* 
            Wrapper Logic:
            - padding-top (Page 1): Handles space below stripe.
            - padding-left/right/bottom: REMOVED. We now set specific PDF margins in pdf_renderer.py
              so the footer aligns correctly.
         */
-        /* 
+            /* 
            Wrapper Logic:
            - padding-top (Page 1): Handles space below stripe.
            - padding-left/right/bottom: Handles global margins.
            - This ensures Left/Right/Bottom are NEVER destroyed.
         */
-        .content-wrapper {
-            padding-top: 6.35mm !important; 
-            padding-left: 12.7mm !important; 
-            padding-right: 12.7mm !important;
-            padding-bottom: 6.35mm !important;
-            width: 100% !important;
-        }
-        
-        .page-stripe {
-            display: block !important;
-            width: 100% !important;
-            height: 8px !important;
-            background-color: #004a99 !important;
-            position: relative !important; 
-            z-index: 10000 !important;
-        }
-        
-        /* 
+            .content-wrapper {
+                padding-top: 6.35mm !important;
+                padding-left: 12.7mm !important;
+                padding-right: 12.7mm !important;
+                padding-bottom: 6.35mm !important;
+                width: 100% !important;
+            }
+
+            .page-stripe {
+                display: block !important;
+                width: 100% !important;
+                height: 8px !important;
+                background-color: #004a99 !important;
+                position: relative !important;
+                z-index: 10000 !important;
+            }
+
+            /* 
            Manual Page Break Spacer 
            - Adds extra padding at the top of the new page to simulate margin.
            - We use padding-top because margin-top is often ignored at page start.
            - We double the standard top margin for 'Page 2+' effect.
         */
-        .page-break { 
-            page-break-before: always; 
-            display: block;
-            padding-top: 12.7mm !important;
-            position: relative;
-        }
-    }
-            
-            .text-block.shaded, .shaded-border {
-                border-left-width: 3px !important;
-                border-left-style: solid !important;
-                border-left-color: #E07000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .page-break {
+                page-break-before: always;
+                display: block;
+                padding-top: 12.7mm !important;
+                position: relative;
             }
-            .text-block.shaded { background-color: #f2f2f2 !important; }
-            .shaded-border { padding-left: 15px; }
-            .page-break { page-break-before: always; }
         }
-        
+
+        .text-block.shaded,
         .shaded-border {
-             border-left-width: 3px !important;
-             border-left-style: solid !important;
-             border-left-color: #E07000 !important;
-             padding-left: 15px;
-             -webkit-print-color-adjust: exact;
-             print-color-adjust: exact;
+            border-left-width: 3px !important;
+            border-left-style: solid !important;
+            border-left-color: #E07000 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
-        .header-block { width: 100%; text-align: center !important; margin-bottom: 10px; display: block; }
+
+        .text-block.shaded {
+            background-color: #f2f2f2 !important;
+        }
+
+        .shaded-border {
+            padding-left: 15px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+        }
+
+        .shaded-border {
+            border-left-width: 3px !important;
+            border-left-style: solid !important;
+            border-left-color: #E07000 !important;
+            padding-left: 15px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .header-block {
+            width: 100%;
+            text-align: center !important;
+            margin-bottom: 10px;
+            display: block;
+        }
+
         .header-block h1 {
             color: #004a99;
-            margin: 0; font-size: 2.5em; text-transform: uppercase; letter-spacing: -1px; text-align: center; display: block; width: 100%;
+            margin: 0;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            text-align: center;
+            display: block;
+            width: 100%;
         }
-        .header-block p.subtitle { color: #666; margin-top: 2px; font-size: 1.1em; text-align: center; }
-        
-        .compound-text-block { margin-bottom: 20px; padding-bottom: 5px; line-height: 1.3; text-align: center; }
-        .compound-item { display: inline-block; }
-        .compound-separator { margin: 0 4px; color: #ccc; }
-        
-        .text-block { margin-bottom: 10px; display: block; }
-        .text-block.normal { font-size: 1em; line-height: 1.4; }
+
+        .header-block p.subtitle {
+            color: #666;
+            margin-top: 2px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .compound-text-block {
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .compound-item {
+            display: inline-block;
+        }
+
+        .compound-separator {
+            margin: 0 4px;
+            color: #ccc;
+        }
+
+        .text-block {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .text-block.normal {
+            font-size: 1em;
+            line-height: 1.4;
+        }
+
         .text-block.shaded {
-            background-color: #f2f2f2 !important; padding: 10px;
+            background-color: #f2f2f2 !important;
+            padding: 10px;
             border-left: 3px solid #E07000 !important;
-            color: #444; font-size: 1.0em;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            color: #444;
+            font-size: 1.0em;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
+
         .text-block.left_border {
-            background-color: transparent !important; padding: 10px; padding-left: 15px;
+            background-color: transparent !important;
+            padding: 10px;
+            padding-left: 15px;
             border-left: 3px solid #004a99 !important;
-            color: #333333; font-size: 1.0em;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            color: #333333;
+            font-size: 1.0em;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
+
         /* Grid Styles */
         .grid-section-wrapper.shaded {
-            background-color: #f2f2f2 !important; padding: 20px;
+            background-color: #f2f2f2 !important;
+            padding: 20px;
             border-left: 8px solid #E07000 !important;
             margin-bottom: 20px;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
+
         .grid-section-wrapper.left_border {
-            background-color: transparent !important; padding: 10px; padding-left: 15px;
+            background-color: transparent !important;
+            padding: 10px;
+            padding-left: 15px;
             border-left: 3px solid #004a99 !important;
             margin-bottom: 20px;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
+
         .section-title {
             color: #004a99;
-            font-size: 1.25em; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-top: 15px; margin-bottom: 10px;
+            font-size: 1.25em;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 3px;
+            margin-top: 15px;
+            margin-bottom: 10px;
         }
-        
+
         .section-title.accented {
             border-bottom: none !important;
         }
-        
+
         .section-title.accented span {
             border-bottom-width: 1px;
             border-bottom-style: solid;
             border-bottom-color: #E07000 !important;
             padding-bottom: 5px;
         }
-        
+
         .text-block.shaded_primary {
-            background-color: #f2f2f2 !important; 
-            padding: 5px 15px; /* Tight vertical padding */
+            background-color: #f2f2f2 !important;
+            padding: 5px 15px;
+            /* Tight vertical padding */
             border-left: 3px solid #004a99 !important;
-            color: #333333; font-size: 1.0em;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            color: #333333;
+            font-size: 1.0em;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .grid-section-wrapper.shaded_primary {
-            background-color: #f2f2f2 !important; 
-            padding: 5px 15px; /* Tight vertical padding */
+            background-color: #f2f2f2 !important;
+            padding: 5px 15px;
+            /* Tight vertical padding */
             border-left: 3px solid #004a99 !important;
             margin-bottom: 20px;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
+
         /* Project Block Styles */
-        .project-block { margin-bottom: 20px; }
+        .project-block {
+            margin-bottom: 20px;
+        }
+
         .project-block.left_border {
-            background-color: transparent !important; 
-            padding: 5px 15px; 
+            background-color: transparent !important;
+            padding: 5px 15px;
             border-left: 3px solid #E07000 !important;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        .project-title { font-weight: bold; margin-bottom: 5px; color: #000; font-size: 1.05em; }
-        .project-details { padding-left: 20px; margin-bottom: 10px; margin-top: 5px; }
-        .project-details li { margin-bottom: 2px; }
-        .project-tags { margin-top: 8px; }
-        .project-tag { 
-            display: inline-block; 
-            background-color: #004a99; 
-            color: #fff !important; 
-            padding: 3px 10px; 
-            border-radius: 12px; 
-            font-size: 0.85em; 
-            margin-right: 5px; 
+
+        .project-title {
             font-weight: bold;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            margin-bottom: 5px;
+            color: #000;
+            font-size: 1.05em;
         }
-        
-        strong { font-weight: bold; color: #000; }
-        
+
+        .project-details {
+            padding-left: 20px;
+            margin-bottom: 10px;
+            margin-top: 5px;
+        }
+
+        .project-details li {
+            margin-bottom: 2px;
+        }
+
+        .project-tags {
+            margin-top: 8px;
+        }
+
+        .project-tag {
+            display: inline-block;
+            background-color: #004a99;
+            color: #fff !important;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-right: 5px;
+            font-weight: bold;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        strong {
+            font-weight: bold;
+            color: #000;
+        }
+
         /* Force remove unwanted separators in timeline/list blocks */
-        .list-item, .timeline-item { border: none !important; border-top: none !important; border-bottom: none !important; }
-        </style>
-        
+        .list-item,
+        .timeline-item {
+            border: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+        }
+    </style>
+
 
     <style>
         @media print {
@@ -263,523 +373,524 @@
 
 <body>
     <!-- DEBUG: PIPELINE CHECK 3 -->
-    
-    
+
+
     <div class="page-stripe">&nbsp;</div>
-    
+
 
     <div class="content-wrapper">
-        
-        
 
-        
+
+
+
         <div class="header-block ">
             <center>
                 <h1 style="text-align: center;">SEAN LUKA GIRGIS</h1>
-                
+
             </center>
         </div>
-        
-        
-        
 
-        
-        <div class="compound-text-block "
-            style="text-align: center">
+
+
+
+
+        <div class="compound-text-block " style="text-align: center">
             <center>
-                
-                
+                <div style="margin-bottom: 5px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: #E07000;">Senior Data Engineer | Capacity
+                        & Infrastructure Optimization</span>
+                </div>
+
                 <span class="compound-item">
-                    
+
                     <a href="https://seanlgirgis.github.io"
                         style="font-size: 10pt; color: #333333;">seanlgirgis.github.io</a>
-                    
+
                 </span>
-                
-                
+
+
                 <span class="compound-separator" style="font-size: 10pt;"> | </span>
-                
+
                 <span class="compound-item">
-                    
+
                     <span style="font-size: 10pt; color: #333333;">214-315-2190</span>
-                    
+
                 </span>
-                
-                
+
+
                 <span class="compound-separator" style="font-size: 10pt;"> | </span>
-                
+
                 <span class="compound-item">
-                    
+
                     <a href="mailto:seanlgirgis@gmail.com"
                         style="font-size: 10pt; color: #333333;">seanlgirgis@gmail.com</a>
-                    
+
                 </span>
-                
-                
+
+
                 <span class="compound-separator" style="font-size: 10pt;"> | </span>
-                
+
                 <span class="compound-item">
-                    
-                    <a href="https://github.com/seanlgirgis"
-                        style="font-size: 10pt; color: #004a99;">GitHub</a>
-                    
+
+                    <a href="https://github.com/seanlgirgis" style="font-size: 10pt; color: #004a99;">GitHub</a>
+
                 </span>
-                
-                
+
+
                 <span class="compound-separator" style="font-size: 10pt;"> | </span>
-                
+
                 <span class="compound-item">
-                    
+
                     <a href="https://www.linkedin.com/in/sean-girgis-43bb1b5/"
                         style="font-size: 10pt; color: #004a99;">LinkedIn</a>
-                    
+
                 </span>
-                
+
             </center>
         </div>
-        
-        
-        
 
-        
+
+
+
+
         <div class="grid-section-wrapper shaded ">
             <h2 class="section-title accented"><span>Core Competencies & Expertise</span></h2>
-            
-            
-            
-            
-
             <div class="grid-block" style="overflow: hidden; width: 100%;">
-                
-                
                 <div class="grid-column"
                     style="float: left; width: 30%; margin-bottom: 20px; box-sizing: border-box; margin-right: 5%;">
-                    
-                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">Modern Stack
-                    </h3>
-                    
+                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">Data Engineering</h3>
                     <ul style="padding-left: 20px; list-style-type: disc;">
-                        
-                        <li>Python (Pandas, Scikit-Learn), ML Forecasting (Prophet), RAG Architectures, Spark, AWS Cloud.</li>
-                        
+                        <li>Python (Pandas, Generators), SQL, PySpark, ETL Pipelines, Data Warehousing
+                            (Snowflake/Redshift).</li>
                     </ul>
                 </div>
-                
-                
                 <div class="grid-column"
                     style="float: left; width: 30%; margin-bottom: 20px; box-sizing: border-box; margin-right: 5%;">
-                    
-                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">Infrastructure & APM
-                    </h3>
-                    
+                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">Cloud & Infrastructure</h3>
                     <ul style="padding-left: 20px; list-style-type: disc;">
-                        
-                        <li>BMC TrueSight, AppDynamics, CA APM (Wily), Dynatrace, Capacity Optimization.</li>
-                        
+                        <li>AWS (S3, Glue, Athena), Hive/Hadoop, Docker, Linux/Unix, Capacity Planning.</li>
                     </ul>
                 </div>
-                
-                
-                <div class="grid-column"
-                    style="float: left; width: 30%; margin-bottom: 20px; box-sizing: border-box; ">
-                    
-                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">Legacy Engineering
-                    </h3>
-                    
+                <div class="grid-column" style="float: left; width: 30%; margin-bottom: 20px; box-sizing: border-box; ">
+                    <h3 style="color: #004a99; font-size: 1.1em; margin-bottom: 10px;">High-Performance Compute</h3>
                     <ul style="padding-left: 20px; list-style-type: disc;">
-                        
-                        <li>C/C++, Java/J2EE, Pro*C, Unix (HPUX, Solaris, AIX), Shell Scripting, Oracle/SQL.</li>
-                        
+                        <li>C++, Java, Multiprocessing, Oracle RAC, Pro*C, OCCI, Low-Latency Systems.</li>
                     </ul>
                 </div>
-                
             </div>
             <div style="clear: both;"></div>
         </div>
-        
-        
-        
 
-        
-        
+
+
+
+
+
         <h2 class="section-title accented ">
             <span>Professional Experience</span>
         </h2>
-        
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">CITI</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">Nov 2017 – Dec 2025</span>
                 </div>
-                
-                
-                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior Performance & Capacity Consultant
+
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior Capacity &
+                    Data Engineer
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li><strong>AI-Driven Forecasting:</strong> Developed ML models using Python and scikit-learn to predict infrastructure requirements 3-6 months in advance.</li>
-                    
-                    <li><strong>Data Pipelines:</strong> Built automated ETL pipelines to extract and process metrics from BMC TrueSight and AppDynamics for 10,000+ nodes.</li>
-                    
-                    <li><strong>HorizonScale:</strong> Led the transition from "Trenda" legacy scripts to a parallelized, high-throughput forecasting engine.</li>
-                    
-                    <li><strong>Cost Optimization:</strong> Identified underutilized patterns, leading to significant hardware consolidation and budget savings.</li>
-                    
-                    <li><strong>Administered and configured BMC TrueSight:</strong> Optimized platform, setting thresholds, alerts, baselines, and integrating data for proactive resource management across diverse applications.</li>
-                    
-                    <li><strong>Built automated Python/pandas data pipelines</strong> extract, cleanse, and consolidate capacity metrics from BMC TrueSight into centralized analytics for accurate forecasting and reporting.</li>
-                    
+                    <li><strong>Automated ETL Pipelines:</strong> Architected ingestion pipelines using
+                        <strong>Python</strong> and <strong>Pandas</strong> for P95 performance telemetry from 6,000+
+                        endpoints, eliminating manual processing for ASIAPAC, EMEA, and LATAM regions.
+                    </li>
+                    <li><strong>Big Data Strategy:</strong> Designed and implemented <strong>Hive/Hadoop</strong>
+                        partitioning strategies for 2+ years of historical data retention, enabling long-term trend
+                        analysis and seasonal risk forecasting.</li>
+                    <li><strong>Predictive Modeling:</strong> Developed <strong>ML-driven forecasting models</strong>
+                        using Prophet and scikit-learn to predict infrastructure bottlenecks 6 months in advance.</li>
+                    <li><strong>Unified Reporting:</strong> Integrated disparate data feeds from BMC TrueSight and
+                        AppDynamics into a unified <strong>Snowflake/Redshift</strong> reporting framework, providing
+                        executive dashboards.</li>
+                    <li><strong>Cost Optimization:</strong> Identified underutilized patterns through data mining,
+                        leading to significant hardware consolidation.</li>
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">G6 HOSPITALITY LLC</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">Mar 2017 – Nov 2017</span>
                 </div>
-                
-                
+
+
                 <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Performance Engineer
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
+
                     <li>Managed end-to-end monitoring for Brand.com using Dynatrace AppMon and Synthetics.</li>
-                    
-                    <li>Led the "FAST" project, data mining user performance metrics to optimize critical money-generating systems.</li>
-                    
-                    <li>Upgraded DynaTrace from v6.5 to v7.0, enforced TLS 1.2 security, and integrated Performance Center with DynaTrace.</li>
-                    
+
+                    <li>Led the "FAST" project, data mining user performance metrics to optimize critical
+                        money-generating systems.</li>
+
+                    <li>Upgraded DynaTrace from v6.5 to v7.0, enforced TLS 1.2 security, and integrated Performance
+                        Center with DynaTrace.</li>
+
                     <li>Implemented custom dashboards, alerts, and reports for business-critical monitoring.</li>
-                    
-                    <li>Supported cloud migration to AWS, evaluated mobile monitoring tools, and delivered before/after dashboards for performance tracking.</li>
-                    
-                    <li>Optimized large-scale DynaTrace installations, resolving complex issues in high-stakes financial services environments.</li>
-                    
+
+                    <li>Supported cloud migration to AWS, evaluated mobile monitoring tools, and delivered before/after
+                        dashboards for performance tracking.</li>
+
+                    <li>Optimized large-scale DynaTrace installations, resolving complex issues in high-stakes financial
+                        services environments.</li>
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">HCL / ENTERGY</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">Jan 2017 – Mar 2017</span>
                 </div>
-                
-                
+
+
                 <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">APM Consultant
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
+
                     <li>Supported enterprise-wide CA APM, CEM, and ADA solutions for utility grid systems.</li>
-                    
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">CA TECHNOLOGIES</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">Mar 2014 – Aug 2016</span>
                 </div>
-                
-                
+
+
                 <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior Consultant
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Led planning, implementation, and upgrades of CA APM solutions for enterprise clients, ensuring seamless integration and performance scalability. </li>
-                    
-                    <li>Reviewed client architectures, provided sizing recommendations, and optimized agent/Enterprise Manager installations for maximum efficiency.</li>
-                    
-                    <li>Designed and deployed custom Management Modules, including advanced reports, alerts, and dashboards tailored to business needs.</li>
-                    
-                    <li>Delivered client training, knowledge transfer, and comprehensive documentation to enable long-term self-sufficiency in CA APM operations.</li>
-                    
+
+                    <li>Led planning, implementation, and upgrades of CA APM solutions for enterprise clients, ensuring
+                        seamless integration and performance scalability. </li>
+
+                    <li>Reviewed client architectures, provided sizing recommendations, and optimized agent/Enterprise
+                        Manager installations for maximum efficiency.</li>
+
+                    <li>Designed and deployed custom Management Modules, including advanced reports, alerts, and
+                        dashboards tailored to business needs.</li>
+
+                    <li>Delivered client training, knowledge transfer, and comprehensive documentation to enable
+                        long-term self-sufficiency in CA APM operations.</li>
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">ENTERPRISE IRON (TIAA-CREF)</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">Aug 2011 – Dec 2013</span>
                 </div>
-                
-                
+
+
                 <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">SME for CA APM
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Served as CA APM SME for TIAA-CREF, managing day-to-day operations of a large-scale enterprise environment with 4 regions, 50+ Enterprise Managers, and ~4,000–6,000 agents.</li>
-                    
-                    <li>Led upgrade of CA Wily Introscope from v9.1 to v9.50, ensuring minimal disruption across multi-cluster financial services infrastructure.</li>
-                    
-                    <li>Designed and implemented custom Management Modules, including specialized dashboards, alerts, reports, and Perl/Ksh data-extraction scripts for business-specific insights.</li>
-                    
-                    <li>Oversaw agent installations, Power Pack deployments, and cluster maintenance (e.g., resolving clamps) to maintain high-availability monitoring.</li>
-                    
-                    <li>Collaborated with IT teams to troubleshoot performance issues in J2EE/WebLogic/WebSphere environments, leveraging JMX monitoring for bottleneck resolution.</li>
-                    
+
+                    <li>Served as CA APM SME for TIAA-CREF, managing day-to-day operations of a large-scale enterprise
+                        environment with 4 regions, 50+ Enterprise Managers, and ~4,000–6,000 agents.</li>
+
+                    <li>Led upgrade of CA Wily Introscope from v9.1 to v9.50, ensuring minimal disruption across
+                        multi-cluster financial services infrastructure.</li>
+
+                    <li>Designed and implemented custom Management Modules, including specialized dashboards, alerts,
+                        reports, and Perl/Ksh data-extraction scripts for business-specific insights.</li>
+
+                    <li>Oversaw agent installations, Power Pack deployments, and cluster maintenance (e.g., resolving
+                        clamps) to maintain high-availability monitoring.</li>
+
+                    <li>Collaborated with IT teams to troubleshoot performance issues in J2EE/WebLogic/WebSphere
+                        environments, leveraging JMX monitoring for bottleneck resolution.</li>
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">AT&T</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">Aug 2010 – Jul 2011</span>
                 </div>
-                
-                
-                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Telecom Applications Performance Testing
+
+
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Telecom Applications
+                    Performance Testing
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Analyzed performance of J2EE telecom web applications to identify optimal loads, break points, and resource bottlenecks.</li>
-                    
-                    <li>Documented key metrics (JDBC connections, threads, memory, CPU, GC) and installed JMX Monitoring, Thread Dumps, and Wily Introscope.</li>
-                    
+
+                    <li>Analyzed performance of J2EE telecom web applications to identify optimal loads, break points,
+                        and resource bottlenecks.</li>
+
+                    <li>Documented key metrics (JDBC connections, threads, memory, CPU, GC) and installed JMX
+                        Monitoring, Thread Dumps, and Wily Introscope.</li>
+
                     <li>Created and modified automation/testing scripts for performance validation.</li>
-                    
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">SABRE</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">May 2008 – Jan 2010</span>
                 </div>
-                
-                
-                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior Software Engineer (C++)
+
+
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Senior Systems & Data
+                    Migration Engineer
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Designed and implemented high-performance conversion of global travel Shopping Engine from MySQL to Oracle, reducing server footprint dramatically.</li>
-                    
-                    <li>Converted SQL queries, achieved superior DSS performance, and automated conversion process.</li>
-                    
+                    <li><strong>Massive-Scale Migration:</strong> Led the data migration of a shopping engine handling
+                        <strong>10x the throughput of VISA</strong>, refactoring 200+ MySQL nodes into a
+                        high-performance 6-node Oracle RAC cluster.
+                    </li>
+                    <li><strong>Latency Optimization:</strong> Optimized core transaction processing using <strong>C++
+                            and OCCI</strong>, reducing physical hardware footprint by 95% while maintaining sub-second
+                        query latency.</li>
                     <li>Built testing framework using CPPUNIT in C++/OCCI/OCI environment.</li>
-                    
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">Computer Science Corporation (CSC)</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">OCT 2007 – May 2008</span>
                 </div>
-                
-                
+
+
                 <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Architect/Developer
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Performed UML-based unit design, created class/sequence diagrams, and developed modules for IRS modernization.</li>
-                    
+
+                    <li>Performed UML-based unit design, created class/sequence diagrams, and developed modules for IRS
+                        modernization.</li>
+
                     <li>Worked on CICS/MQSeries/XML messaging architecture with VC++ and DB2.</li>
-                    
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">Corpus Inc. (CenturyTel -AT&T)</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">May 2005 – Oct 2007</span>
                 </div>
-                
-                
-                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Developer / Support Engineer (AMDOCS telecom billing systems)
+
+
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Developer / Support
+                    Engineer (AMDOCS telecom billing systems)
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Delivered performance enhancements in billing processes (C/C++/Pro*C/PL/SQL), reducing memory usage 75% and improving throughput 20%.</li>
-                    
-                    <li>Developed and troubleshot Flexible Bill Formatter, EDI interfaces, and Enabler/EMS/CSM modules.</li>
-                    
-                    <li>Automated system administration tasks (WebLogic/WebSphere) with Korn Shell scripts, saving 60% reboot time.</li>
-                    
+
+                    <li>Delivered performance enhancements in billing processes (C/C++/Pro*C/PL/SQL), reducing memory
+                        usage 75% and improving throughput 20%.</li>
+
+                    <li>Developed and troubleshot Flexible Bill Formatter, EDI interfaces, and Enabler/EMS/CSM modules.
+                    </li>
+
+                    <li>Automated system administration tasks (WebLogic/WebSphere) with Korn Shell scripts, saving 60%
+                        reboot time.</li>
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">Sprint</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">2001 – 2005</span>
                 </div>
-                
-                
-                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">High Availability Interfaces - C++, POSIX Threads, Marconi APIs
+
+
+                <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">High Availability
+                    Interfaces - C++, POSIX Threads, Marconi APIs
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
-                    <li>Developed high-availability multithreaded interfaces (C++/POSIX threads/sockets/IPC) for EAMS/AMS-PRMS integration.</li>
-                    
-                    <li>Led PRMS maintenance, upgrade (PowerBuilder → Web), and enhancements; improved DB performance 10x via PL/SQL optimizations.</li>
-                    
-                    <li>Reverse-engineered AMDOCS APIs, implemented interfaces, and supported CSM production troubleshooting.</li>
-                    
+
+                    <li>Developed high-availability multithreaded interfaces (C++/POSIX threads/sockets/IPC) for
+                        EAMS/AMS-PRMS integration.</li>
+
+                    <li>Led PRMS maintenance, upgrade (PowerBuilder → Web), and enhancements; improved DB performance
+                        10x via PL/SQL optimizations.</li>
+
+                    <li>Reverse-engineered AMDOCS APIs, implemented interfaces, and supported CSM production
+                        troubleshooting.</li>
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <div class="list-block timeline">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
+
                 <div class="item-header" style="overflow: hidden; margin-bottom: 2px;">
                     <h3 style="float: left; margin: 0; font-size: 1.1em;">Simplex International - Canada</h3>
                     <span style="float: right; color: #E07000; font-weight: bold;">1999 – 2001</span>
                 </div>
-                
-                
+
+
                 <div class="item-sub" style="font-style: italic; color: #666; margin-bottom: 5px;">Developer
                 </div>
-                
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
+
                     <li>Developed interfaces and MRC to the time and attendence system using VB6.</li>
-                    
+
                     <li>Developed extension for Client GM on the security and alert system Using VC++.</li>
-                    
+
                 </ul>
             </div>
-            
-        </div>
-        
-        
-        
 
-        
-        
+        </div>
+
+
+
+
+
+
         <h2 class="section-title accented ">
             <span>Education & Certifications</span>
         </h2>
-        
+
         <div class="list-block ">
-            
+
             <div class="list-item" style="margin-bottom: 15px;">
-                
-                
+
+
                 <ul style="padding-left: 20px; margin-top: 5px;">
-                    
+
                     <li><strong>High Diploma: Computer Engineering Technology</strong> - Humber College, Canada</li>
-                    
+
                     <li><strong>Bachelor of Science: Civil Engineering</strong> - Zagazig University, Egypt</li>
-                    
+
                     <li>Brainbench Certified: C++ Fundamentals, Java 2.0, OOD, C, and Mathematics.</li>
-                    
+
                 </ul>
             </div>
-            
+
         </div>
-        
-        
+
+
     </div>
 </body>
 
