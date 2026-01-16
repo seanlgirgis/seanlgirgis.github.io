@@ -3,19 +3,18 @@
 
 [seanlgirgis.github.io](https://seanlgirgis.github.io) 214-315-2190 [seanlgirgis@gmail.com](mailto:seanlgirgis@gmail.com) [GitHub](https://github.com/seanlgirgis) [LinkedIn](https://www.linkedin.com/in/sean-girgis-43bb1b5/) [X / Twitter](https://x.com/SeanLuka22249)
 
-> **Senior Data Engineer** with 20+ years of experience specializing in **high-throughput systems** and **large-scale data migration** (Sabre, Citi). Expert in building **automated ETL pipelines** to transform massive telemetry streams into **predictive capacity models**. Proven track record of optimizing distributed environments with **6,000+ endpoints** using **Python**, **SQL**, and **PySpark**.
+> **Senior Data Engineer & Cloud Architect** with 20+ years of enterprise experience.
+> Specialized in migrating legacy on-prem pipelines to **Serverless AWS Architectures** (Glue/Athena).
+> Expert in **PySpark**, **GenAI Agents** (Text-to-SQL), and high-scale **Capacity Forecasting**.
 
-## CORE SKILLS MATRIX
-### Data Engineering & Cloud
-- **Pipeline:** Python (Pandas/Generators), SQL (Oracle/Postgres), PySpark.
-- **Cloud:** AWS S3 (Lifecycle Rules), Glue, Athena.
-- **Big Data:** Oracle Partitioning, Parquet Optimization.
-### High-Performance Systems & AI
-- **Forecasting:** Prophet, Scikit-learn, Time-Series Modeling.
-- **Backend:** C++, OCCI, Java, Multiprocessing, Linux/Shell.
-- **Tools:** Airflow, Git, Docker, BMC TrueSight, AppDynamics.
+## FLAGSHIP PROJECTS
+### Serverless Data Platform (AWS)
+`AWS Glue` `Athena` `Bedrock (GenAI)` `S3` `PySpark`
 
-## FLAGSHIP PROJECT: HORIZONSCALE AI
+- **Architecture**: Designed a Serverless Lakehouse using S3, Glue Catalog, and Athena.
+- **AI Agent**: Built a 'Text-to-SQL' GenAI bot using **Claude 3 Sonnet** to democratize data access.
+- **ETL Optimization**: Fixed 'small file' issues by implementing **Snappy Parquet** compression.
+
 ### Project: HorizonScale — Modernizing Enterprise Capacity with AI & PySpark
 `Python` `Prophet` `Streamlit` `Spark` `Multiprocessing`
 
@@ -60,3 +59,13 @@ _Humber College_
 
 **Bachelor of Science, Engineering**
 _Zagazig University_
+
+## CORE SKILLS MATRIX
+### Data Engineering & Cloud
+- **Pipeline:** Python (Pandas/Generators), SQL (Oracle/Postgres), PySpark.
+- **Cloud:** AWS S3 (Lifecycle Rules), Glue, Athena.
+- **Big Data:** Oracle Partitioning, Parquet Optimization.
+### High-Performance Systems & AI
+- **Forecasting:** Prophet, Scikit-learn, Time-Series Modeling.
+- **Backend:** C++, OCCI, Java, Multiprocessing, Linux/Shell.
+- **Tools:** Airflow, Git, Docker, BMC TrueSight, AppDynamics.

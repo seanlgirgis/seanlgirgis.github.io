@@ -24,12 +24,6 @@ sections:
       border_color: "primary_color"
       content_key: "summary_data_eng"
 
-  # 4. Technical Skills (Reordered for Cloud/Data)
-  - type: grid_block
-    config:
-      content_key: "skills_technical"
-      columns: 2
-
   # 5. Featured Project: Cloud Intelligence (GenAI/Serverless)
   - type: section_title_block
     config:
@@ -72,3 +66,9 @@ sections:
     config:
       content_key: "education_certifications_detailed"
       style: "timeline"
+
+  # 10. Technical Skills (Moved to Bottom)
+  - type: grid_block
+    config:
+      content_key: "skills_technical"
+      columns: 2

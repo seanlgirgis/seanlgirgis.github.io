@@ -8,9 +8,9 @@ sections:
   # 1. Header Block
   - type: header_block
     config:
-      content_key: "header_resume_sean" 
+      content_key: "header_resume_sean"
 
-  # 2. Contact Info 
+  # 2. Contact Info
   - type: compound_text_block
     config:
       content_key: "contact_info_main"
@@ -20,26 +20,27 @@ sections:
     config:
       style: "shaded"
       border_color: "primary_color"
-      content_key: "summary_enterprise_ml"
-      
-  # 4. Core Pillars (Grid)
-  - type: grid_block
-    config:
-      content_key: "core_ml_pillars"
-      columns: 2
+      content_key: "summary_data_eng"
 
-  # 5. Flagship Project (Headline)
+  # 5. Flagship Projects
   - type: section_title_block
     config:
-      content: "FLAGSHIP PROJECT: HORIZONSCALE AI"
+      content: "FLAGSHIP PROJECTS"
       style: "accented"
+
+  # 5a. Serverless Data Platform
+  - type: project_block
+    config:
+      content_key: "proj_cloud_intelligence"
+      style: "left_border"
+      border_color: "accent_color"
 
   # 5b. Flagship Highlights (Project Block)
   - type: project_block
     config:
       content_key: "proj_predictive_pipeline"
       style: "left_border"
-      border_color: "accent_color" 
+      border_color: "accent_color"
 
   # 6. Professional Experience (Timeline List)
   - type: list_block
@@ -49,14 +50,14 @@ sections:
       title: "PROFESSIONAL EXPERIENCE" # Override title for DOCX if needed, usually pulled from key if inside
 
   # 6b. Continued Experience (CA APM)
-  # DOCX handles pagination automatically, but we include this split 
+  # DOCX handles pagination automatically, but we include this split
   # to match PDF structure for consistency of content.
   - type: list_block
     config:
       content_key: "exp_ca_consultant"
       style: "timeline"
 
-  # 7. Experience History 
+  # 7. Experience History
   - type: list_block
     config:
       content_key: "exp_history_summary"
@@ -67,3 +68,9 @@ sections:
     config:
       content_key: "education_certifications_detailed"
       style: "timeline"
+
+  # 9. Core Skills Matrix (Moved to Bottom)
+  - type: grid_block
+    config:
+      content_key: "core_ml_pillars"
+      columns: 2

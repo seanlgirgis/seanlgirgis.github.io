@@ -22,16 +22,10 @@ sections:
       border_color: "primary_color"
       content_key: "summary_data_eng"
 
-  # 4. Core Pillars (Grid)
-  - type: grid_block
-    config:
-      content_key: "skills_technical"
-      columns: 2
-
-  # 5. Flagship Project (Headline)
+  # 5. Flagship Projects
   - type: section_title_block
     config:
-      content: "FLAGSHIP PROJECT: SERVERLESS DATA PLATFORM"
+      content: "FLAGSHIP PROJECTS"
       style: "accented"
 
   # 5b. Flagship Highlights (Project Block)
@@ -68,8 +62,15 @@ sections:
       content_key: "exp_history_summary"
       style: "timeline"
 
-  # 8. Education
+  # 9. Core Skills Matrix (Moved to Bottom)
+  - type: grid_block
+    config:
+      content_key: "core_ml_pillars"
+      columns: 2
+
+  # 9 Education
   - type: list_block
     config:
       content_key: "education_certifications_detailed"
       style: "timeline" # Using timeline style for left/right split
+
