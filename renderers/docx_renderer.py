@@ -45,6 +45,22 @@ class DocxRenderer:
         # 3. Fallback
         return Pt(default_pt)
 
+    def get_spacing(self, key, default_pt=6):
+        """
+        Resolves spacing from theme['spacing']['docx'].
+        key: 'block_after', 'header_after', 'list_item_after'
+        """
+        spacing = self.theme.get('spacing', {})
+        docx_spacing = spacing.get('docx', {})
+        default_spacing = spacing.get('default', {})
+        
+        # Check DOCX specific -> Default -> Fallback
+        if key in docx_spacing:
+            return Pt(docx_spacing[key])
+        if key in default_spacing:
+            return Pt(default_spacing[key])
+        return Pt(default_pt)
+
     def __init__(self, theme):
         self.theme = theme
         self.doc = Document()
@@ -299,6 +315,8 @@ class DocxRenderer:
         title = config.get('title', '')
         p = self.doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # Use dynamic spacing for header
+        p.paragraph_format.space_after = self.get_spacing('header_after', 3)
         run = p.add_run(title)
         run.bold = True
         run.font.name = self.theme.get('font_header', 'Arial')
@@ -360,7 +378,11 @@ class DocxRenderer:
         
         if style == 'shaded':
             # Shaded Box Logic
-            self.doc.add_paragraph().paragraph_format.space_after = Pt(6) # Buffer
+            # Spacer/Buffer with 0 height so style.yaml controls it exactly
+            p_buf = self.doc.add_paragraph()
+            p_buf.paragraph_format.line_spacing = Pt(0)
+            p_buf.paragraph_format.space_after = self.get_spacing('block_after', 6)
+            
             table = self.doc.add_table(rows=1, cols=1) # Width removed
             # Remove table defaults?
             table.autofit = False
@@ -413,11 +435,14 @@ class DocxRenderer:
 
             # Add spacing AFTER the table
             spacer = self.doc.add_paragraph()
-            spacer.paragraph_format.space_after = Pt(12)
+            spacer.paragraph_format.space_after = self.get_spacing('block_after', 12)
             
         elif style == 'left_border':
             # Left Border Logic (No Shading)
-            self.doc.add_paragraph().paragraph_format.space_after = Pt(6) 
+            p_buf = self.doc.add_paragraph()
+            p_buf.paragraph_format.line_spacing = Pt(0)
+            p_buf.paragraph_format.space_after = Pt(6) 
+            
             table = self.doc.add_table(rows=1, cols=1) 
             table.autofit = False
             table.allow_autofit = False
@@ -460,14 +485,19 @@ class DocxRenderer:
             self.add_markdown_text(p, content)
 
             spacer = self.doc.add_paragraph()
-            spacer.paragraph_format.space_after = Pt(12)
+            spacer.paragraph_format.line_spacing = Pt(0)
+            spacer.paragraph_format.space_after = self.get_spacing('block_after', 12)
             
             spacer = self.doc.add_paragraph()
+            spacer.paragraph_format.line_spacing = Pt(0)
             spacer.paragraph_format.space_after = Pt(12)
             
         elif style == 'shaded_primary':
              # Left Border + Shading (Blue Border)
-            self.doc.add_paragraph().paragraph_format.space_after = Pt(6) 
+            p_buf = self.doc.add_paragraph()
+            p_buf.paragraph_format.line_spacing = Pt(0)
+            p_buf.paragraph_format.space_after = Pt(6) 
+            
             table = self.doc.add_table(rows=1, cols=1) 
             table.autofit = False
             table.allow_autofit = False
@@ -513,7 +543,8 @@ class DocxRenderer:
             self.add_markdown_text(p, content)
 
             spacer = self.doc.add_paragraph()
-            spacer.paragraph_format.space_after = Pt(12)
+            spacer.paragraph_format.line_spacing = Pt(0)
+            spacer.paragraph_format.space_after = self.get_spacing('block_after', 12)
             
         else:
             p = self.doc.add_paragraph()
@@ -670,7 +701,9 @@ class DocxRenderer:
                 self.add_markdown_text(p_det, detail)
                 
             # Spacing between jobs
-            self.doc.add_paragraph().paragraph_format.space_after = Pt(6)
+            p_space = self.doc.add_paragraph()
+            p_space.paragraph_format.line_spacing = Pt(0)
+            p_space.paragraph_format.space_after = self.get_spacing('list_item_after', 6)
 
     def render_plain_list_block(self, config):
         title = config.get('title')
@@ -999,7 +1032,9 @@ class DocxRenderer:
                 run._element.get_or_add_rPr().append(shd)
 
         # 4. Add spacer after block
-        self.doc.add_paragraph().paragraph_format.space_after = Pt(6)
+        p_end = self.doc.add_paragraph()
+        p_end.paragraph_format.line_spacing = Pt(0)
+        p_end.paragraph_format.space_after = Pt(6)
         
     def resolve_color(self, color_name):
         # Same as HTML logic
@@ -1129,7 +1164,10 @@ class DocxRenderer:
         
         # If left_border style, wrap in table
         if style == 'left_border':
-            self.doc.add_paragraph().paragraph_format.space_after = Pt(6)
+            p_buf = self.doc.add_paragraph()
+            p_buf.paragraph_format.line_spacing = Pt(0)
+            p_buf.paragraph_format.space_after = self.get_spacing('block_after', 6)
+            
             table = self.doc.add_table(rows=1, cols=1)
             table.autofit = False
             table.allow_autofit = False
@@ -1240,7 +1278,8 @@ class DocxRenderer:
         # Spacer after block if it was a table
         if style == 'left_border':
             spacer = self.doc.add_paragraph()
-            spacer.paragraph_format.space_after = Pt(12)
+            spacer.paragraph_format.line_spacing = Pt(0)
+            spacer.paragraph_format.space_after = self.get_spacing('block_after', 12)
 
     # --- HELPER: HYPERLINK ---
     def add_hyperlink(self, paragraph, url, text, color="#0000FF"):

@@ -2,15 +2,15 @@
 # Defines the visual system (Colors, Fonts, Spacing)
 
 theme:
-  primary_color: "#004a99"   # Dark Blue
-  accent_color: "#E07000"    # Orange
-  text_color: "#333333"      # Dark Gray
+  primary_color: "#004a99" # Dark Blue
+  accent_color: "#E07000" # Orange
+  text_color: "#333333" # Dark Gray
   background_color: "#ffffff"
-  
+
   font_header: "Segoe UI"
-  font_header: "Segoe UI"
+
   font_body: "Segoe UI"
-  
+
   # Typography & Sizing
   typography:
     default:
@@ -19,13 +19,13 @@ theme:
       font_size_h2: 12
       font_size_small: 9
       font_size_footer: 8
-      
+
     docx:
-      font_size_base: 11
-      font_size_h1: 16
-      font_size_h2: 11
-      font_size_small: 9
-      font_size_footer: 8
+      font_size_base: 9
+      font_size_h1: 12
+      font_size_h2: 10
+      font_size_small: 8.5
+      font_size_footer: 7.5
 
     pdf:
       font_size_base: 10
@@ -36,11 +36,33 @@ theme:
 
     web:
       font_size_base: "16px"
-      
+
+  # Spacing Configuration (Format Specific)
+  spacing:
+    default:
+      block_after: 10
+      header_after: 5
+      list_item_after: 3
+
+    docx: # Points (Pt)
+      block_after: 6
+      header_after: 3
+      list_item_after: 2
+
+    pdf: # Output (mm/px) - Injected into CSS
+      block_after: "15px"
+      header_after: "5px"
+      list_item_after: "2px"
+
+    web: # Screen (px)
+      block_after: "20px"
+      header_after: "10px"
+      list_item_after: "5px"
+
   # Page Margins (in mm)
   margins:
-    top: 6.35      # 0.25 inch
-    bottom: 6.35   # 0.25 inch
+    top: 6.35 # 0.25 inch
+    bottom: 6.35 # 0.25 inch
     left: 12.7
     right: 12.7
 

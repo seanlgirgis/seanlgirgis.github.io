@@ -27,13 +27,13 @@ class HtmlRenderer:
         
         self.template = self.env.get_template('base.html')
 
-    def render(self, content_data):
+    def render(self, content_data, mode='web'):
         """
         Main rendering workflow:
         1. Pre-process colors (resolve hex codes).
         2. Determine Stripe configuration (Theme fallback or Section override).
         3. Process sections (color resolution for text blocks).
-        4. Generate Dynamic CSS (injecting theme colors).
+        4. Generate Dynamic CSS (injecting theme colors and MODE specific spacing).
         5. Render the 'base.html' template with data.
         """
         # Pre-process content for colors
@@ -61,8 +61,8 @@ class HtmlRenderer:
         # 2. Process Sections (Resolution)
         processed_sections = self.process_sections(sections)
         
-        # 3. Generate CSS (Pass stripe config)
-        css_content = self.generate_css(stripe_config)
+        # 3. Generate CSS (Pass stripe config and mode)
+        css_content = self.generate_css(stripe_config, mode)
         
         return self.template.render(
             theme=self.theme,
@@ -71,9 +71,24 @@ class HtmlRenderer:
             stripe_config=stripe_config # Pass to template
         )
 
-    def generate_css(self, stripe_config=None):
+    def generate_css(self, stripe_config=None, mode='web'):
         t = self.theme
         s_conf = stripe_config or {}
+        
+        # Resolve Spacing based on Mode
+        spacing = t.get('spacing', {})
+        mode_spacing = spacing.get(mode, {})
+        default_spacing = spacing.get('default', {})
+        
+        # Helper to get value
+        def get_dim(key, default):
+            val = mode_spacing.get(key)
+            if not val: val = default_spacing.get(key)
+            return val if val else default
+            
+        block_after = get_dim('block_after', '20px')
+        header_after = get_dim('header_after', '10px')
+        list_item_after = get_dim('list_item_after', '5px')
         
         # Resolve stripe color
         stripe_color = t.get('primary_color', 'blue')
@@ -230,18 +245,18 @@ class HtmlRenderer:
              print-color-adjust: exact;
         }}
         
-        .header-block {{ width: 100%; text-align: center !important; margin-bottom: 10px; display: block; }}
+        .header-block {{ width: 100%; text-align: center !important; margin-bottom: {header_after}; display: block; }}
         .header-block h1 {{
             color: {t.get('primary_color', 'blue')};
             margin: 0; font-size: 2.5em; text-transform: uppercase; letter-spacing: -1px; text-align: center; display: block; width: 100%;
         }}
         .header-block p.subtitle {{ color: #666; margin-top: 2px; font-size: 1.1em; text-align: center; }}
         
-        .compound-text-block {{ margin-bottom: 20px; padding-bottom: 5px; line-height: 1.3; text-align: center; }}
+        .compound-text-block {{ margin-bottom: {block_after}; padding-bottom: 5px; line-height: 1.3; text-align: center; }}
         .compound-item {{ display: inline-block; }}
         .compound-separator {{ margin: 0 4px; color: #ccc; }}
         
-        .text-block {{ margin-bottom: 10px; display: block; }}
+        .text-block {{ margin-bottom: {header_after}; display: block; }}
         .text-block.normal {{ font-size: 1em; line-height: 1.4; }}
         .text-block.shaded {{
             background-color: #f2f2f2 !important; padding: 10px;
@@ -261,20 +276,20 @@ class HtmlRenderer:
         .grid-section-wrapper.shaded {{
             background-color: #f2f2f2 !important; padding: 20px;
             border-left: 8px solid {t.get('accent_color', 'orange')} !important;
-            margin-bottom: 20px;
+            margin-bottom: {block_after};
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
         
         .grid-section-wrapper.left_border {{
             background-color: transparent !important; padding: 10px; padding-left: 15px;
             border-left: 3px solid {t.get('primary_color', 'blue')} !important;
-            margin-bottom: 20px;
+            margin-bottom: {block_after};
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
         
         .section-title {{
             color: {t.get('primary_color', 'blue')};
-            font-size: 1.25em; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-top: 15px; margin-bottom: 10px;
+            font-size: 1.25em; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-top: 15px; margin-bottom: {header_after};
         }}
         
         .section-title.accented {{
@@ -300,12 +315,12 @@ class HtmlRenderer:
             background-color: #f2f2f2 !important; 
             padding: 5px 15px; /* Tight vertical padding */
             border-left: 3px solid {t.get('primary_color', 'blue')} !important;
-            margin-bottom: 20px;
+            margin-bottom: {block_after};
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }}
         
         /* Project Block Styles */
-        .project-block {{ margin-bottom: 20px; }}
+        .project-block {{ margin-bottom: {block_after}; }}
         .project-block.left_border {{
             background-color: transparent !important; 
             padding: 5px 15px; 
@@ -314,7 +329,7 @@ class HtmlRenderer:
         }}
         .project-title {{ font-weight: bold; margin-bottom: 5px; color: #000; font-size: 1.05em; }}
         .project-details {{ padding-left: 20px; margin-bottom: 10px; margin-top: 5px; }}
-        .project-details li {{ margin-bottom: 2px; }}
+        .project-details li {{ margin-bottom: {list_item_after}; }}
         .project-tags {{ margin-top: 8px; }}
         .project-tag {{ 
             display: inline-block; 

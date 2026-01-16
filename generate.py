@@ -175,7 +175,7 @@ def main():
             if content_web:
                 if args.format in ['html', 'all']:
                     renderer_html = HtmlRenderer(theme, base_dir)
-                    html_content = renderer_html.render(content_web)
+                    html_content = renderer_html.render(content_web, mode='web')
                     output_html = base_dir / "components" / f"{target_name}.html"
                     renderer_html.save(html_content, output_html)
                     
@@ -199,7 +199,7 @@ def main():
             if content_pdf:
                 # We need to generate HTML specifically for the PDF renderer
                 renderer_html_for_pdf = HtmlRenderer(theme, base_dir)
-                html_for_pdf = renderer_html_for_pdf.render(content_pdf)
+                html_for_pdf = renderer_html_for_pdf.render(content_pdf, mode='pdf')
                 
                 renderer_pdf = PdfRenderer(theme)
                 output_pdf = base_dir / f"{target_name}.pdf"

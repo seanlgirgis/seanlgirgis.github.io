@@ -52,14 +52,6 @@ _Senior Systems & Data Migration Engineer_
 **Sprint/Corpus** | *2001 – 2008*
 _Developer - High Availability Interfaces (C++)_
 
-## EDUCATION & CERTIFICATIONS
-
-**Post-Graduate Diploma, Computer Science**
-_Humber College_
-
-**Bachelor of Science, Engineering**
-_Zagazig University_
-
 ## CORE SKILLS MATRIX
 ### Data Engineering & Cloud
 - **Pipeline:** Python (Pandas/Generators), SQL (Oracle/Postgres), PySpark.
@@ -69,3 +61,11 @@ _Zagazig University_
 - **Forecasting:** Prophet, Scikit-learn, Time-Series Modeling.
 - **Backend:** C++, OCCI, Java, Multiprocessing, Linux/Shell.
 - **Tools:** Airflow, Git, Docker, BMC TrueSight, AppDynamics.
+
+## EDUCATION & CERTIFICATIONS
+
+**Post-Graduate Diploma, Computer Science**
+_Humber College_
+
+**Bachelor of Science, Engineering**
+_Zagazig University_

@@ -62,15 +62,14 @@ sections:
     config:
       content_key: "exp_history_summary"
       style: "timeline"
-
-  # 8. Education
-  - type: list_block
-    config:
-      content_key: "education_certifications_detailed"
-      style: "timeline"
-
-  # 9. Core Skills Matrix (Moved to Bottom)
+  # . Core Skills Matrix (Moved to Bottom)
   - type: grid_block
     config:
       content_key: "core_ml_pillars"
       columns: 2
+
+  # 9. Education
+  - type: list_block
+    config:
+      content_key: "education_certifications_detailed"
+      style: "timeline"
