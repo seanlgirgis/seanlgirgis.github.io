@@ -16,10 +16,32 @@ LATEST_COMPONENT_OUTPUT = BASE_DIR / "components" / "latest_posts.html"
 LEETCODE_COMPONENT_OUTPUT = BASE_DIR / "components" / "leetcode.html"
 ARTICLES_COMPONENT_OUTPUT = BASE_DIR / "components" / "articles.html"
 TEMPLATE_PATH = BASE_DIR / "templates" / "blog_post.html"
+LEETCODE_CATEGORY_TEMPLATE_PATH = BASE_DIR / "templates" / "leetcode_category.html"
 RSS_OUTPUT = BASE_DIR / "rss.xml"
 ANNOUNCEMENTS_DIR = DATA_DIR / "announcements"
 BASE_URL = "https://seanlgirgis.github.io"
 DEFAULT_OG_IMAGE = "assets/img/blog/spa_flow.png"
+LEETCODE_OUTPUT_DIR = OUTPUT_DIR / "leetcode"
+
+# Stable category IDs for permanent URLs:
+# /blog/leetcode/<category_id>.html
+LEETCODE_CATEGORY_REGISTRY = {
+    "arrays-hashing": {"label": "Arrays & Hashing", "aliases": ["arrays", "hashing"]},
+    "two-pointers": {"label": "Two Pointers", "aliases": []},
+    "sliding-window": {"label": "Sliding Window", "aliases": []},
+    "stack-monotonic": {"label": "Stack & Monotonic Stack", "aliases": ["stack", "monotonic-stack"]},
+    "heap-priority-queue": {"label": "Heap & Priority Queue", "aliases": ["heap", "priority-queue"]},
+    "binary-search": {"label": "Binary Search", "aliases": []},
+    "linked-list": {"label": "Linked List", "aliases": []},
+    "trees": {"label": "Trees", "aliases": ["tree"]},
+    "graphs": {"label": "Graphs", "aliases": ["graph"]},
+    "backtracking": {"label": "Backtracking", "aliases": []},
+    "dynamic-programming": {"label": "Dynamic Programming", "aliases": ["dp"]},
+    "greedy": {"label": "Greedy", "aliases": []},
+    "intervals": {"label": "Intervals", "aliases": []},
+    "design": {"label": "Design", "aliases": ["lru", "mru", "cache-design"]},
+    "simulation": {"label": "Simulation", "aliases": []},
+}
 
 
 def _parse_date(date_str):
@@ -56,6 +78,32 @@ def _extract_first_image_path(md_content):
             return image_path.replace("../", "")
 
     return ""
+
+
+def _slugify(value):
+    s = re.sub(r"[^a-z0-9]+", "-", str(value or "").strip().lower())
+    return s.strip("-")
+
+
+def _resolve_leetcode_category_ids(raw_values):
+    alias_to_id = {}
+    for category_id, cfg in LEETCODE_CATEGORY_REGISTRY.items():
+        alias_to_id[category_id] = category_id
+        alias_to_id[_slugify(cfg["label"])] = category_id
+        for alias in cfg.get("aliases", []):
+            alias_to_id[_slugify(alias)] = category_id
+
+    out = []
+    seen = set()
+    for raw in raw_values:
+        key = _slugify(raw)
+        if not key:
+            continue
+        resolved = alias_to_id.get(key, key)
+        if resolved not in seen:
+            seen.add(resolved)
+            out.append(resolved)
+    return out
 
 def render_markdown(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
@@ -109,6 +157,10 @@ def generate_blog():
         meta = data['meta']
         slug = meta.get('slug', md_file.stem)
         tags = _normalize_tags(meta.get("tags", []))
+        raw_lc_categories = meta.get("leetcode_categories", [])
+        if isinstance(raw_lc_categories, str):
+            raw_lc_categories = [raw_lc_categories]
+        leetcode_category_ids = _resolve_leetcode_category_ids(raw_lc_categories)
         image = meta.get("image") or _extract_first_image_path(data["raw_markdown"]) or DEFAULT_OG_IMAGE
 
         posts.append({
@@ -126,6 +178,7 @@ def generate_blog():
             "difficulty": meta.get("difficulty", ""),
             "topic": meta.get("topic", ""),
             "pattern": meta.get("pattern", ""),
+            "leetcode_category_ids": leetcode_category_ids,
         })
 
     # Sort posts by date (newest first)
@@ -201,21 +254,101 @@ def generate_blog():
     with open(LATEST_COMPONENT_OUTPUT, "w", encoding="utf-8") as f:
         f.write(latest_html)
 
-    # Generate LeetCode hub component
+    # Generate LeetCode hub component + stable category pages
     lc_posts = [
         p for p in posts
         if any(t.lower() == "leetcode" for t in p["tags"]) or p["slug"].startswith("lc-")
     ]
-    leetcode_html = '<div class="container"><h1>LeetCode Hub</h1><p>Structured solutions and patterns.</p><div class="blog-list">'
+    category_to_posts = {category_id: [] for category_id in LEETCODE_CATEGORY_REGISTRY}
+    for post in lc_posts:
+        if post["leetcode_category_ids"]:
+            for category_id in post["leetcode_category_ids"]:
+                category_to_posts.setdefault(category_id, []).append(post)
+        else:
+            category_to_posts.setdefault("simulation", []).append(post)
+
+    # Ensure output directory for category pages exists.
+    LEETCODE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    with open(LEETCODE_CATEGORY_TEMPLATE_PATH, "r", encoding="utf-8") as f:
+        category_template = Template(f.read())
+
+    generated_category_files = set()
+    alias_redirect_pairs = []
+    for category_id, cfg in LEETCODE_CATEGORY_REGISTRY.items():
+        generated_category_files.add(category_id)
+        category_posts = sorted(category_to_posts.get(category_id, []), key=lambda x: x["date_obj"], reverse=True)
+        output_file = LEETCODE_OUTPUT_DIR / f"{category_id}.html"
+        final_html = category_template.render(
+            category_label=cfg["label"],
+            category_id=category_id,
+            posts=category_posts,
+            canonical_url=f"{BASE_URL}/blog/leetcode/{category_id}.html",
+        )
+        with open(output_file, "w", encoding="utf-8") as out:
+            out.write(final_html)
+
+        for alias in cfg.get("aliases", []):
+            alias_slug = _slugify(alias)
+            if alias_slug and alias_slug != category_id:
+                alias_redirect_pairs.append((alias_slug, category_id))
+                generated_category_files.add(alias_slug)
+                alias_file = LEETCODE_OUTPUT_DIR / f"{alias_slug}.html"
+                alias_html = f"""<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=./{category_id}.html">
+  <link rel="canonical" href="{BASE_URL}/blog/leetcode/{category_id}.html">
+  <title>Redirecting...</title>
+</head><body>
+  <p>Redirecting to <a href="./{category_id}.html">{cfg["label"]}</a>...</p>
+</body></html>"""
+                with open(alias_file, "w", encoding="utf-8") as out:
+                    out.write(alias_html)
+
+    # Remove stale category pages/aliases no longer generated.
+    for html_file in LEETCODE_OUTPUT_DIR.glob("*.html"):
+        if html_file.stem not in generated_category_files:
+            html_file.unlink()
+
+    leetcode_html = '<div class="container"><h1>LeetCode Hub</h1><p>Persistent category pages with stable URLs. A post can appear in multiple categories.</p>'
+    leetcode_html += '<h2>Categories</h2><div class="blog-list">'
+    for category_id, cfg in LEETCODE_CATEGORY_REGISTRY.items():
+        count = len(category_to_posts.get(category_id, []))
+        leetcode_html += f"""
+        <div class="blog-card">
+            <h3><a href="blog/leetcode/{category_id}.html">{cfg['label']}</a></h3>
+            <div class="meta">ID: {category_id}</div>
+            <p>{count} solution(s)</p>
+            <a href="blog/leetcode/{category_id}.html" class="read-more">Open Category &rarr;</a>
+        </div>
+        """
+    leetcode_html += "</div>"
+    if alias_redirect_pairs:
+        alias_items = "".join(
+            [f"<li><code>{alias}</code> → <code>{target}</code></li>" for alias, target in alias_redirect_pairs]
+        )
+        leetcode_html += f"<h2>Stable Alias Redirects</h2><ul>{alias_items}</ul>"
+
+    leetcode_html += '<h2>All LeetCode Solutions</h2><div class="blog-list">'
     for post in lc_posts:
         tags_html = "".join([f'<span class="tag">{t}</span>' for t in post['tags']])
         detail_bits = [x for x in [post.get("difficulty", ""), post.get("topic", ""), post.get("pattern", "")] if x]
         detail_line = f"<div class='meta'>{' • '.join(detail_bits)}</div>" if detail_bits else ""
+        cat_links = ""
+        post_cat_ids = post["leetcode_category_ids"] or ["simulation"]
+        cat_links = " ".join(
+            [
+                f'<a class="tag" href="blog/leetcode/{cid}.html">{LEETCODE_CATEGORY_REGISTRY.get(cid, {"label": cid})["label"]}</a>'
+                for cid in post_cat_ids
+            ]
+        )
         leetcode_html += f"""
         <div class="blog-card">
             <h3><a href="{post['link']}">{post['title']}</a></h3>
             <div class="meta">{post['date']} • {tags_html}</div>
             {detail_line}
+            <div class="meta">{cat_links}</div>
             <p>{post['summary']}</p>
             <a href="{post['link']}" class="read-more">Open Solution &rarr;</a>
         </div>

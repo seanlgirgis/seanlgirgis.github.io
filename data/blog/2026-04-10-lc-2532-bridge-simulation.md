@@ -2,6 +2,7 @@
 title: "How I Solved LeetCode 2532 with 4 Heaps and an OO Simulation"
 date: "2026-04-10"
 tags: ["Algorithms", "LeetCode", "Simulation", "Heaps", "Python"]
+leetcode_categories: ["heap-priority-queue", "simulation", "design"]
 slug: "lc-2532-bridge-simulation-4-heaps"
 summary: "A practical walkthrough of LeetCode 2532 using four priority queues, event-driven time jumps, and a Worker dataclass model that makes a hard simulation problem understandable."
 ---

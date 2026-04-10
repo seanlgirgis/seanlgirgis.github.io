@@ -7,6 +7,19 @@ BLOG_DIR = BASE_DIR / "blog"
 
 def generate_sitemap():
     print("Generating sitemap.xml...")
+    alias_category_slugs = set()
+    try:
+        from build_blog import LEETCODE_CATEGORY_REGISTRY
+        for category_id, cfg in LEETCODE_CATEGORY_REGISTRY.items():
+            for alias in cfg.get("aliases", []):
+                alias_slug = "".join(
+                    ch if (ch.isalnum() or ch == "-") else "-"
+                    for ch in str(alias).strip().lower()
+                ).strip("-")
+                if alias_slug and alias_slug != category_id:
+                    alias_category_slugs.add(alias_slug)
+    except Exception:
+        alias_category_slugs = set()
     
     # Static Routes (SPA Sections)
     # Note: Search engines prefer clean URLs. Hash URLs (#about) are often ignored or treated as the same page.
@@ -30,11 +43,15 @@ def generate_sitemap():
             "changefreq": "weekly"
         })
 
-    # Add Static Blog Pages
+    # Add Static Blog Pages (including nested paths like blog/leetcode/*.html)
     if BLOG_DIR.exists():
-        for html_file in BLOG_DIR.glob("*.html"):
+        for html_file in BLOG_DIR.rglob("*.html"):
+            # Keep canonical category pages in sitemap, skip alias redirect pages.
+            if html_file.parent.name == "leetcode" and html_file.stem in alias_category_slugs:
+                continue
+            rel = html_file.relative_to(BLOG_DIR).as_posix()
             urls.append({
-                "loc": f"{BASE_URL}/blog/{html_file.name}",
+                "loc": f"{BASE_URL}/blog/{rel}",
                 "lastmod": html_file.stat().st_mtime,
                 "priority": "0.8",
                 "changefreq": "monthly"

@@ -2,6 +2,7 @@
 title: "LeetCode ####: Problem Title"
 date: "YYYY-MM-DD"
 tags: ["LeetCode", "Algorithms", "Python"]
+leetcode_categories: ["arrays-hashing"]
 slug: "lc-####-problem-title"
 summary: "One-line summary of the approach and why it works."
 image: "assets/img/blog/lc-default-cover.png"
