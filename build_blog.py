@@ -154,12 +154,8 @@ def generate_blog():
     
     for post in posts:
         tags_html = "".join([f'<span class="tag">{t}</span>' for t in post['tags']])
-        image_html = ""
-        if post["image"]:
-            image_html = f'<img class="blog-card-thumb" src="{post["image"]}" alt="{html.escape(post["title"])} thumbnail">'
         component_html += f"""
         <div class="blog-card">
-            {image_html}
             <h3><a href="{post['link']}">{post['title']}</a></h3>
             <div class="meta">{post['date']} • {tags_html}</div>
             <p>{post['summary']}</p>

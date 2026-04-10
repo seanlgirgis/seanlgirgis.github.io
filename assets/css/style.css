@@ -330,6 +330,11 @@ h2 {
     margin-bottom: 12px;
 }
 
+/* Blog listing should be text-first; hide card thumbnails. */
+.blog-list .blog-card .blog-card-thumb {
+    display: none !important;
+}
+
 .blog-card h3 a {
     color: var(--primary);
     text-decoration: none;
