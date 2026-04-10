@@ -1,4 +1,5 @@
 import html
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -39,6 +40,22 @@ def _to_absolute_url(path_or_url):
         return s
     return f"{BASE_URL}/{s.lstrip('./')}"
 
+
+def _extract_first_image_path(md_content):
+    md_match = re.search(r"!\[[^\]]*\]\(([^)]+)\)", md_content or "")
+    if md_match:
+        image_path = md_match.group(1).strip()
+        if image_path:
+            return image_path.replace("../", "")
+
+    html_match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', md_content or "", re.IGNORECASE)
+    if html_match:
+        image_path = html_match.group(1).strip()
+        if image_path:
+            return image_path.replace("../", "")
+
+    return ""
+
 def render_markdown(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         # Split Frontmatter and Content
@@ -55,7 +72,8 @@ def render_markdown(file_path):
         
         return {
             "meta": frontmatter,
-            "content": html_content
+            "content": html_content,
+            "raw_markdown": md_content,
         }
 
 def generate_blog():
@@ -79,7 +97,7 @@ def generate_blog():
         meta = data['meta']
         slug = meta.get('slug', md_file.stem)
         tags = _normalize_tags(meta.get("tags", []))
-        image = meta.get("image", DEFAULT_OG_IMAGE)
+        image = meta.get("image") or _extract_first_image_path(data["raw_markdown"]) or DEFAULT_OG_IMAGE
 
         posts.append({
             "title": meta['title'],
