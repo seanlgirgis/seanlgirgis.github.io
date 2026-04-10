@@ -67,6 +67,17 @@ def render_markdown(file_path):
         
         frontmatter = yaml.safe_load(parts[1])
         md_content = parts[2]
+
+        # Avoid duplicate article title:
+        # template already renders <h1>{{ title }}</h1>, so if markdown starts
+        # with the same H1, remove that first heading only.
+        fm_title = str(frontmatter.get("title", "")).strip()
+        if fm_title:
+            lines = md_content.lstrip("\r\n").splitlines()
+            if lines and lines[0].lstrip().startswith("# "):
+                first_h1 = lines[0].lstrip()[2:].strip()
+                if first_h1 == fm_title:
+                    md_content = "\n".join(lines[1:]).lstrip("\r\n")
         
         html_content = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite'])
         
