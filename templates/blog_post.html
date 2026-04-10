@@ -6,6 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} | Sean Luka Girgis</title>
     <meta name="description" content="{{ summary }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:title" content="{{ title }}">
+    <meta property="og:description" content="{{ summary }}">
+    <meta property="og:image" content="{{ og_image_url }}">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ canonical_url }}">
+    <meta property="twitter:title" content="{{ title }}">
+    <meta property="twitter:description" content="{{ summary }}">
+    <meta property="twitter:image" content="{{ og_image_url }}">
+
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "{{ title }}",
+          "description": "{{ summary }}",
+          "image": "{{ og_image_url }}",
+          "datePublished": "{{ date }}",
+          "dateModified": "{{ date }}",
+          "author": {
+            "@type": "Person",
+            "name": "Sean Luka Girgis",
+            "url": "https://seanlgirgis.github.io/"
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{{ canonical_url }}"
+          }
+        }
+    </script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         /* Standalone Page Overrides */
@@ -101,6 +135,21 @@
         .post-body li {
             margin-bottom: 0.5em;
         }
+
+        .related-posts {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .related-posts ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .related-posts li {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 
@@ -115,6 +164,7 @@
                 <li><a href="../#cv">Detailed C.V.</a></li>
                 <li><a href="../#projects">Projects Showcase</a></li>
                 <li><a href="../#articles">Technical Articles</a></li>
+                <li><a href="../#leetcode">LeetCode Hub</a></li>
                 <li><a href="../#tutorials">Tutorials</a></li>
                 <li><a href="../#blog" class="active">Blog</a></li>
                 <li><a href="../#about">About & Contact</a></li>
@@ -139,6 +189,17 @@
             <div class="post-body">
                 {{ content }}
             </div>
+
+            {% if related_posts and related_posts|length > 0 %}
+            <section class="related-posts">
+                <h2>Related Posts</h2>
+                <ul>
+                    {% for post in related_posts %}
+                    <li><a href="../{{ post.link }}">{{ post.title }}</a> <small>({{ post.date }})</small></li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
         </article>
     </main>
 

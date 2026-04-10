@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Sean Luka Girgis Blog</title>
+  <link>https://seanlgirgis.github.io</link>
+  <description>Technical writing on data engineering, architecture, and algorithms.</description>
+  <item>
+  <title>How I Solved LeetCode 2532 with 4 Heaps and an OO Simulation</title>
+  <link>https://seanlgirgis.github.io/blog/lc-2532-bridge-simulation-4-heaps.html</link>
+  <guid>https://seanlgirgis.github.io/blog/lc-2532-bridge-simulation-4-heaps.html</guid>
+  <pubDate>Fri, 10 Apr 2026 00:00:00 +0000</pubDate>
+  <description>A practical walkthrough of LeetCode 2532 using four priority queues, event-driven time jumps, and a Worker dataclass model that makes a hard simulation problem understandable.</description>
+</item><item>
+  <title>Beyond the Hype: 5 Surprising Realities of a Machine Learning Project</title>
+  <link>https://seanlgirgis.github.io/blog/beyond-the-hype-ml-realities.html</link>
+  <guid>https://seanlgirgis.github.io/blog/beyond-the-hype-ml-realities.html</guid>
+  <pubDate>Tue, 06 Jan 2026 00:00:00 +0000</pubDate>
+  <description>Machine learning isn&#x27;t magic—it&#x27;s engineering. Discover the 5 practical realities of building successful ML models, from the importance of &#x27;boring&#x27; tabular data to the critical need for continuous feedback loops.</description>
+</item><item>
+  <title>How I Built This Portfolio: A Serverless SPA Architecture</title>
+  <link>https://seanlgirgis.github.io/blog/spa-architecture.html</link>
+  <guid>https://seanlgirgis.github.io/blog/spa-architecture.html</guid>
+  <pubDate>Tue, 06 Jan 2026 00:00:00 +0000</pubDate>
+  <description>A deep dive into the vanilla JavaScript architecture powering this portfolio, featuring a custom client-side router and zero backend dependencies.</description>
+</item>
+</channel>
+</rss>

@@ -6,6 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How I Built This Portfolio: A Serverless SPA Architecture | Sean Luka Girgis</title>
     <meta name="description" content="A deep dive into the vanilla JavaScript architecture powering this portfolio, featuring a custom client-side router and zero backend dependencies.">
+    <link rel="canonical" href="https://seanlgirgis.github.io/blog/spa-architecture.html">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://seanlgirgis.github.io/blog/spa-architecture.html">
+    <meta property="og:title" content="How I Built This Portfolio: A Serverless SPA Architecture">
+    <meta property="og:description" content="A deep dive into the vanilla JavaScript architecture powering this portfolio, featuring a custom client-side router and zero backend dependencies.">
+    <meta property="og:image" content="https://seanlgirgis.github.io/assets/img/blog/spa_flow.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://seanlgirgis.github.io/blog/spa-architecture.html">
+    <meta property="twitter:title" content="How I Built This Portfolio: A Serverless SPA Architecture">
+    <meta property="twitter:description" content="A deep dive into the vanilla JavaScript architecture powering this portfolio, featuring a custom client-side router and zero backend dependencies.">
+    <meta property="twitter:image" content="https://seanlgirgis.github.io/assets/img/blog/spa_flow.png">
+
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "How I Built This Portfolio: A Serverless SPA Architecture",
+          "description": "A deep dive into the vanilla JavaScript architecture powering this portfolio, featuring a custom client-side router and zero backend dependencies.",
+          "image": "https://seanlgirgis.github.io/assets/img/blog/spa_flow.png",
+          "datePublished": "2026-01-06",
+          "dateModified": "2026-01-06",
+          "author": {
+            "@type": "Person",
+            "name": "Sean Luka Girgis",
+            "url": "https://seanlgirgis.github.io/"
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://seanlgirgis.github.io/blog/spa-architecture.html"
+          }
+        }
+    </script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         /* Standalone Page Overrides */
@@ -101,6 +135,21 @@
         .post-body li {
             margin-bottom: 0.5em;
         }
+
+        .related-posts {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .related-posts ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .related-posts li {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 
@@ -115,6 +164,7 @@
                 <li><a href="../#cv">Detailed C.V.</a></li>
                 <li><a href="../#projects">Projects Showcase</a></li>
                 <li><a href="../#articles">Technical Articles</a></li>
+                <li><a href="../#leetcode">LeetCode Hub</a></li>
                 <li><a href="../#tutorials">Tutorials</a></li>
                 <li><a href="../#blog" class="active">Blog</a></li>
                 <li><a href="../#about">About & Contact</a></li>
@@ -160,12 +210,12 @@
 <em>Figure 2: Router Decision Logic</em></p>
 <h3>1. Route Definitions</h3>
 <p>Routes are defined as a mapping of page names to a list of HTML components to load. This simple map allows us to compose pages from multiple reusable parts.</p>
-<div class="codehilite"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">routes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s1">&#39;home&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;components/resume.html&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;components/downloads.html&#39;</span><span class="p">],</span>
-<span class="w">    </span><span class="s1">&#39;cv&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;components/cv.html&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;components/downloads.html&#39;</span><span class="p">],</span>
-<span class="w">    </span><span class="c1">// ...</span>
-<span class="p">};</span>
-</code></pre></div>
+<pre class="codehilite"><code class="language-javascript">const routes = {
+    'home': ['components/resume.html', 'components/downloads.html'],
+    'cv': ['components/cv.html', 'components/downloads.html'],
+    // ...
+};
+</code></pre>
 
 <p>Note how <code>downloads.html</code> is reused across multiple pages.</p>
 <h3>2. Loading Pages (<code>loadPage</code>)</h3>
@@ -181,11 +231,13 @@
 - <strong>CV Page</strong>: Links point to <code>cv.pdf</code>, <code>cv.docx</code>.</p>
 <h2>Running Locally</h2>
 <p>Because the router uses <code>fetch()</code>, you cannot open <code>index.html</code> directly from the file system (<code>file://</code>) due to CORS security policies. You must run a local server:</p>
-<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">8000</span>
-</code></pre></div>
+<pre class="codehilite"><code class="language-bash">python -m http.server 8000
+</code></pre>
 
 <p>Then access the site at <code>http://localhost:8000</code>.</p>
             </div>
+
+            
         </article>
     </main>
 

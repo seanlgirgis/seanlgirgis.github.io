@@ -2,11 +2,12 @@
  * Simple Router for Single Page Application behavior
  */
 const routes = {
-    'home': ['components/resume.html', 'components/downloads.html'],
-    'resume': ['components/resume.html', 'components/downloads.html'], // Alias for home
+    'home': ['components/resume.html', 'components/latest_posts.html', 'components/downloads.html'],
+    'resume': ['components/resume.html', 'components/latest_posts.html', 'components/downloads.html'], // Alias for home
     'cv': ['components/cv.html', 'components/downloads.html'],
     'projects': ['components/projects.html'],
     'articles': ['components/articles.html'],
+    'leetcode': ['components/leetcode.html'],
     'tutorials': ['components/tutorials.html'],
     'blog': ['components/blog.html'],
     'about': ['components/about.html']
