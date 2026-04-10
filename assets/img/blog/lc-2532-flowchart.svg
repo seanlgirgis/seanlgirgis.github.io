@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <defs>
+    <style>
+      .t{font-family:Arial,Helvetica,sans-serif;font-size:28px;fill:#1f2937}
+      .s{font-family:Arial,Helvetica,sans-serif;font-size:22px;fill:#374151}
+      .b{fill:#eef2ff;stroke:#6d5efc;stroke-width:2}
+      .g{fill:#e8f7f1;stroke:#2a9d8f;stroke-width:2}
+      .y{fill:#fff7e6;stroke:#b08900;stroke-width:2}
+      .r{fill:#fff0f0;stroke:#c95b5b;stroke-width:2}
+      .n{fill:#f5f5f5;stroke:#9ca3af;stroke-width:2}
+      .a{stroke:#6b7280;stroke-width:3;marker-end:url(#arrow)}
+      .d{stroke:#6b7280;stroke-width:2;stroke-dasharray:10 8;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect x="420" y="40" rx="28" ry="28" width="360" height="70" class="n"/>
+  <text x="600" y="85" text-anchor="middle" class="t">Start</text>
+
+  <line x1="600" y1="110" x2="600" y2="170" class="a"/>
+
+  <rect x="280" y="170" rx="12" ry="12" width="640" height="110" class="b"/>
+  <text x="600" y="220" text-anchor="middle" class="t">Init 4 Heaps</text>
+  <text x="600" y="255" text-anchor="middle" class="s">All workers -&gt; left_ready (max-heap)</text>
+
+  <line x1="600" y1="280" x2="600" y2="350" class="a"/>
+
+  <rect x="350" y="350" rx="18" ry="18" width="500" height="80" class="n"/>
+  <text x="600" y="402" text-anchor="middle" class="t">boxes_crossed &lt; n ?</text>
+
+  <line x1="600" y1="430" x2="600" y2="510" class="a"/>
+  <rect x="280" y="510" rx="12" ry="12" width="640" height="110" class="g"/>
+  <text x="600" y="560" text-anchor="middle" class="t">release_finished_workers(clock)</text>
+  <text x="600" y="595" text-anchor="middle" class="s">Move done workers -&gt; ready queues</text>
+
+  <line x1="600" y1="620" x2="600" y2="690" class="a"/>
+  <rect x="320" y="690" rx="18" ry="18" width="560" height="85" class="y"/>
+  <text x="600" y="742" text-anchor="middle" class="t">right_ready not empty?</text>
+
+  <line x1="420" y1="775" x2="320" y2="855" class="a"/>
+  <rect x="90" y="855" rx="14" ry="14" width="460" height="115" class="r"/>
+  <text x="320" y="910" text-anchor="middle" class="t">Pop least-efficient worker</text>
+  <text x="320" y="945" text-anchor="middle" class="s">clock += right_to_left</text>
+
+  <line x1="320" y1="970" x2="320" y2="1040" class="a"/>
+  <rect x="110" y="1040" rx="18" ry="18" width="420" height="80" class="n"/>
+  <text x="320" y="1092" text-anchor="middle" class="t">boxes_crossed == n ?</text>
+
+  <line x1="320" y1="1120" x2="320" y2="1190" class="a"/>
+  <rect x="180" y="1190" rx="28" ry="28" width="280" height="70" class="n"/>
+  <text x="320" y="1235" text-anchor="middle" class="t">Return clock</text>
+
+  <line x1="530" y1="1080" x2="690" y2="1080" class="a"/>
+  <rect x="690" y="1030" rx="12" ry="12" width="420" height="105" class="g"/>
+  <text x="900" y="1080" text-anchor="middle" class="t">Push -&gt; left_dropping</text>
+  <text x="900" y="1112" text-anchor="middle" class="s">finish_time = clock + put_box</text>
+
+  <line x1="780" y1="775" x2="900" y2="855" class="a"/>
+  <rect x="680" y="855" rx="18" ry="18" width="440" height="95" class="y"/>
+  <text x="900" y="908" text-anchor="middle" class="t">left_ready not empty</text>
+  <text x="900" y="938" text-anchor="middle" class="s">AND boxes_left &gt; 0 ?</text>
+
+  <line x1="900" y1="950" x2="900" y2="1020" class="a"/>
+  <rect x="690" y="1190" rx="14" ry="14" width="420" height="105" class="b"/>
+  <text x="900" y="1238" text-anchor="middle" class="t">Pop least-efficient worker</text>
+  <text x="900" y="1268" text-anchor="middle" class="s">clock += left_to_right</text>
+
+  <line x1="900" y1="1295" x2="900" y2="1365" class="a"/>
+  <rect x="690" y="1365" rx="12" ry="12" width="420" height="105" class="g"/>
+  <text x="900" y="1412" text-anchor="middle" class="t">Push -&gt; right_picking</text>
+  <text x="900" y="1442" text-anchor="middle" class="s">finish_time = clock + pick_box</text>
+
+  <line x1="600" y1="775" x2="600" y2="1320" class="d"/>
+  <rect x="460" y="1320" rx="12" ry="12" width="280" height="95" class="r"/>
+  <text x="600" y="1370" text-anchor="middle" class="t">Jump clock</text>
+  <text x="600" y="1402" text-anchor="middle" class="s">min next finish time</text>
+</svg>

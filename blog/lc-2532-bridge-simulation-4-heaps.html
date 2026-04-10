@@ -145,9 +145,10 @@
             </header>
 
             <div class="post-body">
-                <h1>How I Solved LeetCode 2532 with 4 Heaps and an OO Simulation</h1>
-<p>LeetCode 2532 (Time to Cross a Bridge) looks intimidating at first, but the problem becomes manageable once you model it as a queue-driven simulation.</p>
+                <p>LeetCode 2532 (Time to Cross a Bridge) looks intimidating at first, but the problem becomes manageable once you model it as a queue-driven simulation.</p>
 <p>The key insight is that this is not a graph problem and not a DP problem. It is an <strong>event simulation</strong> problem with strict priority rules.</p>
+<h2>Flowchart</h2>
+<p><img alt="LC 2532 flowchart" src="../assets/img/blog/lc-2532-flowchart.svg" /></p>
 <h2>Problem in Plain English</h2>
 <ul>
 <li>There are <code>n</code> boxes on the right side.</li>
@@ -169,18 +170,11 @@
 </ol>
 <p>This maps directly to the worker lifecycle:</p>
 <p><code>left_ready -&gt; cross L-&gt;R -&gt; right_picking -&gt; right_ready -&gt; cross R-&gt;L -&gt; left_dropping -&gt; left_ready</code></p>
-<h2>Why Event-Driven Time Jump Matters</h2>
-<p>Sometimes no worker is currently ready to cross, but some are still busy picking or dropping.<br />
-In that case, the bridge is idle and we should jump clock to the next finish event:</p>
-<pre class="codehilite"><code class="language-python">clock = min(
-    left_side_workers_dropping.peek()[0] if left_side_workers_dropping else float(&quot;inf&quot;),
-    right_side_workers_picking.peek()[0] if right_side_workers_picking else float(&quot;inf&quot;),
-)
-</code></pre>
-
-<p>Without this jump, simulation can stall or become inefficient.</p>
-<h2>OO Layer That Improved Readability</h2>
-<p>I used a frozen dataclass for worker timing semantics:</p>
+<h2>Download the Python File</h2>
+<ul>
+<li><a href="../assets/downloads/lc_2532_bridge_simulation.py">Download the full Python solution (.py)</a></li>
+</ul>
+<h2>Embedded Code (Core OO Solver)</h2>
 <pre class="codehilite"><code class="language-python">@dataclass(frozen=True)
 class Worker:
     worker_id: int
@@ -198,26 +192,67 @@ class Worker:
 
     def finish_put_at_left(self, now: int) -&gt; int:
         return now + self.put_box
+
+
+def findCrossingTime_oo(n: int, k: int, time: List[List[int]]) -&gt; int:
+    assert k == len(time)
+    workers = [
+        Worker(i, row[0], row[1], row[2], row[3])
+        for i, row in enumerate(time)
+    ]
+    boxes_crossed_to_left, clock = 0, 0
+    boxes_left_to_assign = n
+
+    left_side_worker_ready_q = MaxHeapt()
+    right_side_worker_ready_q = MaxHeapt()
+    left_side_workers_dropping = MinHeapt()
+    right_side_workers_picking = MinHeapt()
+
+    for worker in workers:
+        left_side_worker_ready_q.push(worker.inefficiency, worker.worker_id)
+
+    def release_finished_workers(now: int) -&gt; None:
+        while left_side_workers_dropping and left_side_workers_dropping.peek()[0] &lt;= now:
+            _, worker_id = left_side_workers_dropping.pop()
+            left_side_worker_ready_q.push(workers[worker_id].inefficiency, worker_id)
+        while right_side_workers_picking and right_side_workers_picking.peek()[0] &lt;= now:
+            _, worker_id = right_side_workers_picking.pop()
+            right_side_worker_ready_q.push(workers[worker_id].inefficiency, worker_id)
+
+    while boxes_crossed_to_left &lt; n:
+        release_finished_workers(clock)
+
+        if right_side_worker_ready_q:
+            _, worker_id = right_side_worker_ready_q.pop()
+            worker = workers[worker_id]
+            clock += worker.right_to_left
+            boxes_crossed_to_left += 1
+            if boxes_crossed_to_left == n:
+                return clock
+            left_side_workers_dropping.push(worker.finish_put_at_left(clock), worker_id)
+            continue
+
+        if boxes_left_to_assign &gt; 0 and left_side_worker_ready_q:
+            _, worker_id = left_side_worker_ready_q.pop()
+            worker = workers[worker_id]
+            clock += worker.left_to_right
+            boxes_left_to_assign -= 1
+            right_side_workers_picking.push(worker.finish_pick_at_right(clock), worker_id)
+            continue
+
+        clock = min(
+            left_side_workers_dropping.peek()[0] if left_side_workers_dropping else float(&quot;inf&quot;),
+            right_side_workers_picking.peek()[0] if right_side_workers_picking else float(&quot;inf&quot;),
+        )
+
+    return clock
 </code></pre>
 
-<p>This keeps queue logic focused on orchestration and keeps time math inside the worker model.</p>
-<h2>Core Simulation Order</h2>
-<p>At each iteration:</p>
-<ol>
-<li>Release workers whose side work finished at current time.</li>
-<li>If right-ready exists, cross right-to-left first.</li>
-<li>Else if left-ready exists and boxes remain to assign, cross left-to-right.</li>
-<li>Else jump time to next busy-finish event.</li>
-</ol>
-<p>This matches problem rules exactly and avoids priority bugs.</p>
 <h2>Complexity</h2>
 <ul>
 <li>Time: <code>O((n + k) log k)</code></li>
 <li>Space: <code>O(k)</code></li>
 </ul>
-<h2>Final Note</h2>
-<p>The biggest breakthrough for me was treating this as a <strong>state machine + event queue</strong> instead of trying to reason about all workers at once.<br />
-Once the four queues are clear, the rest of the problem becomes mechanical and reliable.</p>
             </div>
         </article>
     </main>
