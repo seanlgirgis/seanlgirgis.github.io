@@ -14,6 +14,7 @@ OUTPUT_DIR = BASE_DIR / "blog"
 COMPONENT_OUTPUT = BASE_DIR / "components" / "blog.html"
 LATEST_COMPONENT_OUTPUT = BASE_DIR / "components" / "latest_posts.html"
 LEETCODE_COMPONENT_OUTPUT = BASE_DIR / "components" / "leetcode.html"
+ARTICLES_COMPONENT_OUTPUT = BASE_DIR / "components" / "articles.html"
 TEMPLATE_PATH = BASE_DIR / "templates" / "blog_post.html"
 RSS_OUTPUT = BASE_DIR / "rss.xml"
 ANNOUNCEMENTS_DIR = DATA_DIR / "announcements"
@@ -129,6 +130,7 @@ def generate_blog():
 
     # Sort posts by date (newest first)
     posts.sort(key=lambda x: x["date_obj"], reverse=True)
+    generated_slugs = {p["slug"] for p in posts}
 
     def related_posts_for(post):
         src_tags = set(t.lower() for t in post["tags"])
@@ -159,6 +161,11 @@ def generate_blog():
         
         with open(output_file, "w", encoding="utf-8") as out:
             out.write(final_html)
+
+    # Remove stale generated blog pages that no longer exist in data/blog.
+    for html_file in OUTPUT_DIR.glob("*.html"):
+        if html_file.stem not in generated_slugs:
+            html_file.unlink()
     
     # Generate Blog list component
     component_html = '<div class="container"><h1>Blog</h1><div class="blog-list">'
@@ -218,6 +225,64 @@ def generate_blog():
     leetcode_html += "</div></div>"
     with open(LEETCODE_COMPONENT_OUTPUT, "w", encoding="utf-8") as f:
         f.write(leetcode_html)
+
+    # Generate Technical Articles hub component with structured sections.
+    idea_posts = [
+        p for p in posts
+        if any(
+            t.lower() in {"machine learning", "data science", "business strategy", "production ml", "ideas"}
+            for t in p["tags"]
+        )
+    ]
+    project_posts = [
+        p for p in posts
+        if any(
+            t.lower() in {"web architecture", "architecture", "project", "spa", "serverless"}
+            for t in p["tags"]
+        )
+    ]
+
+    def _cards(section_posts, link_label):
+        if not section_posts:
+            return "<p>No posts yet.</p>"
+        cards = []
+        for post in section_posts[:6]:
+            tags_html = "".join([f'<span class="tag">{t}</span>' for t in post['tags']])
+            cards.append(
+                f"""
+        <div class="blog-card">
+            <h3><a href="{post['link']}">{post['title']}</a></h3>
+            <div class="meta">{post['date']} • {tags_html}</div>
+            <p>{post['summary']}</p>
+            <a href="{post['link']}" class="read-more">{link_label} &rarr;</a>
+        </div>
+        """
+            )
+        return "".join(cards)
+
+    articles_html = f"""
+<div class="container">
+    <h1>Technical Articles</h1>
+    <p>Organized by track so readers can quickly find solutions, ideas, and project breakdowns.</p>
+
+    <h2>LeetCode Solutions</h2>
+    <div class="blog-list">
+        {_cards(lc_posts, "Open Solution")}
+    </div>
+
+    <h2>Ideas & Insights</h2>
+    <div class="blog-list">
+        {_cards(idea_posts, "Read Insight")}
+    </div>
+
+    <h2>Project Deep Dives</h2>
+    <div class="blog-list">
+        {_cards(project_posts, "Read Deep Dive")}
+    </div>
+</div>
+"""
+    with open(ARTICLES_COMPONENT_OUTPUT, "w", encoding="utf-8") as f:
+        f.write(articles_html)
 
     # Generate RSS feed
     rss_items = []

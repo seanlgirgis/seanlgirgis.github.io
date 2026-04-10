@@ -25,19 +25,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://seanlgirgis.github.io/blog/sagemaker-ml-pipeline.html</loc>
-    <lastmod>2026-04-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://seanlgirgis.github.io/blog/spa-architecture.html</loc>
-    <lastmod>2026-04-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://seanlgirgis.github.io/blog/zero_blog.html</loc>
     <lastmod>2026-04-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
