@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How I Solved LeetCode 2532 with 4 Heaps and an OO Simulation | Sean Luka Girgis</title>
+    <meta name="description" content="A practical walkthrough of LeetCode 2532 using four priority queues, event-driven time jumps, and a Worker dataclass model that makes a hard simulation problem understandable.">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Standalone Page Overrides */
+        body {
+            overflow: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100vh;
+        }
+
+        .blog-content {
+            margin-left: 300px;
+            padding: 40px;
+            max-width: 900px;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+
+            .blog-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        .blog-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .blog-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Markdown Content Styles */
+        .post-body h2 {
+            margin-top: 1.5em;
+            color: var(--primary);
+        }
+
+        .post-body p {
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .post-body code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .post-body pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .post-body pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .post-body ul {
+            margin-bottom: 1.5em;
+        }
+
+        .post-body li {
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h1>Sean Luka Girgis</h1>
+        <p style="font-size: 0.85rem; opacity: 0.8;">Senior Data Engineer & AI Architect</p>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="../#home">Home (Resume)</a></li>
+                <li><a href="../#cv">Detailed C.V.</a></li>
+                <li><a href="../#projects">Projects Showcase</a></li>
+                <li><a href="../#articles">Technical Articles</a></li>
+                <li><a href="../#tutorials">Tutorials</a></li>
+                <li><a href="../#blog" class="active">Blog</a></li>
+                <li><a href="../#about">About & Contact</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="blog-content">
+        <a href="../#blog" class="back-link">← Back to Blog List</a>
+
+        <article>
+            <header class="blog-header">
+                <h1>How I Solved LeetCode 2532 with 4 Heaps and an OO Simulation</h1>
+                <div class="blog-meta">
+                    <span>2026-04-10</span> •
+                    
+                    <span class="tag">Algorithms</span>
+                    
+                    <span class="tag">LeetCode</span>
+                    
+                    <span class="tag">Simulation</span>
+                    
+                    <span class="tag">Heaps</span>
+                    
+                    <span class="tag">Python</span>
+                    
+                </div>
+            </header>
+
+            <div class="post-body">
+                <h1>How I Solved LeetCode 2532 with 4 Heaps and an OO Simulation</h1>
+<p>LeetCode 2532 (Time to Cross a Bridge) looks intimidating at first, but the problem becomes manageable once you model it as a queue-driven simulation.</p>
+<p>The key insight is that this is not a graph problem and not a DP problem. It is an <strong>event simulation</strong> problem with strict priority rules.</p>
+<h2>Problem in Plain English</h2>
+<ul>
+<li>There are <code>n</code> boxes on the right side.</li>
+<li>Workers start on the left side.</li>
+<li>Only one worker can be on the bridge at a time.</li>
+<li>Right-to-left crossing has higher priority than left-to-right crossing.</li>
+<li>On each side, choose the least efficient worker first:</li>
+<li><code>inefficiency = left_to_right + right_to_left</code></li>
+<li>if tied, larger index first.</li>
+</ul>
+<p>Return the time when the <strong>last box reaches the left side</strong>.</p>
+<h2>The 4-Heap Model</h2>
+<p>I use four heaps to represent worker state:</p>
+<ol>
+<li><code>left_side_worker_ready_q</code> (max heap): workers waiting on left to cross.</li>
+<li><code>right_side_worker_ready_q</code> (max heap): workers waiting on right to cross back with a box.</li>
+<li><code>right_side_workers_picking</code> (min heap): workers currently picking a box on right.</li>
+<li><code>left_side_workers_dropping</code> (min heap): workers currently dropping a box on left.</li>
+</ol>
+<p>This maps directly to the worker lifecycle:</p>
+<p><code>left_ready -&gt; cross L-&gt;R -&gt; right_picking -&gt; right_ready -&gt; cross R-&gt;L -&gt; left_dropping -&gt; left_ready</code></p>
+<h2>Why Event-Driven Time Jump Matters</h2>
+<p>Sometimes no worker is currently ready to cross, but some are still busy picking or dropping.<br />
+In that case, the bridge is idle and we should jump clock to the next finish event:</p>
+<pre class="codehilite"><code class="language-python">clock = min(
+    left_side_workers_dropping.peek()[0] if left_side_workers_dropping else float(&quot;inf&quot;),
+    right_side_workers_picking.peek()[0] if right_side_workers_picking else float(&quot;inf&quot;),
+)
+</code></pre>
+
+<p>Without this jump, simulation can stall or become inefficient.</p>
+<h2>OO Layer That Improved Readability</h2>
+<p>I used a frozen dataclass for worker timing semantics:</p>
+<pre class="codehilite"><code class="language-python">@dataclass(frozen=True)
+class Worker:
+    worker_id: int
+    left_to_right: int
+    pick_box: int
+    right_to_left: int
+    put_box: int
+
+    @property
+    def inefficiency(self) -&gt; int:
+        return self.left_to_right + self.right_to_left
+
+    def finish_pick_at_right(self, now: int) -&gt; int:
+        return now + self.pick_box
+
+    def finish_put_at_left(self, now: int) -&gt; int:
+        return now + self.put_box
+</code></pre>
+
+<p>This keeps queue logic focused on orchestration and keeps time math inside the worker model.</p>
+<h2>Core Simulation Order</h2>
+<p>At each iteration:</p>
+<ol>
+<li>Release workers whose side work finished at current time.</li>
+<li>If right-ready exists, cross right-to-left first.</li>
+<li>Else if left-ready exists and boxes remain to assign, cross left-to-right.</li>
+<li>Else jump time to next busy-finish event.</li>
+</ol>
+<p>This matches problem rules exactly and avoids priority bugs.</p>
+<h2>Complexity</h2>
+<ul>
+<li>Time: <code>O((n + k) log k)</code></li>
+<li>Space: <code>O(k)</code></li>
+</ul>
+<h2>Final Note</h2>
+<p>The biggest breakthrough for me was treating this as a <strong>state machine + event queue</strong> instead of trying to reason about all workers at once.<br />
+Once the four queues are clear, the rest of the problem becomes mechanical and reliable.</p>
+            </div>
+        </article>
+    </main>
+
+</body>
+
+</html>
