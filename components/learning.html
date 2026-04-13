@@ -14,14 +14,48 @@
             🏗️ Layer 3 — System Design
         </span>
     </div>
-    <p style="font-size:0.85em; color:#aaa; margin-bottom:30px;">
+    <p style="font-size:0.85em; color:#aaa; margin-bottom:24px;">
         AI-generated audio and video overviews hosted on Cloudflare R2. Cards with full opacity are live — dimmed cards are planned.
     </p>
+
+    <!-- Jump Navigation -->
+    <nav style="background:#f7f9fc; border:1px solid #dce6f0; border-radius:8px; padding:18px 20px 14px; margin-bottom:36px;">
+        <div style="font-size:0.78em; font-weight:700; color:#004a99; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:12px;">📚 Layer 1 — Technology References</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:5px 16px; margin-bottom:14px;">
+            <a href="#" onclick="document.getElementById('aws-analytics').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">☁️ AWS — Analytics &amp; Storage</a>
+            <a href="#" onclick="document.getElementById('aws-compute').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">☁️ AWS — Compute &amp; Containers</a>
+            <a href="#" onclick="document.getElementById('aws-events').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">☁️ AWS — Orchestration &amp; Events</a>
+            <a href="#" onclick="document.getElementById('aws-security').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">☁️ AWS — Security &amp; Networking</a>
+            <a href="#" onclick="document.getElementById('cloud-other').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">☁️ Cloud — Other Platforms</a>
+            <a href="#" onclick="document.getElementById('streaming').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">📡 Streaming &amp; Messaging</a>
+            <a href="#" onclick="document.getElementById('orchestration').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🔄 Orchestration</a>
+            <a href="#" onclick="document.getElementById('bigdata').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">⚡ Big Data &amp; Processing</a>
+            <a href="#" onclick="document.getElementById('transformation').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🔀 Data Transformation</a>
+            <a href="#" onclick="document.getElementById('architecture').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🏛️ Data Architecture Patterns</a>
+            <a href="#" onclick="document.getElementById('ai-genai').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🤖 AI &amp; GenAI Engineering</a>
+            <a href="#" onclick="document.getElementById('ml').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">📈 ML &amp; Forecasting</a>
+            <a href="#" onclick="document.getElementById('python').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🐍 Python for Data Engineering</a>
+            <a href="#" onclick="document.getElementById('governance').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🛡️ Data Governance &amp; Quality</a>
+            <a href="#" onclick="document.getElementById('devops').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">⚙️ DevOps &amp; Infrastructure</a>
+            <a href="#" onclick="document.getElementById('databases').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">🗄️ Databases</a>
+            <a href="#" onclick="document.getElementById('visualization').scrollIntoView({behavior:'smooth'});return false;" style="color:#004a99;font-size:0.85em;text-decoration:none;">📊 Visualization &amp; Reporting</a>
+        </div>
+        <div style="border-top:1px solid #dce6f0; padding-top:10px; display:flex; gap:30px; flex-wrap:wrap;">
+            <div>
+                <span style="font-size:0.78em; font-weight:700; color:#b7650a; letter-spacing:0.06em; text-transform:uppercase; margin-right:10px;">🔧 Layer 2</span>
+                <a href="#" onclick="document.getElementById('craft').scrollIntoView({behavior:'smooth'});return false;" style="color:#b7650a;font-size:0.85em;text-decoration:none;">Engineering Craft &amp; Patterns</a>
+            </div>
+            <div>
+                <span style="font-size:0.78em; font-weight:700; color:#5b4fcf; letter-spacing:0.06em; text-transform:uppercase; margin-right:10px;">🏗️ Layer 3</span>
+                <a href="#" onclick="document.getElementById('system-design').scrollIntoView({behavior:'smooth'});return false;" style="color:#5b4fcf;font-size:0.85em;text-decoration:none;">System Design for Data Engineers</a>
+            </div>
+        </div>
+    </nav>
 
     <!-- ─────────────────────────────────────────────────
          CLOUD — AWS / Analytics & Storage
     ───────────────────────────────────────────────────── -->
-    <h2>Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Analytics &amp; Storage</span></h2>
+    <h2 id="aws-analytics">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Analytics &amp; Storage</span></h2>
     <div class="blog-list">
 
         <div class="blog-card">
@@ -80,7 +114,7 @@
     <!-- ─────────────────────────────────────────────────
          CLOUD — AWS / Compute & Containers
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Compute &amp; Containers</span></h2>
+    <h2 id="aws-compute" style="margin-top:44px;">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Compute &amp; Containers</span></h2>
     <div class="blog-list">
 
         <div class="blog-card">
@@ -135,7 +169,7 @@
     <!-- ─────────────────────────────────────────────────
          CLOUD — AWS / Orchestration & Events
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Orchestration &amp; Events</span></h2>
+    <h2 id="aws-events" style="margin-top:44px;">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Orchestration &amp; Events</span></h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -171,7 +205,7 @@
     <!-- ─────────────────────────────────────────────────
          CLOUD — AWS / Security & Networking
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Security &amp; Networking</span></h2>
+    <h2 id="aws-security" style="margin-top:44px;">Cloud — AWS <span style="font-size:0.62em; color:#888; font-weight:400;">/ Security &amp; Networking</span></h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -207,7 +241,7 @@
     <!-- ─────────────────────────────────────────────────
          CLOUD — Other Platforms
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Cloud — Other Platforms</h2>
+    <h2 id="cloud-other" style="margin-top:44px;">Cloud — Other Platforms</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -243,7 +277,7 @@
     <!-- ─────────────────────────────────────────────────
          STREAMING & MESSAGING
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Streaming &amp; Messaging</h2>
+    <h2 id="streaming" style="margin-top:44px;">Streaming &amp; Messaging</h2>
     <div class="blog-list">
 
         <div class="blog-card">
@@ -276,7 +310,7 @@
     <!-- ─────────────────────────────────────────────────
          ORCHESTRATION
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Orchestration</h2>
+    <h2 id="orchestration" style="margin-top:44px;">Orchestration</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -305,7 +339,7 @@
     <!-- ─────────────────────────────────────────────────
          BIG DATA & PROCESSING
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Big Data &amp; Processing</h2>
+    <h2 id="bigdata" style="margin-top:44px;">Big Data &amp; Processing</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -355,7 +389,7 @@
     <!-- ─────────────────────────────────────────────────
          DATA TRANSFORMATION
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Data Transformation</h2>
+    <h2 id="transformation" style="margin-top:44px;">Data Transformation</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -377,7 +411,7 @@
     <!-- ─────────────────────────────────────────────────
          DATA ARCHITECTURE PATTERNS
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Data Architecture Patterns</h2>
+    <h2 id="architecture" style="margin-top:44px;">Data Architecture Patterns</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -413,7 +447,7 @@
     <!-- ─────────────────────────────────────────────────
          AI & GENAI ENGINEERING
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">AI &amp; GenAI Engineering</h2>
+    <h2 id="ai-genai" style="margin-top:44px;">AI &amp; GenAI Engineering</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -449,7 +483,7 @@
     <!-- ─────────────────────────────────────────────────
          MACHINE LEARNING & FORECASTING
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Machine Learning &amp; Forecasting</h2>
+    <h2 id="ml" style="margin-top:44px;">Machine Learning &amp; Forecasting</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -478,7 +512,7 @@
     <!-- ─────────────────────────────────────────────────
          PYTHON FOR DATA ENGINEERING
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Python for Data Engineering</h2>
+    <h2 id="python" style="margin-top:44px;">Python for Data Engineering</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -500,7 +534,7 @@
     <!-- ─────────────────────────────────────────────────
          DATA GOVERNANCE & QUALITY
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Data Governance &amp; Quality</h2>
+    <h2 id="governance" style="margin-top:44px;">Data Governance &amp; Quality</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -529,7 +563,7 @@
     <!-- ─────────────────────────────────────────────────
          DEVOPS & INFRASTRUCTURE
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">DevOps &amp; Infrastructure</h2>
+    <h2 id="devops" style="margin-top:44px;">DevOps &amp; Infrastructure</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -551,7 +585,7 @@
     <!-- ─────────────────────────────────────────────────
          DATABASES
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Databases</h2>
+    <h2 id="databases" style="margin-top:44px;">Databases</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -587,7 +621,7 @@
     <!-- ─────────────────────────────────────────────────
          VISUALIZATION
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:44px;">Visualization &amp; Reporting</h2>
+    <h2 id="visualization" style="margin-top:44px;">Visualization &amp; Reporting</h2>
     <div class="blog-list">
 
         <div class="blog-card" style="opacity:0.55;">
@@ -616,7 +650,7 @@
     <!-- ─────────────────────────────────────────────────
          ENGINEERING CRAFT & PATTERNS  (Layer 2)
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:54px;">Engineering Craft &amp; Patterns
+    <h2 id="craft" style="margin-top:54px;">Engineering Craft &amp; Patterns
         <span style="font-size:0.62em; color:#888; font-weight:400;">/ Hands-on · How you actually do the work</span>
     </h2>
     <p style="color:#666; font-size:0.9em; margin:-8px 0 22px;">
@@ -714,7 +748,7 @@
     <!-- ─────────────────────────────────────────────────
          SYSTEM DESIGN FOR DATA ENGINEERS  (Layer 3)
     ───────────────────────────────────────────────────── -->
-    <h2 style="margin-top:54px;">System Design for Data Engineers
+    <h2 id="system-design" style="margin-top:54px;">System Design for Data Engineers
         <span style="font-size:0.62em; color:#888; font-weight:400;">/ Architecture · Open-ended design scenarios</span>
     </h2>
     <p style="color:#666; font-size:0.9em; margin:-8px 0 22px;">
