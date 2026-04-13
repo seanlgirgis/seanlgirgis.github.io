@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Athena — Master Engineering Reference | Sean Girgis</title>
+    <meta name="description" content="Complete Amazon Athena engineering reference: serverless SQL on S3, partitioning, cost model, Glue catalog integration, CTAS, workgroups, and federated queries.">
+    <link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-athena.html">
+    <style>
+        :root {
+            --primary: #004a99;
+            --accent:  #e67e22;
+            --text:    #222;
+            --muted:   #666;
+            --bg:      #f4f7f6;
+            --line:    #dde3ea;
+            --code-bg: #1e2a38;
+            --code-fg: #e8edf2;
+            --hi-bg:   #e8f4fd;
+            --warn-bg: #fff8e6;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .doc {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 48px 52px 80px;
+            min-height: 100vh;
+        }
+        @media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+
+        .topnav { font-size: 0.88em; margin-bottom: 32px; color: var(--muted); }
+        .topnav a { color: var(--primary); text-decoration: none; }
+        .topnav a:hover { text-decoration: underline; }
+
+        h1 { color: var(--primary); font-size: 2em; margin: 0 0 10px; line-height: 1.25; }
+        .subtitle { color: var(--muted); font-size: 0.9em; margin: 0 0 24px; }
+
+        .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 32px; }
+        .tag { background: var(--hi-bg); color: var(--primary); padding: 3px 10px; border-radius: 12px; font-size: 0.82em; font-weight: 600; }
+
+        .audio-box { border: 1px solid var(--line); border-left: 5px solid var(--accent); border-radius: 6px; padding: 18px 22px; margin-bottom: 36px; background: #fffdf9; }
+        .audio-box .audio-label { font-weight: 700; color: var(--accent); font-size: 0.92em; margin-bottom: 10px; }
+        .video-hint { font-size: 0.82em; color: #aaa; margin-top: 8px; }
+
+        .toc { background: #f7f9fc; border: 1px solid var(--line); border-radius: 6px; padding: 22px 28px; margin-bottom: 44px; }
+        .toc h2 { margin: 0 0 14px; font-size: 0.82em; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+        .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+        @media (max-width: 560px) { .toc ol { columns: 1; } }
+        .toc li { margin-bottom: 6px; break-inside: avoid; }
+        .toc a { color: var(--primary); text-decoration: none; font-size: 0.93em; }
+        .toc a:hover { text-decoration: underline; }
+
+        .doc h2 { color: var(--primary); font-size: 1.25em; margin: 52px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+        .doc h3 { color: #333; font-size: 1.02em; margin: 28px 0 10px; }
+
+        .back-top { display: block; text-align: right; font-size: 0.82em; color: var(--muted); text-decoration: none; margin-top: 28px; padding-top: 10px; border-top: 1px solid var(--line); }
+        .back-top:hover { color: var(--primary); }
+
+        code { background: #eef2f7; color: var(--primary); padding: 2px 6px; border-radius: 3px; font-size: 0.88em; font-family: 'Consolas', 'Courier New', monospace; }
+        pre { background: var(--code-bg); color: var(--code-fg); padding: 18px 22px; border-radius: 6px; overflow-x: auto; font-size: 0.87em; line-height: 1.6; margin: 14px 0; font-family: 'Consolas', 'Courier New', monospace; }
+        pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.91em; }
+        th { background: var(--primary); color: #fff; padding: 9px 14px; text-align: left; font-weight: 600; }
+        td { padding: 8px 14px; border-bottom: 1px solid #eee; }
+        tr:nth-child(even) td { background: #f8fafc; }
+
+        .hi { background: var(--hi-bg); border-left: 4px solid var(--primary); padding: 13px 17px; border-radius: 0 5px 5px 0; margin: 16px 0; font-size: 0.95em; }
+        .warn { background: var(--warn-bg); border-left: 4px solid var(--accent); padding: 13px 17px; border-radius: 0 5px 5px 0; margin: 16px 0; font-size: 0.95em; }
+
+        .qa { margin-bottom: 22px; }
+        .qa-q { font-weight: 700; color: var(--primary); margin-bottom: 6px; font-size: 0.97em; }
+        .qa-a { border-left: 3px solid var(--accent); padding: 10px 16px; background: #fffaf5; border-radius: 0 5px 5px 0; font-style: italic; color: #444; line-height: 1.75; }
+
+        .cheat { background: var(--code-bg); color: var(--code-fg); border-radius: 6px; padding: 22px 26px; }
+        .cheat-row { display: grid; grid-template-columns: 160px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.9em; }
+        .cheat-row:last-child { border-bottom: none; }
+        .ct { color: #f5a623; font-family: monospace; font-weight: bold; }
+        .cd { color: #c8d8e8; }
+
+        ul li, ol li { margin-bottom: 4px; }
+        strong { color: #111; }
+    </style>
+</head>
+<body>
+<div class="doc">
+
+    <div class="topnav" id="top">
+        <a href="https://seanlgirgis.github.io/#learning">← Learning Hub</a>
+        &nbsp;/&nbsp; Amazon Athena — Master Engineering Reference
+    </div>
+
+    <h1>Amazon Athena — Master Engineering Reference</h1>
+    <p class="subtitle">Engineering reference &nbsp;·&nbsp; Senior Data Engineer &nbsp;·&nbsp; Last updated April 2026 &nbsp;·&nbsp; 25–35 min read</p>
+    <div class="tag-row">
+        <span class="tag">Amazon Athena</span>
+        <span class="tag">Serverless SQL</span>
+        <span class="tag">S3</span>
+        <span class="tag">Glue Catalog</span>
+        <span class="tag">Parquet</span>
+        <span class="tag">CTAS</span>
+        <span class="tag">Federated Queries</span>
+    </div>
+
+    <!-- Media -->
+    <div class="audio-box">
+        <div class="audio-label">🎧 AI-Generated Audio Overview</div>
+        <div class="video-hint">Audio &amp; video coming soon — upload to Cloudflare R2 and update src attributes.</div>
+        <!-- Uncomment when media is ready:
+        <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+            <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/Athena_small.m4a" type="audio/mp4">
+        </audio>
+        <div class="video-hint" style="margin-top:10px;">🎬 AI-Generated Video Overview</div>
+        <video controls preload="metadata" style="width:100%;max-width:100%;border-radius:4px;margin-top:8px;">
+            <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/Athena_small.mp4" type="video/mp4">
+        </video>
+        -->
+    </div>
+
+    <!-- TOC -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#s1">What Athena Actually Is</a></li>
+            <li><a href="#s2">How Athena Works Under the Hood</a></li>
+            <li><a href="#s3">The Cost Model — Pay Per Scan</a></li>
+            <li><a href="#s4">File Formats and Why They Matter</a></li>
+            <li><a href="#s5">Athena + Glue Data Catalog</a></li>
+            <li><a href="#s6">Partitioning for Performance and Cost</a></li>
+            <li><a href="#s7">Writing Effective Athena SQL</a></li>
+            <li><a href="#s8">CTAS — Create Table As Select</a></li>
+            <li><a href="#s9">Views in Athena</a></li>
+            <li><a href="#s10">Workgroups</a></li>
+            <li><a href="#s11">Federated Queries</a></li>
+            <li><a href="#s12">Athena vs Redshift — When to Use Which</a></li>
+            <li><a href="#s13">Common Gotchas and Anti-Patterns</a></li>
+            <li><a href="#s14">10 Key Engineering Questions and Answers</a></li>
+            <li><a href="#s15">Production Story Angles</a></li>
+            <li><a href="#cheat">Quick Reference Cheat Sheet</a></li>
+        </ol>
+    </div>
+
+    <!-- ── 1 ── -->
+    <h2 id="s1">1. What Athena Actually Is</h2>
+    <p>
+        Athena is a <strong>serverless interactive query service</strong> that lets you run standard SQL directly against data
+        stored in S3 — no cluster to provision, no data to load, no infrastructure to manage. You point it at an S3 path,
+        define a schema (or let Glue infer one), and query.
+    </p>
+    <p>
+        The key mental model: <strong>Athena is a query engine, not a database.</strong> It does not store your data.
+        It does not index your data. It reads files from S3 on demand, applies your SQL, and returns results.
+        The data lives entirely in S3 — Athena is purely the compute layer on top of it.
+    </p>
+    <div class="hi">
+        <strong>The one-sentence positioning:</strong> Athena = SQL on S3, serverless, pay per byte scanned.
+        Everything else — performance, cost, design choices — flows from understanding that single sentence deeply.
+    </div>
+    <p>
+        Under the hood Athena is built on <strong>Presto</strong> (now Trino), a distributed SQL engine originally
+        developed at Meta. Athena v3 (current) runs on Trino. This matters because Presto/Trino SQL has some
+        differences from standard ANSI SQL and from Redshift SQL — knowing this saves debugging time.
+    </p>
+    <h3>What Athena is Not</h3>
+    <ul>
+        <li><strong>Not a data warehouse</strong> — no columnar storage management, no sort keys, no distribution styles</li>
+        <li><strong>Not a streaming engine</strong> — batch/interactive queries only, not real-time</li>
+        <li><strong>Not a replacement for Redshift</strong> — for complex multi-join analytics at high concurrency, Redshift wins</li>
+        <li><strong>Not free</strong> — every query scans data, and you pay per TB scanned</li>
+    </ul>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 2 ── -->
+    <h2 id="s2">2. How Athena Works Under the Hood</h2>
+    <p>
+        When you run a query, Athena does the following in sequence:
+    </p>
+    <pre>You submit SQL
+    ↓
+Athena parses query → generates execution plan
+    ↓
+Reads table metadata from Glue Data Catalog
+    (schema, S3 location, partition info, file format)
+    ↓
+Applies partition pruning
+    (eliminates S3 prefixes that don't match WHERE clause)
+    ↓
+Dispatches parallel read workers across matching S3 files
+    ↓
+Each worker reads and decompresses its file slice
+    ↓
+Applies column projection (reads only needed columns from Parquet)
+    ↓
+Aggregates and returns results
+    ↓
+Writes results to your designated S3 results bucket</pre>
+
+    <p>
+        Two optimizations in that flow are critical to understand: <strong>partition pruning</strong> and
+        <strong>column projection</strong>. Partition pruning means Athena skips entire S3 prefixes that don't
+        match your WHERE clause — this is why partitioning by date cuts query cost dramatically. Column projection
+        means with Parquet files, Athena reads only the columns you SELECT — it doesn't read the whole file.
+    </p>
+    <div class="hi">
+        <strong>Both optimizations require the right file format.</strong> Column projection only works with columnar
+        formats like Parquet or ORC. With CSV or JSON, Athena reads every column regardless of what you SELECT.
+        This is the single biggest lever for reducing cost.
+    </div>
+    <h3>Query Results</h3>
+    <p>
+        Every Athena query writes its results to an S3 bucket you configure — the <strong>query results location</strong>.
+        Results are stored as CSV files with a companion metadata file. You can point BI tools (QuickSight, Tableau)
+        at Athena and they read from this results bucket.
+    </p>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 3 ── -->
+    <h2 id="s3">3. The Cost Model — Pay Per Scan</h2>
+    <p>
+        Athena charges <strong>$5 per TB of data scanned</strong>. There is no charge for DDL statements, failed
+        queries, or cancelled queries. The compute is serverless — you only pay for what you scan.
+    </p>
+    <p>
+        This makes cost optimization a first-class engineering concern. A poorly written query against an
+        unpartitioned CSV table can scan terabytes and cost dollars. The same query against a Parquet table
+        with partitions can scan megabytes and cost fractions of a cent.
+    </p>
+
+    <h3>Cost Reduction Levers — In Order of Impact</h3>
+    <table>
+        <tr><th>Lever</th><th>Mechanism</th><th>Typical Reduction</th></tr>
+        <tr><td><strong>Use Parquet or ORC</strong></td><td>Column projection — only reads selected columns</td><td>60–90%</td></tr>
+        <tr><td><strong>Partition by query columns</strong></td><td>Partition pruning — skips non-matching prefixes</td><td>50–99%</td></tr>
+        <tr><td><strong>Compress data</strong></td><td>Snappy/GZIP reduces bytes on disk = bytes scanned</td><td>30–60%</td></tr>
+        <tr><td><strong>Compact small files</strong></td><td>Fewer, larger files = less metadata overhead</td><td>10–40%</td></tr>
+        <tr><td><strong>SELECT only needed columns</strong></td><td>With Parquet, fewer columns = less scan</td><td>Varies</td></tr>
+        <tr><td><strong>Use LIMIT carefully</strong></td><td>LIMIT does not stop scanning — it filters after</td><td>None</td></tr>
+    </table>
+
+    <div class="warn">
+        <strong>LIMIT does not reduce cost.</strong> <code>SELECT * FROM large_table LIMIT 10</code> still scans
+        the entire table. To sample cheaply, use partition filters in the WHERE clause instead.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 4 ── -->
+    <h2 id="s4">4. File Formats and Why They Matter</h2>
+    <table>
+        <tr><th>Format</th><th>Type</th><th>Athena Performance</th><th>Best For</th></tr>
+        <tr><td><strong>Parquet</strong></td><td>Columnar</td><td>Excellent — column pruning + compression</td><td>Analytics, data lake curated zone</td></tr>
+        <tr><td><strong>ORC</strong></td><td>Columnar</td><td>Excellent — similar to Parquet</td><td>Hive-native workloads</td></tr>
+        <tr><td><strong>JSON</strong></td><td>Row</td><td>Poor — reads full rows always</td><td>Raw landing zone only</td></tr>
+        <tr><td><strong>CSV</strong></td><td>Row</td><td>Poor — reads full rows, no compression benefit</td><td>Source files, never for analytics</td></tr>
+        <tr><td><strong>Avro</strong></td><td>Row</td><td>Fair — good for schema evolution</td><td>Streaming ingestion formats</td></tr>
+    </table>
+
+    <div class="hi">
+        <strong>Parquet is the default answer.</strong> For any analytics use case on Athena, the data should
+        be in Parquet with Snappy compression. The Glue ETL job that processes raw S3 data should always
+        write Parquet to the processed/curated zones. This one decision drives the majority of Athena cost savings.
+    </div>
+
+    <h3>Parquet Internals Worth Knowing</h3>
+    <p>
+        Parquet organizes data in <strong>row groups</strong> (horizontal slices) and <strong>column chunks</strong>
+        (vertical slices within a row group). Each column chunk has <strong>statistics</strong> (min, max, null count)
+        stored in its footer. Athena uses these statistics for <strong>predicate pushdown</strong> — it can skip
+        entire row groups if the column statistics show no matching values.
+    </p>
+    <pre>Parquet file structure:
+┌─────────────────────────────────────┐
+│  Row Group 1                        │
+│  ├── Column chunk: user_id          │
+│  ├── Column chunk: event_date       │  ← statistics: min=2026-01-01, max=2026-01-31
+│  └── Column chunk: revenue          │
+├─────────────────────────────────────┤
+│  Row Group 2                        │
+│  ├── Column chunk: user_id          │
+│  ├── Column chunk: event_date       │  ← statistics: min=2026-02-01, max=2026-02-28
+│  └── Column chunk: revenue          │
+├─────────────────────────────────────┤
+│  File Footer (schema + statistics)  │
+└─────────────────────────────────────┘
+
+WHERE event_date = '2026-01-15'
+→ Athena reads footer → skips Row Group 2 entirely</pre>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 5 ── -->
+    <h2 id="s5">5. Athena + Glue Data Catalog</h2>
+    <p>
+        Athena does not manage its own metadata. It reads table definitions — schema, S3 location, partition
+        information, file format — from the <strong>Glue Data Catalog</strong>. This is the central metadata
+        store that ties together Athena, Glue ETL jobs, and Redshift Spectrum into a single coherent data platform.
+    </p>
+    <pre>Glue Data Catalog
+    ├── Database: capacity_data
+    │   ├── Table: raw_telemetry      → s3://bucket/raw/      (JSON, no partitions)
+    │   ├── Table: processed_metrics  → s3://bucket/processed/ (Parquet, partitioned year/month)
+    │   └── Table: monthly_summary    → s3://bucket/curated/   (Parquet, partitioned year)
+    └── Database: reference_data
+        └── Table: server_inventory   → s3://bucket/reference/ (Parquet)</pre>
+
+    <h3>Creating Tables — Two Approaches</h3>
+    <p><strong>1. Glue Crawler (automated)</strong> — crawler scans S3, infers schema, creates/updates table in catalog automatically. Best for evolving schemas or large numbers of tables.</p>
+    <p><strong>2. DDL in Athena (manual)</strong> — write CREATE EXTERNAL TABLE directly in Athena. Best for full control over schema definition:</p>
+    <pre>CREATE EXTERNAL TABLE processed_metrics (
+    server_id   STRING,
+    metric_name STRING,
+    value       DOUBLE,
+    ts          TIMESTAMP
+)
+PARTITIONED BY (year STRING, month STRING)
+STORED AS PARQUET
+LOCATION 's3://bucket/processed/metrics/'
+TBLPROPERTIES ('parquet.compress' = 'SNAPPY');</pre>
+
+    <h3>Loading Partitions</h3>
+    <p>After creating or adding data to a partitioned table, Athena needs to know about the new partitions:</p>
+    <pre>-- Option 1: discover all partitions automatically
+MSCK REPAIR TABLE processed_metrics;
+
+-- Option 2: add a specific partition manually (faster for large tables)
+ALTER TABLE processed_metrics
+ADD PARTITION (year='2026', month='04')
+LOCATION 's3://bucket/processed/metrics/year=2026/month=04/';</pre>
+    <div class="warn">
+        <strong>MSCK REPAIR TABLE can be slow</strong> on tables with thousands of partitions — it scans all S3 prefixes.
+        For production pipelines, prefer <code>ALTER TABLE ADD PARTITION</code> at the end of each ETL job run.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 6 ── -->
+    <h2 id="s6">6. Partitioning for Performance and Cost</h2>
+    <p>
+        Partitioning is the single most impactful design decision for Athena. A well-partitioned table
+        can reduce query cost by 99% compared to a flat unpartitioned table with the same data.
+    </p>
+    <h3>How Partition Pruning Works</h3>
+    <pre>Table: processed_metrics
+Partitions: year=2026/month=04/ contains 50 GB
+
+-- This query scans only 50 GB
+SELECT * FROM processed_metrics
+WHERE year = '2026' AND month = '04';
+
+-- This query scans the entire table (no partition filter)
+SELECT * FROM processed_metrics
+WHERE metric_name = 'cpu_utilization';  -- metric_name is not a partition key</pre>
+
+    <h3>Partition Projection — Skip the Glue Catalog for Date Partitions</h3>
+    <p>
+        For tables with predictable date-based partitions, Athena can use <strong>Partition Projection</strong>
+        — it generates partition paths mathematically without querying the Glue catalog. This eliminates the
+        catalog lookup overhead and is especially fast for date ranges.
+    </p>
+    <pre>CREATE EXTERNAL TABLE daily_metrics (...)
+PARTITIONED BY (dt STRING)
+STORED AS PARQUET
+LOCATION 's3://bucket/metrics/'
+TBLPROPERTIES (
+    'projection.enabled'        = 'true',
+    'projection.dt.type'        = 'date',
+    'projection.dt.range'       = '2025-01-01,NOW',
+    'projection.dt.format'      = 'yyyy-MM-dd',
+    'projection.dt.interval'    = '1',
+    'projection.dt.interval.unit' = 'DAYS',
+    'storage.location.template' = 's3://bucket/metrics/dt=${dt}/'
+);</pre>
+    <div class="hi">
+        <strong>Partition Projection removes the need to run MSCK REPAIR TABLE</strong> or add partitions manually.
+        For time-series data it's the cleanest pattern — no catalog maintenance required.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 7 ── -->
+    <h2 id="s7">7. Writing Effective Athena SQL</h2>
+    <p>
+        Athena uses Trino SQL (formerly Presto). It is mostly ANSI-compatible but has some differences
+        worth knowing before hitting confusing errors.
+    </p>
+    <h3>Common Patterns</h3>
+    <pre>-- Date filtering using partition columns (always use partition keys in WHERE)
+SELECT server_id, AVG(value) AS avg_cpu
+FROM processed_metrics
+WHERE year = '2026' AND month = '04'
+  AND metric_name = 'cpu_utilization'
+GROUP BY server_id
+ORDER BY avg_cpu DESC
+LIMIT 20;
+
+-- Working with timestamps (Athena uses from_iso8601_timestamp, not TO_DATE)
+SELECT server_id,
+       from_iso8601_timestamp(ts_string) AS event_time
+FROM raw_telemetry
+WHERE year = '2026';
+
+-- String functions (Trino uses || for concat, not CONCAT in older versions)
+SELECT server_id || '-' || metric_name AS metric_key FROM processed_metrics;
+
+-- Approximate COUNT DISTINCT (much faster for large datasets)
+SELECT approx_distinct(server_id) AS unique_servers
+FROM processed_metrics
+WHERE year = '2026';
+
+-- JSON extraction from a string column
+SELECT json_extract_scalar(raw_payload, '$.hostname') AS hostname
+FROM raw_telemetry
+WHERE year = '2026';</pre>
+
+    <h3>Trino vs Redshift SQL Differences</h3>
+    <table>
+        <tr><th>Operation</th><th>Athena (Trino)</th><th>Redshift</th></tr>
+        <tr><td>Current timestamp</td><td><code>current_timestamp</code></td><td><code>GETDATE()</code></td></tr>
+        <tr><td>Date diff</td><td><code>date_diff('day', d1, d2)</code></td><td><code>DATEDIFF(day, d1, d2)</code></td></tr>
+        <tr><td>String split</td><td><code>split(str, ',')</code></td><td><code>SPLIT_PART(str, ',', n)</code></td></tr>
+        <tr><td>Approx distinct</td><td><code>approx_distinct(col)</code></td><td><code>APPROXIMATE COUNT DISTINCT</code></td></tr>
+        <tr><td>Regex extract</td><td><code>regexp_extract(col, pattern)</code></td><td><code>REGEXP_SUBSTR(col, pattern)</code></td></tr>
+    </table>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 8 ── -->
+    <h2 id="s8">8. CTAS — Create Table As Select</h2>
+    <p>
+        CTAS lets you create a new table from the results of a SELECT query. The output is written to S3
+        as Parquet (or another format you specify) and registered in the Glue Data Catalog. This is one
+        of the most powerful Athena features for data engineering.
+    </p>
+    <h3>Primary Use Cases</h3>
+    <ul>
+        <li><strong>Convert CSV/JSON to Parquet</strong> — run once, all future queries are faster and cheaper</li>
+        <li><strong>Repartition a table</strong> — rebuild with better partition keys without writing Glue ETL code</li>
+        <li><strong>Materialize aggregations</strong> — pre-compute expensive aggregations into a summary table</li>
+        <li><strong>Compact small files</strong> — CTAS writes fewer, larger files than many small source files</li>
+    </ul>
+    <pre>-- Convert raw JSON to partitioned Parquet
+CREATE TABLE processed_metrics
+WITH (
+    format           = 'PARQUET',
+    parquet_compression = 'SNAPPY',
+    partitioned_by   = ARRAY['year', 'month'],
+    external_location = 's3://bucket/processed/metrics/'
+)
+AS
+SELECT
+    server_id,
+    metric_name,
+    CAST(value AS DOUBLE) AS value,
+    from_iso8601_timestamp(ts) AS ts,
+    DATE_FORMAT(from_iso8601_timestamp(ts), '%Y') AS year,
+    DATE_FORMAT(from_iso8601_timestamp(ts), '%m') AS month
+FROM raw_telemetry
+WHERE year = '2026';</pre>
+
+    <div class="hi">
+        <strong>CTAS is Athena's ETL capability.</strong> For lightweight transformations — format conversion,
+        repartitioning, light aggregation — CTAS can replace a Glue ETL job entirely.
+        For complex multi-step transformations, Glue PySpark is still the right tool.
+    </div>
+    <h3>INSERT INTO — Incremental Appends</h3>
+    <pre>-- Append new data to an existing CTAS table
+INSERT INTO processed_metrics
+SELECT server_id, metric_name, value, ts, year, month
+FROM raw_telemetry
+WHERE year = '2026' AND month = '05';</pre>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 9 ── -->
+    <h2 id="s9">9. Views in Athena</h2>
+    <p>
+        Athena supports <strong>logical views</strong> — stored SQL queries that behave like tables.
+        Views do not store data; they execute the underlying query every time they are queried.
+        They are stored in the Glue Data Catalog.
+    </p>
+    <pre>-- Create a view that abstracts partition columns from consumers
+CREATE VIEW current_month_metrics AS
+SELECT server_id, metric_name, value, ts
+FROM processed_metrics
+WHERE year = FORMAT('%Y', current_date)
+  AND month = FORMAT('%m', current_date);
+
+-- Consumers query the view without knowing the partition structure
+SELECT server_id, AVG(value)
+FROM current_month_metrics
+WHERE metric_name = 'memory_utilization'
+GROUP BY server_id;</pre>
+
+    <div class="warn">
+        <strong>Views do not reduce cost.</strong> Querying a view executes the full underlying SQL including all scans.
+        If the view has no partition filter, every query against it scans the entire table. Always ensure
+        views push down partition predicates, or document that consumers must add their own WHERE clauses.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 10 ── -->
+    <h2 id="s10">10. Workgroups</h2>
+    <p>
+        Workgroups let you organize queries, enforce controls, and track costs by team or use case.
+        Every Athena query runs in a workgroup — the default workgroup if you don't specify one.
+    </p>
+    <h3>What Workgroups Control</h3>
+    <ul>
+        <li><strong>Query results location</strong> — each workgroup writes to a different S3 prefix</li>
+        <li><strong>Data scan limit</strong> — cancel a query if it would scan more than X bytes (cost guard)</li>
+        <li><strong>Workgroup scan limit</strong> — cut off the entire workgroup if it exceeds a daily/weekly limit</li>
+        <li><strong>Encryption</strong> — enforce SSE-KMS on query results</li>
+        <li><strong>Cost allocation</strong> — tag queries by team, project, or cost center</li>
+    </ul>
+    <pre>-- Using the API (boto3) to run a query in a specific workgroup
+import boto3
+
+athena = boto3.client('athena', region_name='us-east-1')
+response = athena.start_query_execution(
+    QueryString = "SELECT * FROM processed_metrics WHERE year='2026' AND month='04'",
+    QueryExecutionContext = {'Database': 'capacity_data'},
+    WorkGroup = 'data-engineering-team'
+)</pre>
+
+    <div class="hi">
+        <strong>In a financial services environment</strong>, workgroups are typically set up per team
+        with enforced scan limits and SSE-KMS on results. This prevents runaway queries from generating
+        unexpected cost and ensures query results are encrypted at rest.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 11 ── -->
+    <h2 id="s11">11. Federated Queries</h2>
+    <p>
+        Athena Federated Query lets you run SQL against data sources <em>other than S3</em> — including
+        RDS, DynamoDB, Redshift, CloudWatch Logs, JDBC databases — and join them with S3 data in a
+        single query. The mechanism is a <strong>Lambda-based connector</strong> that Athena invokes
+        to retrieve data from the external source.
+    </p>
+    <pre>-- Join S3-based processed data with RDS reference data in one query
+SELECT m.server_id,
+       m.value AS cpu_pct,
+       r.data_center,
+       r.owner_team
+FROM processed_metrics m
+JOIN "oracle-connector".dbo.server_inventory r
+    ON m.server_id = r.server_id
+WHERE m.year = '2026'
+  AND m.month = '04'
+  AND m.metric_name = 'cpu_utilization'
+  AND m.value > 80;</pre>
+
+    <h3>When to Use Federated Queries</h3>
+    <ul>
+        <li>Enriching S3 analytics data with reference data that lives in a relational database</li>
+        <li>Ad-hoc cross-source analysis without an ETL pipeline to join the data first</li>
+        <li>Querying CloudWatch Logs with SQL — useful for operational analysis</li>
+    </ul>
+    <div class="warn">
+        <strong>Federated queries are slower and more expensive than pure S3 queries.</strong> The Lambda connector
+        adds latency and the external source is queried in real time. Use for ad-hoc or low-frequency queries —
+        not for high-concurrency dashboards. For frequent joins, ETL the reference data into S3 instead.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 12 ── -->
+    <h2 id="s12">12. Athena vs Redshift — When to Use Which</h2>
+    <p>
+        This is one of the most common architectural questions. The answer is not one or the other — they
+        serve different workloads and are often used together in the same data platform.
+    </p>
+    <table>
+        <tr><th>Dimension</th><th>Athena</th><th>Redshift</th></tr>
+        <tr><td><strong>Architecture</strong></td><td>Serverless, no cluster</td><td>Provisioned or Serverless cluster</td></tr>
+        <tr><td><strong>Data location</strong></td><td>Always in S3</td><td>In Redshift storage (or S3 via Spectrum)</td></tr>
+        <tr><td><strong>Cost model</strong></td><td>Per TB scanned</td><td>Per hour (provisioned) or per RPU-hour (serverless)</td></tr>
+        <tr><td><strong>Concurrency</strong></td><td>Moderate — good for ad-hoc</td><td>High — good for dashboards, many users</td></tr>
+        <tr><td><strong>Query latency</strong></td><td>Seconds to minutes</td><td>Milliseconds to seconds (with sort/dist keys)</td></tr>
+        <tr><td><strong>Setup</strong></td><td>Zero — point at S3 and query</td><td>Cluster setup, table design, data loading</td></tr>
+        <tr><td><strong>Best for</strong></td><td>Ad-hoc exploration, data lake queries, ETL validation</td><td>BI dashboards, high-concurrency reporting, complex joins</td></tr>
+    </table>
+
+    <div class="hi">
+        <strong>The common pattern in production:</strong> Athena for exploration and pipeline validation;
+        Redshift for production BI workloads. Glue processes raw S3 data into Parquet — both Athena and
+        Redshift read from the same processed S3 data (Redshift via COPY or Spectrum, Athena directly).
+        One pipeline, two consumers.
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 13 ── -->
+    <h2 id="s13">13. Common Gotchas and Anti-Patterns</h2>
+
+    <h3>1. Querying without partition filters</h3>
+    <div class="warn">
+        <code>SELECT * FROM large_table WHERE metric_name = 'cpu'</code> — if <code>metric_name</code> is not
+        a partition key, this scans the entire table. Always filter on partition columns first.
+    </div>
+
+    <h3>2. Small files problem</h3>
+    <p>
+        Thousands of small Parquet files (under 128MB) cause Athena to spend more time on file metadata overhead
+        than actual data reading. An S3 prefix with 10,000 × 1MB files performs far worse than 100 × 100MB files
+        containing the same data. Fix with a periodic compaction job using CTAS or Glue.
+    </p>
+
+    <h3>3. Using LIMIT to reduce cost</h3>
+    <div class="warn">
+        <code>SELECT * FROM table LIMIT 10</code> scans the full table and returns 10 rows. LIMIT is applied
+        <em>after</em> scanning. To cheaply sample data, use a partition filter:
+        <code>WHERE year='2026' AND month='04' LIMIT 10</code>
+    </div>
+
+    <h3>4. Schema mismatch after Glue crawler runs</h3>
+    <p>
+        If source data changes schema (new column added, type changed), the Glue crawler may update the
+        catalog table in unexpected ways. Use crawler configuration to control schema update behaviour —
+        specifically the <code>SchemaChangePolicy</code> setting. In production, prefer manual DDL
+        for critical tables rather than relying on crawlers alone.
+    </p>
+
+    <h3>5. Forgetting to run MSCK REPAIR TABLE</h3>
+    <p>
+        New data written to S3 is invisible to Athena until the partition is registered. Either run
+        <code>MSCK REPAIR TABLE</code>, use <code>ALTER TABLE ADD PARTITION</code>, or switch to
+        Partition Projection to eliminate the problem entirely.
+    </p>
+
+    <h3>6. Mixing Hive-style and non-Hive partitions</h3>
+    <p>
+        Athena expects Hive-style partitions (<code>year=2026/month=04/</code>). If your S3 data uses
+        plain date folders (<code>2026/04/</code>), you must define partitions manually with explicit
+        LOCATION in ALTER TABLE — MSCK REPAIR TABLE will not find them.
+    </p>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 14 ── -->
+    <h2 id="s14">14. Ten Key Engineering Questions and Answers</h2>
+
+    <div class="qa">
+        <div class="qa-q">Q1 — "How does Athena reduce query cost and improve performance?"</div>
+        <div class="qa-a">"Two main levers: file format and partitioning. Parquet gives you column projection — Athena only reads the columns in your SELECT, not the whole row. Partitioning gives you partition pruning — Athena skips entire S3 prefixes that don't match your WHERE clause. Together they can reduce bytes scanned by 90% or more. On top of those, compression reduces file size, which directly reduces scan bytes since Athena charges per compressed byte scanned."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q2 — "What is the Glue Data Catalog and why does Athena need it?"</div>
+        <div class="qa-a">"Athena doesn't store metadata — it reads it from the Glue Data Catalog. The catalog holds the table schema, the S3 location, the file format, and the partition structure. When you run a query, Athena looks up the table in the catalog first to know where the data is and how to read it. This is also why Glue, Athena, and Redshift Spectrum can all share the same metadata — one catalog, multiple query engines."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q3 — "What is CTAS and when would you use it over Glue ETL?"</div>
+        <div class="qa-a">"CTAS is Create Table As Select — it runs a SELECT query and writes the results to S3 as a new table, typically in Parquet. I'd use it for lightweight transformations: converting raw JSON or CSV to Parquet, repartitioning an existing table with better partition keys, or materializing a frequently-run aggregation. For complex multi-step transformations, joins across many tables, or anything needing Python logic, Glue PySpark is the right tool. The rule of thumb: if it can be expressed in one SQL statement, CTAS is probably simpler."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q4 — "How do you handle schema evolution in Athena tables?"</div>
+        <div class="qa-a">"Parquet is schema-on-read, so adding new columns to source data doesn't break existing queries — Athena just returns NULL for missing columns in older files. The risk is type changes or column renames, which can break queries silently. My approach: use Glue crawlers to detect schema changes but set the SchemaChangePolicy to LOG rather than UPDATE for critical tables. Then review changes manually and apply controlled DDL with ALTER TABLE. For append-only new columns, Parquet handles this gracefully."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q5 — "What is Partition Projection and when is it better than standard partitioning?"</div>
+        <div class="qa-a">"Partition Projection tells Athena to compute partition paths mathematically from a pattern rather than looking them up in the Glue catalog. For a daily-partitioned table spanning years, that's thousands of catalog entries — every query requires a catalog lookup to find which partitions exist. With Partition Projection, Athena generates the S3 paths directly from the date range in your WHERE clause. It eliminates catalog overhead and removes the need to run MSCK REPAIR TABLE or ALTER TABLE ADD PARTITION when new data lands. I use it by default for any time-series table with predictable date-based partitioning."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q6 — "How do you prevent a runaway Athena query from incurring large unexpected cost?"</div>
+        <div class="qa-a">"Workgroups with data scan limits. You configure a per-query byte limit — if a query would scan more than that amount, Athena cancels it before it completes. You can also set a workgroup-level daily scan limit so the entire team's queries stop if a threshold is crossed. Combined with IAM policies restricting which tables teams can query, this is a reasonable cost governance layer. The deeper fix is making sure every production table is properly partitioned and in Parquet, so even without limits the cost per query is low."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q7 — "When would you choose Athena over Redshift for a query workload?"</div>
+        <div class="qa-a">"Athena for ad-hoc exploration, data validation, one-off analysis, and queries that run infrequently. Redshift for dashboards with many concurrent users, sub-second latency requirements, and complex analytics with lots of joins that benefit from sort keys and distribution styles. In practice they coexist: Athena is the exploration layer against the same S3 data that Redshift reads via COPY for production reporting. No need to choose — design the S3 layer well and both engines consume it."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q8 — "Why does LIMIT not reduce query cost in Athena?"</div>
+        <div class="qa-a">"Because Athena scans data first, then applies LIMIT to the results. The scan cost is incurred before LIMIT is evaluated. To cheaply get a sample, use partition filters in the WHERE clause to constrain the scan, then LIMIT. For example, instead of SELECT * FROM table LIMIT 10, use SELECT * FROM table WHERE year='2026' AND month='04' LIMIT 10. The partition filter does the cost reduction work; LIMIT just reduces the result set size."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q9 — "What is Athena Federated Query and what are its limitations?"</div>
+        <div class="qa-a">"Federated Query lets you join S3-based Athena tables with external data sources — RDS, DynamoDB, JDBC databases — in a single SQL statement. It works through Lambda connectors that Athena invokes to fetch data from the external source. The limitations are latency and cost: each federated source adds Lambda invocation overhead, and external databases may be slow to respond at query time. It's suited for ad-hoc enrichment queries. For high-frequency production queries that need reference data, the better pattern is to ETL that reference data into S3 so it's always in the fast path."</div>
+    </div>
+
+    <div class="qa">
+        <div class="qa-q">Q10 — "Walk me through how you'd migrate a reporting layer from querying raw CSV files to an optimised Athena setup."</div>
+        <div class="qa-a">"First, profile the existing queries — identify what columns are filtered on most (these become partition keys) and what columns are selected (this tells me how much column pruning is possible). Then run a CTAS to convert the CSV data to Parquet with Snappy compression, partitioned by the most-queried dimensions (typically date). Register the new table in the Glue catalog. Use Partition Projection if the partition structure is date-based and predictable. Validate query results match the original, measure cost difference (expect 60–90% reduction), then switch the reporting layer to the new table. Going forward, the ETL pipeline writes Parquet directly — the CSV table becomes read-only for historical reference."</div>
+    </div>
+
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── 15 ── -->
+    <h2 id="s15">15. Production Story Angles</h2>
+    <p>
+        These are the patterns that come up repeatedly when working with Athena at scale in a production
+        data engineering environment.
+    </p>
+    <h3>Athena as Pipeline Validator</h3>
+    <p>
+        After a Glue ETL job writes Parquet to the processed zone, a lightweight Athena query serves as
+        the validation step — row count check, null check on key columns, range check on values.
+        This is fast, cheap (small scan on the just-written partition), and avoids loading bad data
+        downstream into Redshift.
+    </p>
+    <pre>-- Validation query run after ETL job completes
+SELECT
+    COUNT(*)                              AS row_count,
+    SUM(CASE WHEN server_id IS NULL THEN 1 ELSE 0 END) AS null_server_ids,
+    MIN(value)                            AS min_value,
+    MAX(value)                            AS max_value
+FROM processed_metrics
+WHERE year = '2026' AND month = '04';</pre>
+
+    <h3>Ad-Hoc Exploration Before Building Pipelines</h3>
+    <p>
+        When raw data first lands in S3 — whether from a new source system or an irregular data dump —
+        Athena is the fastest way to understand its structure and quality before committing to a schema
+        in a data warehouse. Define an external table pointing at the raw files, run exploratory SQL,
+        identify issues. The cost of this exploration is negligible compared to loading into Redshift
+        and discovering problems after the fact.
+    </p>
+
+    <h3>Cost-Effective Historical Analysis</h3>
+    <p>
+        Historical data that is rarely queried but must be retained (compliance, audit) can live in S3
+        Glacier-compatible storage. When analysis is needed, Athena queries it directly without restoring
+        to a warehouse. For data accessed a few times a year at most, this is dramatically cheaper than
+        keeping it in Redshift.
+    </p>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+    <!-- ── Cheat Sheet ── -->
+    <h2 id="cheat">⚡ Quick Reference Cheat Sheet</h2>
+    <div class="cheat">
+        <div class="cheat-row"><span class="ct">Athena</span><span class="cd">Serverless SQL engine — queries S3, charges per TB scanned</span></div>
+        <div class="cheat-row"><span class="ct">Presto / Trino</span><span class="cd">Engine Athena runs on — mostly ANSI SQL, some differences from Redshift</span></div>
+        <div class="cheat-row"><span class="ct">Glue Catalog</span><span class="cd">Metadata store — schema, S3 location, partitions — shared with Redshift Spectrum</span></div>
+        <div class="cheat-row"><span class="ct">Partition Pruning</span><span class="cd">Athena skips S3 prefixes that don't match WHERE clause — requires partition keys in filter</span></div>
+        <div class="cheat-row"><span class="ct">Column Projection</span><span class="cd">Parquet only — reads only SELECTed columns, not entire rows</span></div>
+        <div class="cheat-row"><span class="ct">CTAS</span><span class="cd">Create Table As Select — writes query results to S3 as a new table</span></div>
+        <div class="cheat-row"><span class="ct">Partition Projection</span><span class="cd">Generates partition paths mathematically — no catalog lookup, no MSCK REPAIR needed</span></div>
+        <div class="cheat-row"><span class="ct">MSCK REPAIR</span><span class="cd">Discovers and registers new Hive-style partitions — slow on large tables</span></div>
+        <div class="cheat-row"><span class="ct">Workgroup</span><span class="cd">Isolates queries by team — controls results location, scan limits, encryption</span></div>
+        <div class="cheat-row"><span class="ct">Federated Query</span><span class="cd">SQL across S3 + external sources (RDS, DynamoDB) via Lambda connectors</span></div>
+        <div class="cheat-row"><span class="ct">$5 / TB</span><span class="cd">Athena pricing — per compressed byte scanned, not per query or per hour</span></div>
+        <div class="cheat-row"><span class="ct">LIMIT caveat</span><span class="cd">LIMIT does not reduce scan cost — full table is scanned before LIMIT applies</span></div>
+        <div class="cheat-row"><span class="ct">Results bucket</span><span class="cd">S3 location where every Athena query writes its output CSV + metadata</span></div>
+    </div>
+    <a class="back-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

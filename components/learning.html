@@ -1,12 +1,11 @@
 <div class="container">
     <h1>Learning Hub</h1>
     <p style="color:#555; margin-bottom:8px;">
-        Deep-dive engineering references — written for interview prep and ongoing mastery.
-        Each topic is a standalone study guide with code examples, architecture diagrams,
-        Q&amp;A sections, and (where available) embedded audio &amp; video overviews.
+        Deep-dive engineering references — standalone study guides with code examples,
+        architecture diagrams, Q&amp;A sections, and embedded audio &amp; video overviews.
     </p>
     <p style="font-size:0.9em; color:#888; margin-bottom:30px;">
-        Audio and video are generated via NotebookLM from the source markdown and hosted on OneDrive.
+        AI-generated audio and video overviews are hosted on Cloudflare R2.
     </p>
 
     <h2>Cloud — AWS</h2>
@@ -22,16 +21,39 @@
                 <span class="tag">ECS</span>
             </div>
             <p>
-                Complete S3 reference: object model, storage classes, three-zone data lake pattern,
-                Hive partitioning, security model, Glue/Redshift/ECS integration, event notifications,
-                consistency model, and 10 interview Q&amp;A with verbatim answers.
-                Mapped to real Citi pipeline experience.
+                Object model, storage classes, three-zone data lake pattern, Hive partitioning,
+                security model, Glue/Redshift/ECS integration, event notifications,
+                consistency model, and 10 engineering Q&amp;A.
             </p>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <a href="learning/aws-s3.html" class="read-more">Open Reference &rarr;</a>
                 <span style="font-size:0.85em; color:#aaa;">14 sections &bull; 30–40 min read</span>
-                <span id="s3-media-badge" style="font-size:0.82em; color:#555;">
+                <span style="font-size:0.82em; color:#555;">
                     🎧 Audio <span style="color:#27ae60; font-weight:600;">●&nbsp;Live</span>
+                    &nbsp;&nbsp;🎬 Video <span style="color:#27ae60; font-weight:600;">●&nbsp;Live</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="blog-card">
+            <h3><a href="learning/aws-athena.html">Amazon Athena — Master Engineering Reference</a></h3>
+            <div class="meta">
+                <span class="tag">AWS</span>
+                <span class="tag">Serverless SQL</span>
+                <span class="tag">S3</span>
+                <span class="tag">Glue Catalog</span>
+                <span class="tag">Parquet</span>
+            </div>
+            <p>
+                Serverless SQL on S3, cost model, Parquet vs CSV impact, partition pruning,
+                Partition Projection, CTAS, views, workgroups, federated queries,
+                Athena vs Redshift decision guide, and 10 engineering Q&amp;A.
+            </p>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <a href="learning/aws-athena.html" class="read-more">Open Reference &rarr;</a>
+                <span style="font-size:0.85em; color:#aaa;">16 sections &bull; 25–35 min read</span>
+                <span style="font-size:0.82em; color:#555;">
+                    🎧 Audio <span style="color:#aaa;">○&nbsp;Coming soon</span>
                     &nbsp;&nbsp;🎬 Video <span style="color:#aaa;">○&nbsp;Coming soon</span>
                 </span>
             </div>
@@ -42,14 +64,24 @@
     <h2 style="margin-top:40px;">Coming Soon</h2>
     <div class="blog-list">
         <div class="blog-card" style="opacity:0.6;">
+            <h3>AWS Glue — ETL Engineering Reference</h3>
+            <div class="meta"><span class="tag">AWS</span><span class="tag">Glue</span><span class="tag">ETL</span><span class="tag">PySpark</span></div>
+            <p>DynamicFrames, crawlers, catalog, job bookmarks, Spark tuning, pushdown predicates, workflows.</p>
+        </div>
+        <div class="blog-card" style="opacity:0.6;">
             <h3>Amazon Redshift — Warehouse Engineering Reference</h3>
             <div class="meta"><span class="tag">AWS</span><span class="tag">Redshift</span><span class="tag">Analytics</span></div>
             <p>Distribution styles, sort keys, WLM, COPY/UNLOAD patterns, Spectrum, RA3 architecture.</p>
         </div>
         <div class="blog-card" style="opacity:0.6;">
-            <h3>AWS Glue — ETL Engineering Reference</h3>
-            <div class="meta"><span class="tag">AWS</span><span class="tag">Glue</span><span class="tag">ETL</span></div>
-            <p>DynamicFrames, crawlers, catalog, job bookmarks, Spark tuning, pushdown predicates.</p>
+            <h3>AWS Lambda — Serverless Engineering Reference</h3>
+            <div class="meta"><span class="tag">AWS</span><span class="tag">Lambda</span><span class="tag">Serverless</span></div>
+            <p>Event-driven execution, triggers, concurrency, cold starts, pipeline integration patterns.</p>
+        </div>
+        <div class="blog-card" style="opacity:0.6;">
+            <h3>ECS / Docker — Container Pipeline Reference</h3>
+            <div class="meta"><span class="tag">ECS</span><span class="tag">Docker</span><span class="tag">Containers</span></div>
+            <p>Task definitions, IAM task roles, Fargate vs EC2, containerized ETL patterns.</p>
         </div>
         <div class="blog-card" style="opacity:0.6;">
             <h3>Apache Kafka — Streaming Engineering Reference</h3>
