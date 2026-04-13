@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Glue — Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-glue.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:150px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+  <!-- TOPNAV -->
+  <div class="topnav">
+    <a href="https://seanlgirgis.github.io/#learning">← Learning Hub</a> / AWS Glue — Master Engineering Reference
+  </div>
+
+  <!-- HEADER -->
+  <h1>AWS Glue</h1>
+  <p class="subtitle">Engineering reference · Senior Data Engineer · Last updated 2026-04-13 · 25–35 min read</p>
+
+  <div class="tag-row">
+    <span class="tag">AWS</span>
+    <span class="tag">Glue</span>
+    <span class="tag">ETL</span>
+    <span class="tag">PySpark</span>
+    <span class="tag">Catalog</span>
+  </div>
+
+  <!-- MEDIA BOX -->
+  <div class="audio-box">
+    <div class="audio-label">🎧 AI-Generated Audio Overview</div>
+    <div class="video-hint">🎧 Audio / 🎬 Video: coming soon</div>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">What Glue Actually Is</a></li>
+      <li><a href="#s2">Core Components</a></li>
+      <li><a href="#s3">Glue Data Catalog Deep-Dive</a></li>
+      <li><a href="#s4">Crawlers</a></li>
+      <li><a href="#s5">ETL Jobs — DynamicFrames vs DataFrames</a></li>
+      <li><a href="#s6">Writing PySpark in Glue</a></li>
+      <li><a href="#s7">Glue + S3</a></li>
+      <li><a href="#s8">Glue + Redshift</a></li>
+      <li><a href="#s9">Workflows and Triggers</a></li>
+      <li><a href="#s10">Job Bookmarks</a></li>
+      <li><a href="#s11">Performance Tuning</a></li>
+      <li><a href="#s12">Security</a></li>
+      <li><a href="#s13">Common Gotchas and Anti-Patterns</a></li>
+      <li><a href="#s14">10 Key Engineering Questions</a></li>
+      <li><a href="#s15">Production Story Angles</a></li>
+      <li><a href="#s16">Quick Reference Cheat Sheet</a></li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2 id="s1">1. What Glue Actually Is</h2>
+
+  <p>AWS Glue is a fully managed, serverless data integration service. It sits in the ETL tier of a modern data platform — between raw storage (S3, RDS, DynamoDB) and analytical consumers (Redshift, Athena, EMR). The key word is <em>serverless</em>: you do not provision clusters, patch nodes, or manage Spark master/worker topology. You write transformation logic; Glue handles execution infrastructure.</p>
+
+  <p>Positioning it against alternatives is important for understanding where it belongs. Compared to a self-managed Spark cluster on EMR, Glue removes cluster lifecycle management at the cost of less control over runtime configuration and a per-DPU-hour pricing model that can surprise you at scale. Compared to Lambda, Glue handles stateful, large-dataset transforms that would exceed Lambda's 15-minute timeout and 10GB ephemeral storage limits. Compared to raw SQL in Redshift or Athena, Glue gives you full Spark expressiveness — arbitrary UDFs, iterative processing, multi-dataset joins that span zones.</p>
+
+  <p>Glue's scope has expanded significantly since its 2017 launch. Today it encompasses: ETL job execution (Python Shell and PySpark), a centralized metadata store (the Data Catalog), schema discovery automation (Crawlers), visual job authoring (Glue Studio), orchestration (Workflows and Triggers), streaming ETL on Kinesis and Kafka, and Glue DataBrew for no-code transforms. For data engineering interviews and production work, the core triad that matters most is: <strong>Data Catalog + Crawlers + ETL Jobs</strong>.</p>
+
+  <div class="hi">The Data Catalog is the most underrated part of Glue. Treat it as the metadata spine of your entire lake — not just a companion to ETL jobs.</div>
+
+  <p>One important framing: Glue is not a replacement for a proper orchestration layer like Apache Airflow or AWS Step Functions. Its native Workflow/Trigger system handles linear and conditional pipelines, but for complex DAGs with retry logic, SLAs, backfill, and cross-team visibility, Glue Workflows hit a ceiling quickly. Many mature pipelines use Airflow or Step Functions to invoke Glue jobs rather than Glue's own orchestration primitives.</p>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 2 -->
+  <h2 id="s2">2. Core Components</h2>
+
+  <p>Understanding Glue requires understanding each component's role distinctly — they are loosely coupled and can be used independently.</p>
+
+  <h3>Data Catalog</h3>
+  <p>A centralized Hive-metastore-compatible repository of metadata: databases, tables, partitions, and column-level schema. It is the source of truth for schema in Athena and can be shared with EMR clusters. Every Glue ETL job, every Athena query, and every crawler reads from and writes to the Catalog.</p>
+
+  <h3>Crawlers</h3>
+  <p>Automated schema discovery agents. You point a Crawler at an S3 prefix, a JDBC source, or DynamoDB, and it samples the data, infers the schema, detects partitions, and writes or updates table entries in the Data Catalog. Crawlers can run on schedule or be triggered programmatically.</p>
+
+  <h3>ETL Jobs</h3>
+  <p>The execution unit for transformation logic. A Glue Job is a script (Python or Scala) that runs on a managed Spark environment. You choose the number of DPUs (Data Processing Units — each DPU is 4 vCPUs + 16 GB RAM), the Glue version (which maps to specific Spark and Python versions), and the worker type (<code>Standard</code>, <code>G.1X</code>, <code>G.2X</code>, <code>G.025X</code> for streaming).</p>
+
+  <h3>Triggers</h3>
+  <p>Event sources that start a Job or Workflow. Types: scheduled (cron), on-demand, and conditional (event-based, reacting to job success or failure). A common production pattern is an S3 event notification → EventBridge rule → Glue Trigger to start processing as soon as new data lands.</p>
+
+  <h3>Workflows</h3>
+  <p>A DAG of Jobs and Crawlers connected by Triggers. Useful for linear or simple conditional pipelines. Workflows provide a visual execution graph in the console and support run properties — key/value pairs that can be passed between nodes.</p>
+
+  <h3>Connections</h3>
+  <p>Named configurations for JDBC sources (Redshift, RDS, MySQL), network settings for VPC-private sources, and authentication credentials. Jobs reference Connections by name, which keeps credentials out of job scripts.</p>
+
+<pre>
+Glue Architecture Overview
+───────────────────────────────────────────────────────────
+
+  S3 Raw Zone          Crawlers           Data Catalog
+  ───────────    ──────────────────→   ─────────────────
+  /raw/events/                          DB: raw_db
+  /raw/orders/                            Table: events
+                                          Table: orders
+
+         ↓ Glue ETL Job (PySpark)
+
+  S3 Processed Zone                    Data Catalog
+  ─────────────────                  ─────────────────
+  /processed/events/                   DB: processed_db
+  /processed/orders/                     Table: events
+  (Parquet, partitioned)                 Table: orders
+
+         ↓ Redshift Spectrum / Athena
+  Analytical Consumers
+</pre>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 3 -->
+  <h2 id="s3">3. Glue Data Catalog Deep-Dive</h2>
+
+  <p>The Data Catalog is a regional, account-scoped (or optionally shared via Lake Formation) metadata store. Its data model mirrors the Hive metastore: a Catalog contains Databases, each Database contains Tables, each Table has a schema (column names and types), SerDe configuration, storage location, and partition keys.</p>
+
+  <p>Tables in the Catalog are logical — they describe the shape of data at a location, but do not store the data itself. When Athena runs a query against a Catalog table, it reads the schema from the Catalog, translates it to a scan plan against the underlying S3 path, and applies the SerDe (serializer/deserializer) to parse bytes. This means you can register an S3 path in the Catalog manually, point Athena at it, and query without ever running a Glue job.</p>
+
+  <h3>Partitions</h3>
+  <p>Partitions are sub-divisions of a table that map to a sub-prefix in S3. A table partitioned by <code>year/month/day</code> will have partition entries like <code>year=2026/month=04/day=13</code> pointing to <code>s3://bucket/prefix/year=2026/month=04/day=13/</code>. Athena uses these partition entries to prune S3 reads — without them, a query filters post-scan, scanning everything. Partition metadata must exist in the Catalog for pruning to work; landing files without registering partitions is a common gotcha.</p>
+
+<pre>
+-- Add a partition manually (when Crawler is too slow for high-frequency loads)
+ALTER TABLE processed_db.events
+ADD PARTITION (year='2026', month='04', day='13')
+LOCATION 's3://my-bucket/processed/events/year=2026/month=04/day=13/';
+
+-- Or use MSCK REPAIR TABLE to bulk-register all discovered partitions
+MSCK REPAIR TABLE processed_db.events;
+</pre>
+
+  <h3>Schema Versioning</h3>
+  <p>Every time a schema change is detected (new column, type change), Glue creates a new schema version for the table. You can view version history in the console or via the API. This is useful for auditing schema drift, but Glue does not automatically enforce schema compatibility — it will happily update to an incompatible schema if the Crawler detects one. Downstream consumers (Athena, Redshift Spectrum) may break silently if a type widens or narrows unexpectedly.</p>
+
+  <div class="warn"><strong>Schema evolution trap:</strong> If a Crawler detects that a column changed from <code>bigint</code> to <code>string</code> (common when new files have malformed data), it will update the Catalog table. Athena will then fail to read older Parquet files that stored the column as <code>bigint</code>. Always gate Crawlers with schema change notifications rather than letting them auto-update production tables silently.</div>
+
+  <h3>Lake Formation Integration</h3>
+  <p>When Lake Formation is enabled in your account, all Catalog access goes through Lake Formation's permission model rather than raw IAM. Column-level and row-level filtering becomes possible. This adds meaningful governance capabilities but also a new failure mode: Glue jobs or Athena queries that worked under IAM-only models can fail with cryptic Lake Formation permission errors after enabling it.</p>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 4 -->
+  <h2 id="s4">4. Crawlers</h2>
+
+  <p>A Crawler is a Glue-managed process that connects to a data store, samples it, and writes inferred schema and partition metadata to the Data Catalog. Crawlers are most useful for initial schema discovery and for keeping partition lists current on large, frequently updated S3 datasets.</p>
+
+  <h3>How Crawlers Sample Data</h3>
+  <p>For S3, a Crawler lists the target prefix, groups files by path structure to identify likely partition patterns, samples a subset of files per partition (not all files — just enough to infer schema), and uses classifiers to identify the format (JSON, Parquet, CSV, Avro, ORC). The default built-in classifiers cover most formats. If your data uses a custom format, you can write a custom Grok or XML classifier.</p>
+
+  <h3>Classifier Priority</h3>
+  <p>Classifiers are applied in priority order. If a custom classifier matches, it wins; built-in classifiers are evaluated only if custom ones don't match or return <code>UNCERTAIN</code>. This matters when you have mixed-format prefixes — a misranked classifier will misidentify format and produce garbage schema or fail entirely.</p>
+
+<pre>
+# Example: triggering a Crawler programmatically after new data lands
+import boto3
+
+glue = boto3.client('glue', region_name='us-east-1')
+
+response = glue.start_crawler(Name='processed_events_crawler')
+print(response)
+
+# Poll for completion
+import time
+while True:
+    state = glue.get_crawler(Name='processed_events_crawler')['Crawler']['State']
+    if state == 'READY':
+        break
+    print(f"Crawler state: {state}")
+    time.sleep(15)
+</pre>
+
+  <h3>Scheduled vs Event-Triggered Crawlers</h3>
+  <p>Crawlers can run on a cron schedule or be started programmatically. Schedule-based crawling adds latency — a Crawler on a 1-hour schedule means up to 60 minutes before new partitions are queryable. For lower-latency pipelines, trigger the Crawler explicitly from the ETL job (or from a Lambda/Step Function) after data is written, rather than relying on polling schedules.</p>
+
+  <div class="warn"><strong>Crawler cost and duration:</strong> Crawlers bill per DPU-second and run on at least 2 DPUs minimum. A large S3 prefix with millions of objects can take 20–30 minutes to crawl. For high-partition tables updated frequently, prefer <code>ALTER TABLE ADD PARTITION</code> or <code>MSCK REPAIR TABLE</code> over re-crawling the entire prefix.</div>
+
+  <h3>Common Crawler Gotchas</h3>
+  <ul>
+    <li><strong>Mixed schema files:</strong> If a prefix contains files with different schemas (e.g., an evolving JSON schema over time), the Crawler merges them using a "union" approach that can produce unexpected nullable columns or type conflicts.</li>
+    <li><strong>Hive-style vs non-Hive partitioning:</strong> Hive-style (<code>year=2026/month=04/</code>) is recognized automatically. Non-Hive paths (<code>2026/04/</code>) require custom partition configuration or manual registration.</li>
+    <li><strong>Table deletion detection:</strong> By default, if a prefix is empty or removed, a Crawler can delete the Catalog table. Control this with the "Schema change policy" setting (<code>LOG</code> instead of <code>DELETE</code>).</li>
+  </ul>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 5 -->
+  <h2 id="s5">5. ETL Jobs — DynamicFrames vs DataFrames</h2>
+
+  <p>Glue ETL scripts use an abstraction called the <strong>DynamicFrame</strong> — a Glue-native extension of the Spark DataFrame that tolerates schema inconsistencies. This is the most important conceptual distinction in Glue development.</p>
+
+  <h3>DynamicFrame</h3>
+  <p>A DynamicFrame allows individual rows to have different schemas. Each field in a DynamicFrame is tagged with both its name and type, so a column that appears as <code>int</code> in most rows but <code>string</code> in a few will be represented as a <code>choice</code> type rather than causing an immediate parse failure. This mirrors the reality of messy, schema-on-read data lakes where not all files conform to a single schema.</p>
+
+  <h3>DataFrame</h3>
+  <p>The standard Spark DataFrame requires a uniform schema. Every row must match the declared schema. Spark raises an exception at the point of schema enforcement if a record doesn't conform. DataFrames are faster for processing (tighter Catalyst optimizer integration), better supported by the wider PySpark ecosystem, and required for many advanced Spark operations that don't have DynamicFrame equivalents.</p>
+
+  <div class="hi">The practical rule: use DynamicFrames at the <strong>ingestion boundary</strong> (reading raw, dirty data from S3 or JDBC) to handle schema variability. Convert to DataFrames with <code>.toDF()</code> for the bulk of your transformation logic. Convert back to DynamicFrame only if writing to a Glue sink or needing Glue-specific features like <code>resolveChoice</code>.</div>
+
+<pre>
+from awsglue.context import GlueContext
+from awsglue.transforms import ResolveChoice, DropNullFields
+from pyspark.context import SparkContext
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+
+# Read raw data as DynamicFrame (tolerates schema inconsistencies)
+raw_dyf = glueContext.create_dynamic_frame.from_catalog(
+    database="raw_db",
+    table_name="events",
+    transformation_ctx="raw_dyf"
+)
+
+# Inspect for choice types (schema conflicts)
+raw_dyf.printSchema()
+
+# Resolve ambiguous types before converting
+resolved_dyf = ResolveChoice.apply(
+    raw_dyf,
+    choice="make_cols",     # creates separate col per type variant
+    transformation_ctx="resolved_dyf"
+)
+
+# Convert to Spark DataFrame for transformation logic
+df = resolved_dyf.toDF()
+
+# ... transform ...
+
+# Convert back to DynamicFrame for writing
+from awsglue.dynamicframe import DynamicFrame
+output_dyf = DynamicFrame.fromDF(df, glueContext, "output_dyf")
+</pre>
+
+  <table>
+    <tr><th>Feature</th><th>DynamicFrame</th><th>DataFrame</th></tr>
+    <tr><td>Schema flexibility</td><td>Per-row (choice types)</td><td>Uniform, strict</td></tr>
+    <tr><td>Performance</td><td>Slightly slower</td><td>Faster (Catalyst optimized)</td></tr>
+    <tr><td>Glue Catalog integration</td><td>Native</td><td>Via spark.read.table()</td></tr>
+    <tr><td>resolveChoice / applyMapping</td><td>Available</td><td>Not available</td></tr>
+    <tr><td>PySpark ecosystem ops</td><td>Limited</td><td>Full</td></tr>
+    <tr><td>Best for</td><td>Raw ingestion, schema repair</td><td>Core transformations</td></tr>
+  </table>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 6 -->
+  <h2 id="s6">6. Writing PySpark in Glue</h2>
+
+  <p>Glue ETL scripts are standard PySpark with a thin Glue library layer on top. The script entry point initializes a <code>GlueContext</code> (which wraps <code>SparkContext</code>), and from there you can use both Glue-specific APIs and the full PySpark API interchangeably.</p>
+
+  <h3>applyMapping</h3>
+  <p><code>applyMapping</code> is the DynamicFrame equivalent of column renaming and type casting in one pass. It takes a list of tuples: <code>(source_name, source_type, target_name, target_type)</code>. Columns not listed are dropped. This makes schema normalization at ingestion concise and explicit.</p>
+
+<pre>
+from awsglue.transforms import ApplyMapping
+
+mapped_dyf = ApplyMapping.apply(
+    frame=raw_dyf,
+    mappings=[
+        ("event_id",    "string",  "event_id",   "string"),
+        ("ts",          "long",    "timestamp",  "long"),
+        ("user_id",     "int",     "user_id",    "int"),
+        ("event_type",  "string",  "event_type", "string"),
+        ("payload",     "string",  "payload",    "string"),
+    ],
+    transformation_ctx="mapped_dyf"
+)
+</pre>
+
+  <h3>resolveChoice</h3>
+  <p>When a column is detected as a <code>choice</code> type (ambiguous), <code>resolveChoice</code> lets you decide how to handle it. Options:</p>
+  <ul>
+    <li><code>cast:type</code> — force all values to the specified type</li>
+    <li><code>make_cols</code> — create one column per type variant (<code>col_int</code>, <code>col_string</code>)</li>
+    <li><code>make_struct</code> — wrap variants into a struct</li>
+    <li><code>project:type</code> — keep only values that match the specified type, nullify others</li>
+  </ul>
+
+<pre>
+from awsglue.transforms import ResolveChoice
+
+# Column "amount" has both int and string values in raw data
+resolved = ResolveChoice.apply(
+    frame=raw_dyf,
+    specs=[("amount", "cast:double")],
+    transformation_ctx="resolved"
+)
+</pre>
+
+  <h3>Common PySpark Patterns in Glue</h3>
+
+<pre>
+from pyspark.sql import functions as F
+from pyspark.sql.types import TimestampType
+
+df = raw_dyf.toDF()
+
+# Cast epoch millis to timestamp
+df = df.withColumn("event_ts", (F.col("ts") / 1000).cast(TimestampType()))
+
+# Add partition columns from timestamp
+df = df.withColumn("year",  F.year("event_ts").cast("string"))
+df = df.withColumn("month", F.lpad(F.month("event_ts").cast("string"), 2, "0"))
+df = df.withColumn("day",   F.lpad(F.dayofmonth("event_ts").cast("string"), 2, "0"))
+
+# Deduplicate by event_id, keeping latest
+from pyspark.sql import Window
+window = Window.partitionBy("event_id").orderBy(F.desc("ts"))
+df = df.withColumn("rn", F.row_number().over(window)).filter(F.col("rn") == 1).drop("rn")
+
+# Write partitioned Parquet
+df.write \
+  .mode("append") \
+  .partitionBy("year", "month", "day") \
+  .parquet("s3://my-bucket/processed/events/")
+</pre>
+
+  <div class="warn"><strong>Don't mix <code>spark.write</code> and Glue sinks for the same output:</strong> Writing via the Spark DataFrame API (<code>df.write.parquet()</code>) does not auto-register partitions in the Data Catalog. You still need to run a Crawler or call <code>ALTER TABLE ADD PARTITION</code> after writing. Glue's own sink (<code>glueContext.write_dynamic_frame</code>) handles Catalog registration if configured, but the two patterns should not be mixed for the same table.</div>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 7 -->
+  <h2 id="s7">7. Glue + S3</h2>
+
+  <p>S3 is the primary data store for Glue. Understanding how Glue reads and writes S3 efficiently is essential for performance and cost control.</p>
+
+  <h3>Reading Partitioned Data</h3>
+  <p>When reading from the Data Catalog, Glue uses the partition metadata to determine which S3 prefixes to scan. Without a predicate pushdown, it reads all partitions. With a pushdown predicate, it filters at the Catalog level before touching S3 — dramatically reducing the volume of data scanned and the number of files opened.</p>
+
+<pre>
+# Pushdown predicate: only read April 2026 partitions
+events_dyf = glueContext.create_dynamic_frame.from_catalog(
+    database="raw_db",
+    table_name="events",
+    push_down_predicate="(year == '2026' and month == '04')",
+    transformation_ctx="events_dyf"
+)
+</pre>
+
+  <div class="hi">Pushdown predicates operate on partition columns only — not on row-level column values. They prevent Spark from listing and opening irrelevant S3 prefixes entirely. For row-level filtering on non-partition columns, you still need a <code>.filter()</code> on the DataFrame.</div>
+
+  <h3>Writing Parquet to S3</h3>
+  <p>Parquet is the standard output format for processed zones. Key write options:</p>
+  <ul>
+    <li><strong>Partition columns:</strong> Always partition by date-derived columns. Avoid high-cardinality partitions (e.g., user_id) which produce millions of small files.</li>
+    <li><strong>Compression:</strong> Snappy is the default and a good balance of speed and compression ratio. For archival or Athena-heavy workloads, consider Zstd.</li>
+    <li><strong>File size:</strong> Target 128–256 MB per Parquet file. Small files (under 10 MB) compound into significant overhead — S3 list operations, Spark task overhead, Athena scan costs.</li>
+  </ul>
+
+<pre>
+# Coalesce before write to control file count per partition
+df.coalesce(4) \
+  .write \
+  .mode("append") \
+  .option("compression", "snappy") \
+  .partitionBy("year", "month", "day") \
+  .parquet("s3://my-bucket/processed/events/")
+</pre>
+
+  <h3>S3 Consistency</h3>
+  <p>S3 has been strongly consistent for all operations since December 2020. Prior versions of Glue documentation warned about eventual consistency issues with list-after-write; these are no longer a concern. You can safely list and read S3 objects immediately after writing them.</p>
+
+  <div class="warn"><strong>Output mode gotcha:</strong> Using <code>mode("overwrite")</code> with <code>partitionBy</code> in Spark overwrites the <strong>entire table prefix</strong>, not just the specific partitions being written. Set <code>spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")</code> to overwrite only the partitions present in the current write, which is almost always what you want.</div>
+
+<pre>
+spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+
+df.write \
+  .mode("overwrite") \
+  .partitionBy("year", "month", "day") \
+  .parquet("s3://my-bucket/processed/events/")
+</pre>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 8 -->
+  <h2 id="s8">8. Glue + Redshift</h2>
+
+  <p>Glue integrates with Redshift through a JDBC connector and an S3 staging bucket pattern. Because Redshift cannot directly stream data to/from external processes over a Spark executor connection efficiently, Glue's Redshift connector uses S3 as an intermediary: data is first written to a staging S3 prefix, then loaded into Redshift using a <code>COPY</code> command, or unloaded from Redshift via <code>UNLOAD</code> before Glue reads it.</p>
+
+  <h3>Reading from Redshift</h3>
+<pre>
+connection_options = {
+    "url": "jdbc:redshift://cluster.us-east-1.redshift.amazonaws.com:5439/mydb",
+    "dbtable": "schema_name.table_name",
+    "user": "glue_user",
+    "password": "{{resolve:secretsmanager:redshift/glue:SecretString:password}}",
+    "redshiftTmpDir": "s3://my-bucket/tmp/glue-redshift/",
+    "aws_iam_role": "arn:aws:iam::123456789:role/MyRedshiftRole"
+}
+
+redshift_dyf = glueContext.create_dynamic_frame.from_options(
+    connection_type="redshift",
+    connection_options=connection_options,
+    transformation_ctx="redshift_dyf"
+)
+</pre>
+
+  <h3>Writing to Redshift</h3>
+<pre>
+glueContext.write_dynamic_frame.from_options(
+    frame=output_dyf,
+    connection_type="redshift",
+    connection_options={
+        **connection_options,
+        "dbtable": "schema_name.target_table",
+        "preactions": "TRUNCATE TABLE schema_name.target_table;",
+        "postactions": "GRANT SELECT ON schema_name.target_table TO GROUP analysts;"
+    },
+    transformation_ctx="write_redshift"
+)
+</pre>
+
+  <div class="hi">The <code>redshiftTmpDir</code> bucket must be in the same region as the Redshift cluster. Cross-region staging will fail. The Redshift cluster's IAM role (not the Glue job role) needs <code>s3:GetObject</code> on the staging prefix to run the COPY command.</div>
+
+  <h3>JDBC vs Redshift Data API</h3>
+  <p>For large bulk loads, the JDBC/S3 staging pattern is appropriate. For small metadata or dimension table lookups from within a Glue job, the Redshift Data API (via <code>boto3</code>) avoids the JDBC connection overhead and doesn't require a Glue Connection with VPC routing. Use the right tool for the operation size.</p>
+
+  <div class="warn"><strong>Temp directory cleanup:</strong> The staging S3 prefix accumulates data from every Glue run. The connector does not auto-clean it. Apply an S3 lifecycle rule to expire objects in the <code>tmp/glue-redshift/</code> prefix after 1–3 days to avoid storage cost creep.</div>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 9 -->
+  <h2 id="s9">9. Workflows and Triggers</h2>
+
+  <p>Glue Workflows are a visual DAG of Jobs and Crawlers connected by Triggers. They are appropriate for linear or moderately branching pipelines that live entirely within the Glue ecosystem. For more complex orchestration needs, most teams use Airflow or Step Functions to invoke Glue jobs via the API.</p>
+
+  <h3>Trigger Types</h3>
+  <table>
+    <tr><th>Type</th><th>When it fires</th><th>Use case</th></tr>
+    <tr><td>Scheduled</td><td>Cron expression</td><td>Nightly batch, hourly micro-batch</td></tr>
+    <tr><td>On-demand</td><td>Manual API call or console start</td><td>Backfill, ad-hoc reruns</td></tr>
+    <tr><td>Conditional</td><td>Job/Crawler reaches a terminal state</td><td>Chain: job A succeeds → start job B</td></tr>
+    <tr><td>EventBridge</td><td>S3 event, custom event bus event</td><td>Event-driven ingestion</td></tr>
+  </table>
+
+  <h3>Conditional Triggers</h3>
+  <p>Conditional triggers activate when upstream jobs or crawlers reach a specified state (<code>SUCCEEDED</code>, <code>FAILED</code>, <code>STOPPED</code>, or <code>ANY</code>). You can combine conditions with <code>AND</code> (all must meet condition) or <code>OR</code> (any one suffices). This enables simple fan-in patterns — wait for multiple parallel jobs to complete before starting a downstream aggregation.</p>
+
+<pre>
+# Create a conditional trigger via boto3
+glue.create_trigger(
+    Name='start_aggregation_after_joins',
+    Type='CONDITIONAL',
+    WorkflowName='nightly_pipeline',
+    Predicate={
+        'Logical': 'AND',
+        'Conditions': [
+            {'LogicalOperator': 'EQUALS', 'JobName': 'join_events', 'State': 'SUCCEEDED'},
+            {'LogicalOperator': 'EQUALS', 'JobName': 'join_orders', 'State': 'SUCCEEDED'},
+        ]
+    },
+    Actions=[{'JobName': 'aggregate_daily'}]
+)
+</pre>
+
+  <h3>Workflow Run Properties</h3>
+  <p>Workflows support run properties — a key/value map that is passed to all jobs in the workflow at execution time. Jobs read these via <code>args = getResolvedOptions(sys.argv, ['JOB_NAME', 'workflow_run_id'])</code> and then call <code>glue.get_workflow_run_properties()</code>. This is how you pass dynamic parameters (e.g., the processing date) through a multi-step workflow without hardcoding them in each job.</p>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 10 -->
+  <h2 id="s10">10. Job Bookmarks</h2>
+
+  <p>Job bookmarks are Glue's built-in incremental processing mechanism. When enabled, a bookmark tracks the state of a job's data sources after each successful run. On the next run, the job reads only the new data — files added or records inserted since the last run — rather than reprocessing the entire dataset.</p>
+
+  <h3>How Bookmarks Work for S3</h3>
+  <p>For S3 sources, bookmarks track files by <strong>modification timestamp and name</strong>. After a successful run, Glue records which files were processed. On the next run, it identifies files that are newer (by last-modified time) or alphabetically after the last processed file and includes only those. This is fundamentally a cursor mechanism, not a checksum — it doesn't verify content, only recency.</p>
+
+<pre>
+# Enable bookmark in job parameters
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'JOB_RUN_ID'])
+
+# Read with bookmark active
+raw_dyf = glueContext.create_dynamic_frame.from_catalog(
+    database="raw_db",
+    table_name="events",
+    transformation_ctx="raw_dyf"   # transformation_ctx is required for bookmark tracking
+)
+# The transformation_ctx string is the bookmark key — keep it stable across runs
+</pre>
+
+  <div class="hi">The <code>transformation_ctx</code> parameter is how Glue identifies which source a bookmark belongs to. If you rename it, the bookmark resets and the next run reprocesses everything from the beginning.</div>
+
+  <h3>When Bookmarks Break</h3>
+  <p>Bookmarks are powerful but fragile in several scenarios:</p>
+  <ul>
+    <li><strong>Reprocessing / backfill:</strong> If you need to reprocess historical data, you must disable or reset the bookmark explicitly. A job with an active bookmark will skip already-processed files even if you want them reprocessed.</li>
+    <li><strong>File replacement:</strong> If a file at the same path is replaced with new content (same name, new content), the bookmark may not detect it as "new" since the tracking is path and timestamp based. For immutable-file pipelines (append-only S3 prefixes), this is not a concern.</li>
+    <li><strong>Out-of-order file arrivals:</strong> Late-arriving files with old modification timestamps (e.g., files written with a backdated mtime) can be missed by the bookmark entirely.</li>
+    <li><strong>JDBC bookmarks:</strong> For JDBC sources, bookmarks track by a sequential key column. The column must be strictly monotonically increasing (auto-increment IDs, insertion timestamps). Any updates to existing rows won't be captured — bookmarks are append-only by design.</li>
+  </ul>
+
+  <div class="warn"><strong>Bookmark reset procedure:</strong> To reset a bookmark for a specific job source, use the AWS console (Job → History → Reset bookmark) or the API: <code>glue.reset_job_bookmark(JobName='my_job')</code>. This clears the cursor and forces a full reprocess on the next run.</div>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 11 -->
+  <h2 id="s11">11. Performance Tuning</h2>
+
+  <p>Glue performance tuning operates at three levels: DPU allocation, data layout and partitioning, and Spark configuration. Getting all three right is the difference between a job that runs in 8 minutes and one that runs in 45.</p>
+
+  <h3>DPU Sizing</h3>
+  <p>A standard DPU provides 4 vCPUs and 16 GB of memory. For most batch jobs, start with <code>G.1X</code> workers (1 DPU per worker, good balance). <code>G.2X</code> workers (2 DPUs, 32 GB RAM) are appropriate for memory-intensive operations like large joins, aggregations with high cardinality, or jobs that shuffle heavily. Over-allocating DPUs adds cost without proportional speedup if the job is I/O-bound rather than compute-bound.</p>
+
+  <p>A practical starting point: estimate the total data volume, divide by ~5 GB per DPU per minute as a rough throughput baseline, and size up from there if the job does heavy computation. Always check the Spark UI (accessible via the Glue console during a run) — if executor utilization is under 50% with 10+ DPUs, you're probably over-provisioned.</p>
+
+  <h3>Pushdown Predicates</h3>
+  <p>As covered in the S3 section, pushdown predicates prevent Glue from listing S3 prefixes for partitions outside the filter range. This is the single highest-impact optimization for time-partitioned tables. Always pass a pushdown predicate when processing a date range.</p>
+
+  <h3>enable.s3.parquet.pushdown</h3>
+  <p>This Spark configuration enables predicate pushdown into Parquet file row groups. Parquet stores column statistics (min/max) in row group metadata. With this setting, Spark skips row groups whose statistics guarantee no matching rows, reducing I/O even within a file.</p>
+
+<pre>
+# Set in Glue job parameters (--conf key)
+spark.conf.set("spark.hadoop.fs.s3.parquet.pushdown", "true")
+
+# Or set as a job parameter in Glue console / CDK:
+# Key: --conf
+# Value: spark.hadoop.fs.s3.parquet.pushdown=true
+</pre>
+
+  <h3>Partition Tuning</h3>
+  <p>Spark's default parallelism is 200 partitions after a shuffle. For large datasets this is often too low; for small datasets it creates too many small tasks. Tune with:</p>
+
+<pre>
+# Set shuffle partitions based on data size
+# Rule of thumb: ~128 MB per partition after shuffle
+spark.conf.set("spark.sql.shuffle.partitions", "50")
+
+# Adaptive query execution (Glue 3.0+ with Spark 3.x)
+spark.conf.set("spark.sql.adaptive.enabled", "true")
+spark.conf.set("spark.sql.adaptive.coalescePartitions.enabled", "true")
+</pre>
+
+  <div class="hi">Adaptive Query Execution (AQE) in Spark 3 (Glue 3.0+) automatically coalesces small shuffle partitions and can switch join strategies at runtime based on actual data statistics. Enable it — it provides substantial improvements with no downside for most workloads.</div>
+
+  <h3>Small File Problem</h3>
+  <p>Writing many small files to S3 creates downstream problems: slow Athena scans (each file requires a separate S3 HEAD request), high Glue crawler durations, and poor Parquet encoding efficiency. Use <code>coalesce(n)</code> before writing to control file count. Target 128–256 MB per output file for Athena-read tables.</p>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 12 -->
+  <h2 id="s12">12. Security</h2>
+
+  <h3>IAM Roles</h3>
+  <p>Every Glue job runs under an IAM role. The role needs permissions to: read/write the relevant S3 prefixes, read/write the Glue Data Catalog (via <code>glue:GetTable</code>, <code>glue:UpdateTable</code>, etc.), read Secrets Manager secrets if using JDBC connections, and assume any cross-account roles if the data spans accounts. Follow least-privilege — a Glue role should not have blanket <code>s3:*</code> access.</p>
+
+<pre>
+# Minimum S3 permissions for a Glue ETL role
+{
+  "Effect": "Allow",
+  "Action": [
+    "s3:GetObject",
+    "s3:PutObject",
+    "s3:DeleteObject",
+    "s3:ListBucket"
+  ],
+  "Resource": [
+    "arn:aws:s3:::my-bucket/raw/*",
+    "arn:aws:s3:::my-bucket/processed/*",
+    "arn:aws:s3:::my-bucket"
+  ]
+}
+</pre>
+
+  <h3>VPC Connectivity</h3>
+  <p>Glue jobs that need to connect to JDBC sources in a VPC (RDS, Redshift in a private subnet) require a Glue Connection configured with the VPC, subnet, and security group. The security group must allow outbound TCP on the database port. Glue runs the job workers in the specified subnet, so the subnet must have a NAT Gateway or VPC endpoint for Glue to reach the Glue service APIs and S3.</p>
+
+  <div class="warn"><strong>VPC routing for S3:</strong> If Glue workers are in a private subnet with no NAT and only a VPC endpoint for S3, the endpoint policy must allow the Glue job's IAM role. Without this, S3 writes will fail silently at the network level — a confusing failure mode to diagnose.</div>
+
+  <h3>Encryption</h3>
+  <p>Glue supports encryption at rest for: job scripts (S3 SSE-KMS), temporary shuffle data (Glue security configuration), Data Catalog (AWS managed or CMK), and CloudWatch logs. For regulated environments, create a Glue Security Configuration that enforces S3 encryption with a CMK and attach it to all jobs. The KMS key policy must allow the Glue job role to use it.</p>
+
+  <h3>Lake Formation</h3>
+  <p>Lake Formation sits on top of the Glue Data Catalog and adds column-level and row-level access control. When Lake Formation is enabled, IAM permissions on S3 paths are no longer sufficient — you must also grant Lake Formation table permissions. Glue jobs accessing LF-governed tables need both IAM permissions and LF grants. The combination is powerful for multi-team data mesh patterns but adds significant IAM/LF configuration complexity.</p>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 13 -->
+  <h2 id="s13">13. Common Gotchas and Anti-Patterns</h2>
+
+  <div class="warn">
+    <strong>1. Ignoring transformation_ctx:</strong> Omitting or inconsistently naming the <code>transformation_ctx</code> breaks Job Bookmarks and also disables Glue's job metrics collection for that transformation. Always set it for every source, sink, and transform that supports it.
+  </div>
+
+  <div class="warn">
+    <strong>2. Writing with Spark API, reading with Glue API:</strong> If you write a table using <code>df.write.parquet()</code> and later read it with <code>glueContext.create_dynamic_frame.from_catalog()</code>, the Catalog may be stale — it doesn't auto-update when the Spark API writes new data. Run a Crawler or update partitions manually after every Spark-API write.
+  </div>
+
+  <div class="warn">
+    <strong>3. Relying on Glue Workflows for complex orchestration:</strong> Glue Workflows have no built-in retry policies at the workflow level, no SLA monitoring, no backfill tooling, and limited error visibility. For anything beyond 5–6 steps, use a proper orchestrator and invoke Glue jobs via API.
+  </div>
+
+  <div class="warn">
+    <strong>4. Over-partitioning S3 output:</strong> Partitioning by hour AND user_id AND event_type creates an explosion of S3 prefixes with tiny files. Athena's minimum billing unit per file scan is 10 MB — tiny files make queries expensive. Partition by the columns your consumers filter on most commonly (usually date range), not every dimension.
+  </div>
+
+  <div class="warn">
+    <strong>5. Not pinning the Glue version:</strong> Glue version determines the Spark version. Upgrading Glue version (e.g., 2.0 → 4.0) changes Spark behavior, available libraries, and default configurations. Always pin the Glue version in IaC definitions and test in a non-production environment before upgrading.
+  </div>
+
+  <div class="warn">
+    <strong>6. Crawler auto-updating production catalog tables:</strong> A Crawler with <code>UPDATE_IN_DATABASE</code> schema change behavior will modify the table schema when it detects changes. If a bad file lands in S3 with a schema anomaly, the Crawler will propagate that anomaly to the Catalog and break downstream Athena queries. Use <code>LOG</code> behavior for production tables and review schema changes manually.
+  </div>
+
+  <div class="warn">
+    <strong>7. JDBC without connection pooling for small lookups:</strong> Opening a JDBC connection from every Spark executor is expensive and can exhaust database connection limits. For small dimension table lookups, broadcast them as DataFrames from a single connection rather than letting every executor open its own connection.
+  </div>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 14 -->
+  <h2 id="s14">14. 10 Key Engineering Questions</h2>
+
+  <div class="qa">
+    <div class="qa-q">Q1. What is the difference between a DynamicFrame and a Spark DataFrame, and when would you choose each?</div>
+    <div class="qa-a">A DynamicFrame tolerates per-row schema variability using "choice" types, making it suitable for ingesting raw, dirty data where schema consistency cannot be guaranteed. A DataFrame enforces a uniform schema and integrates fully with Spark's Catalyst optimizer, making it faster and more feature-rich for transformation logic. In practice: use DynamicFrame at the ingestion boundary, convert to DataFrame for transformations, and convert back only if a Glue-specific sink or transform is needed.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q2. How do Glue Job Bookmarks work, and what are their failure modes?</div>
+    <div class="qa-a">Bookmarks track processed S3 files by last-modified timestamp and filename, or JDBC records by a sequential key column. On each successful run, the cursor advances. On the next run, only data newer than the cursor is read. They break for: backfill (must reset manually), late-arriving files with old timestamps (missed entirely), JDBC row updates (only inserts are captured), and renamed transformation_ctx (resets the bookmark).</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q3. What is a pushdown predicate in Glue, and how does it differ from a Spark filter?</div>
+    <div class="qa-a">A pushdown predicate filters at the Data Catalog partition metadata level — it prevents Glue from even listing S3 prefixes for excluded partitions. A Spark filter applies after data is read into memory. Pushdown predicates reduce I/O and S3 list call costs; Spark filters only reduce CPU cost after data is already loaded. Use pushdown predicates for partition-key filters and Spark filters for row-level conditions on non-partition columns.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q4. Explain the S3 staging bucket pattern for Glue-to-Redshift writes.</div>
+    <div class="qa-a">Glue cannot efficiently stream data directly into Redshift via JDBC at Spark scale. Instead, the Glue Redshift connector writes the output data to a temporary S3 prefix first, then triggers a Redshift COPY command from that prefix. The Redshift cluster's IAM role (not the Glue role) must have permission to read from the staging bucket. The staging prefix accumulates data and must be cleaned via S3 lifecycle rules — the connector does not auto-expire it.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q5. How do you handle schema evolution in a Glue + Athena pipeline without breaking downstream consumers?</div>
+    <div class="qa-a">Use additive schema changes only (new nullable columns) since Parquet is forward-compatible for additions. Gate Crawlers with LOG-only schema change behavior and review detected changes before applying them. For breaking changes (type changes, column renames), write to a new partition range or new table and migrate consumers deliberately. Use schema registries (AWS Glue Schema Registry) for streaming pipelines to enforce compatibility policies at the producer level.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q6. What is resolveChoice and when do you need it?</div>
+    <div class="qa-a">resolveChoice resolves "choice" types — columns where different rows have different data types in a DynamicFrame. It offers four strategies: cast:type (force all to one type), make_cols (one column per type variant), make_struct (embed variants in a struct), and project:type (keep only matching-type rows). It's needed after ingesting raw data where a column's type is inconsistent, typically before converting to a DataFrame for processing.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q7. How would you tune a slow Glue job that processes 500 GB of Parquet data daily?</div>
+    <div class="qa-a">First, apply a pushdown predicate to read only the relevant date partition. Enable Adaptive Query Execution (Spark 3 / Glue 3+). Tune shuffle partitions based on post-shuffle data size (target ~128 MB per partition). Check the Spark UI for skewed tasks — if one partition is 10x larger than others, add a salt key to redistribute. Use G.2X workers if the job is memory-bound (large joins, high-cardinality aggregations). Coalesce output files to 128–256 MB per file to avoid downstream read overhead.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q8. When would you use Glue Workflows vs AWS Step Functions for pipeline orchestration?</div>
+    <div class="qa-a">Use Glue Workflows for simple linear or conditional pipelines that are entirely Glue-native and don't require retry policies, SLA alerting, backfill, or cross-system steps. Use Step Functions when the pipeline includes non-Glue steps (Lambda, ECS, SNS notifications), requires sophisticated retry with exponential backoff, needs per-step timeout enforcement, or has more than 6–8 steps where Glue Workflow visibility becomes limiting.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q9. What security considerations apply when running Glue in a VPC?</div>
+    <div class="qa-a">The Glue job workers are placed in the specified subnet. The subnet needs: a route to S3 (via VPC endpoint or NAT), a route to Glue service APIs (via interface endpoint or NAT), and security group rules allowing outbound TCP to the JDBC source port. The S3 VPC endpoint policy must permit the Glue job role. Glue also requires a self-referencing security group rule (inbound from itself) for inter-executor communication within the job.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Q10. How does the Glue Data Catalog relate to Athena and what are the implications of Crawler-based schema management?</div>
+    <div class="qa-a">Athena uses the Glue Data Catalog as its metastore — every Athena database and table is a Catalog entity. Crawlers populate and update these entities automatically. The implication is that Crawler behavior directly affects query correctness: a Crawler that updates a column type can silently break Athena queries reading older Parquet files with the previous type. Production tables should use LOG schema-change behavior and have human review gates before Catalog updates are applied.</div>
+  </div>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 15 -->
+  <h2 id="s15">15. Production Story Angles</h2>
+
+  <p>At a large financial institution, Glue ETL jobs formed the core of a multi-zone data lake. Raw telemetry and transactional event data landed in an S3 raw zone via Kinesis Firehose, arriving as gzip-compressed JSON. A set of Glue PySpark jobs ran hourly, triggered by EventBridge rules reacting to S3 object creation events — rather than polling on a schedule. This event-driven pattern reduced processing latency from up to 60 minutes (with a scheduled trigger) to under 5 minutes for the first batch after landing.</p>
+
+  <p>Each job read from the raw zone using the Glue Data Catalog with a pushdown predicate scoped to the current processing window. The raw JSON was ingested as a DynamicFrame (to handle occasional schema anomalies from upstream producers), passed through <code>resolveChoice</code> to flatten any ambiguous numeric types, mapped to a canonical schema via <code>applyMapping</code>, and written to the processed zone as Parquet partitioned by <code>year/month/day/hour</code>. After each write, the job registered new partitions in the Catalog using Athena's <code>ALTER TABLE ADD PARTITION</code> SQL (invoked via <code>boto3</code>) rather than running a full Crawler — this avoided the Crawler's overhead on a table with tens of thousands of partitions.</p>
+
+  <p>The Data Catalog served as the single schema source of truth for both Athena ad-hoc queries and Redshift Spectrum external tables. Schema changes followed a deliberate promotion process: new column additions were first deployed to the raw-to-processed job and confirmed in a non-production catalog, then added to the production Catalog table as nullable columns using DDL, then added to the Redshift Spectrum view. This avoided the "Crawler surprises production" failure mode entirely.</p>
+
+  <p>Job Bookmarks were used selectively — only on the raw-to-processed jobs where an upstream replay was never expected. For jobs that supported backfill (historical reprocessing), bookmarks were disabled and date-range parameters were passed explicitly via Workflow run properties. This kept the reprocessing path clean and avoided having to reset bookmarks manually in production under pressure.</p>
+
+  <p>Performance-wise, the biggest gains came from two changes: adding pushdown predicates (reducing per-run scan from the full table to the current hourly partition) and enabling Adaptive Query Execution after upgrading to Glue 3.0. Both changes together reduced median job duration by roughly 60% at the same DPU allocation.</p>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+  <!-- SECTION 16 -->
+  <h2 id="s16">16. Quick Reference Cheat Sheet</h2>
+
+  <div class="cheat">
+    <div class="cheat-row">
+      <div class="ct">DynamicFrame</div>
+      <div class="cd">Glue-native Spark abstraction tolerating per-row schema variability via "choice" types</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">resolveChoice</div>
+      <div class="cd">Resolve choice columns: cast:type | make_cols | make_struct | project:type</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">applyMapping</div>
+      <div class="cd">Rename + cast columns in one step: (src_name, src_type, tgt_name, tgt_type)</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">transformation_ctx</div>
+      <div class="cd">Bookmark key — must be stable across runs; renaming resets the bookmark</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">push_down_predicate</div>
+      <div class="cd">Filter partitions at Catalog level before S3 scan — partition columns only</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">Job Bookmark</div>
+      <div class="cd">Incremental cursor — S3: tracks by file mtime+name; JDBC: tracks by sequential key</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">DPU (G.1X)</div>
+      <div class="cd">4 vCPU + 16 GB RAM per worker; G.2X doubles to 8 vCPU + 32 GB</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">redshiftTmpDir</div>
+      <div class="cd">S3 staging prefix for Glue↔Redshift COPY/UNLOAD — must be same region as cluster</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">AQE</div>
+      <div class="cd">Adaptive Query Execution (Spark 3 / Glue 3+) — auto-coalesces partitions at runtime</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">MSCK REPAIR</div>
+      <div class="cd">Bulk-register S3 Hive-style partitions into Catalog; slower than ALTER TABLE ADD PARTITION</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">Crawler schema policy</div>
+      <div class="cd">LOG vs UPDATE_IN_DATABASE — always use LOG for production tables to gate schema changes</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">partitionOverwriteMode</div>
+      <div class="cd">Set to "dynamic" to overwrite only written partitions, not the entire table prefix</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">Glue Version</div>
+      <div class="cd">Maps to Spark version: Glue 4.0 → Spark 3.3; always pin in IaC</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">Security Config</div>
+      <div class="cd">Glue resource that enforces S3/CloudWatch/shuffle encryption — attach to all jobs in regulated envs</div>
+    </div>
+    <div class="cheat-row">
+      <div class="ct">Workflow run props</div>
+      <div class="cd">Key/value map passed to all jobs in a workflow run — use for dynamic date params</div>
+    </div>
+  </div>
+
+  <a class="back-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>
