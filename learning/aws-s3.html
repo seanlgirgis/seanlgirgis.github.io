@@ -274,7 +274,11 @@
 
     <!-- Title -->
     <h1>Amazon S3 — Master Engineering Reference</h1>
-    <p class="subtitle">Interview refresh + NotebookLM source &nbsp;·&nbsp; Senior Data Engineer &nbsp;·&nbsp; Last updated April 2026 &nbsp;·&nbsp; 30–40 min read</p>
+    <p class="subtitle">Interview refresh + NotebookLM source &nbsp;·&nbsp; Senior Data Engineer &nbsp;·&nbsp; Last updated 2026-04-13 &nbsp;·&nbsp; 30–40 min read</p>
+    <div class="hi">
+        <strong>Purpose:</strong> refresh<br>
+        <strong>Audience:</strong> Senior Data Engineer preparing for Lead DE interview
+    </div>
     <div class="tag-row">
         <span class="tag">AWS S3</span>
         <span class="tag">Data Lake</span>
@@ -288,9 +292,8 @@
     <!-- Audio -->
     <div class="audio-box">
         <div class="audio-label">🎧 Audio Podcast Overview — NotebookLM Generated</div>
-        <iframe src="https://1drv.ms/u/c/cb6c7a3afba57a62/IQTEaA7TfhVWTK9BbObeiOCLAXu2CvNgIbsGBjiTayGfXPM"
-            height="120" frameborder="0" scrolling="no"></iframe>
-        <div class="video-hint">🎬 Video deep-dive: coming soon</div>
+        <div class="video-hint">Audio link coming later</div>
+        <div class="video-hint">Video link coming later</div>
     </div>
 
     <!-- TOC -->
@@ -310,7 +313,7 @@
             <li><a href="#s11">Event Notifications</a></li>
             <li><a href="#s12">Consistency Model</a></li>
             <li><a href="#s13">10 Interview Q&amp;A</a></li>
-            <li><a href="#s14">Your Citi Story Angles</a></li>
+            <li><a href="#s14">Your Story Angles</a></li>
             <li><a href="#cheat">Quick Reference Cheat Sheet</a></li>
         </ol>
     </div>
@@ -332,6 +335,7 @@
         <tr><td><strong>File</strong></td><td>EFS</td><td>Shared file systems across EC2</td></tr>
         <tr><td><strong>Warehouse</strong></td><td>Redshift</td><td>Structured analytics queries</td></tr>
     </table>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> S3 replicates across multiple Availability Zones by default and is built for 11 9's durability, enabling virtually unlimited scale without infrastructure management.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 2 ── -->
@@ -365,6 +369,7 @@
         <li>Example: After 30 days → S3-IA &nbsp;→&nbsp; After 90 days → Glacier &nbsp;→&nbsp; After 365 days → delete</li>
         <li>Critical for cost management on large data lakes</li>
     </ul>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> Lifecycle rules can also move data into Intelligent-Tiering automatically and expire incomplete multipart uploads to reduce waste.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 3 ── -->
@@ -385,11 +390,12 @@
         Processed/curated (read occasionally) → <code>Standard-IA</code> or <code>Intelligent-Tiering</code><br>
         Archive (compliance, rarely touched) → <code>Glacier</code>
     </div>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> S3 Express One Zone is an option for single-digit millisecond latency and very high throughput hot paths.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 4 ── -->
     <h2 id="s4">4. Data Lake Patterns</h2>
-    <p>This is the most important section for your interview. Capital One will care about how you design an S3-based data platform.</p>
+    <p>This is the most important section for your interview. Hiring teams will care about how you design an S3-based data platform.</p>
     <h3>The Three-Zone Pattern</h3>
     <pre>s3://company-datalake/
     ├── raw/           ← Landing zone: exactly as received, never modified
@@ -401,7 +407,7 @@
         <li><strong>Curated</strong> = aggregated, partitioned optimally for query patterns. Redshift or Athena reads from here.</li>
     </ul>
     <div class="hi">
-        <strong>Your Citi parallel:</strong><br>
+        <strong>Your parallel:</strong><br>
         <code>BMC TrueSight telemetry → S3 raw/ → Glue ETL → S3 processed/ → Redshift → Forecasting models</code><br>
         This is exactly the three-zone pattern. You lived it — just name it properly in the interview.
     </div>
@@ -409,6 +415,7 @@
     <pre>s3://citi-capacity/raw/source=bmc-truesight/year=2026/month=04/day=13/
 s3://citi-capacity/processed/entity=server/year=2026/month=04/
 s3://citi-capacity/curated/domain=capacity/report=monthly-utilization/</pre>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> A common extension is a fourth analytics/consumption zone for BI-optimized outputs and feature-store-ready datasets.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 5 ── -->
@@ -440,6 +447,7 @@ WHERE year='2026' AND region='us-east'  → partition by year/region</pre>
         <li><strong>Compaction jobs</strong>: Glue job that reads many small files → writes fewer large files</li>
         <li><strong>Coalesce in Spark</strong>: <code>df.coalesce(10).write.parquet(path)</code></li>
     </ul>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> Target Parquet file sizes around 128MB–1GB. Modern table formats (Iceberg/Delta) can help automate compaction and metadata management.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 6 ── -->
@@ -465,9 +473,10 @@ WHERE year='2026' AND region='us-east'  → partition by year/region</pre>
         <li><strong>Client-side</strong>: You encrypt before upload — maximum control, maximum complexity</li>
     </ul>
     <div class="hi">
-        <strong>For Capital One specifically:</strong><br>
+        <strong>For financial services specifically:</strong><br>
         <em>"All S3 buckets had Block Public Access enabled at the account level. Data at rest used SSE-KMS so every access was auditable through CloudTrail. IAM roles were scoped to least-privilege — Glue jobs had read on raw/, write on processed/ only."</em>
     </div>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> For regulated data, combine Object Lock (WORM), Macie classification, and S3 Inventory for governance and auditability.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 7 ── -->
@@ -495,6 +504,7 @@ s3://bucket/b7d1/2026/04/13/file.parquet</pre>
     </ul>
     <h3>Transfer Acceleration</h3>
     <p>Routes uploads through AWS CloudFront edge locations → faster for geographically distributed sources.</p>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> Monitor CloudWatch metrics (errors, request rates, object counts) and alarm on 4xx/5xx spikes and throttling patterns.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 8 ── -->
@@ -526,6 +536,7 @@ Athena / Redshift Spectrum (queries using catalog metadata)</pre>
     <div class="hi">
         <strong>Your Citi connection:</strong> Glue jobs read raw telemetry from <code>s3://raw/</code>, transformed and typed the data, wrote Parquet to <code>s3://processed/</code>. Redshift loaded from <code>s3://processed/</code> via COPY command.
     </div>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> Use Glue job bookmarks to avoid reprocessing and add data quality rules before writing to processed/.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 9 ── -->
@@ -557,6 +568,7 @@ FORMAT AS PARQUET PARALLEL ON;</pre>
         <li><code>KEY</code> — distribute on a column, good for join-heavy queries</li>
         <li><code>ALL</code> — copy to every node, good for small dimension tables</li>
     </ul>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> For very large loads, consider COPY with MANIFEST and evaluate AUTO distribution/sort optimization features.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 10 ── -->
@@ -592,6 +604,7 @@ s3.put_object(Bucket='citi-capacity', Key='processed/2026/04/13/data.parquet', B
 # List files with prefix
 response = s3.list_objects_v2(Bucket='citi-capacity', Prefix='raw/2026/04/13/')
 files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> Prefer streaming helpers like <code>upload_fileobj()</code>/<code>download_fileobj()</code> for large files and explicit encryption settings in writes.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 11 ── -->
@@ -621,6 +634,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
   }
 }</pre>
     <p>Route to Step Functions, ECS, Glue — anything.</p>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> Filter by suffix (for example <code>.parquet</code>) and use SQS + DLQ for resilient high-volume event processing.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 12 ── -->
@@ -633,6 +647,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
     </ul>
     <div class="warn"><strong>Pre-December 2020:</strong> S3 had eventual consistency for overwrites and deletes. You may see this in older articles — it no longer applies.</div>
     <p><strong>Why this matters for pipelines:</strong> You can safely read a file immediately after writing it. No sleep/retry loops. For concurrent writes to the same key, include unique timestamps or UUIDs in file names to avoid races.</p>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> LIST operations are strongly consistent now; for multi-object ACID semantics, use table formats like Iceberg/Delta on top of S3.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 13 ── -->
@@ -685,15 +700,15 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
 
     <div class="qa">
         <div class="qa-q">Q10 — "Tell me about a time you used S3 in a production data pipeline."</div>
-        <div class="qa-a">Use <strong>Story 4 from your interview prep file.</strong> Citi → hybrid platform → S3 landing zone → Glue ETL → Redshift forecasting workloads → ECS containerized Python jobs. 6,000+ endpoints, 8 years production, Oracle alongside for existing reporting.</div>
+        <div class="qa-a">Use <strong>Story 4 from your interview prep file.</strong> Previous role → hybrid platform → S3 landing zone → Glue ETL → Redshift forecasting workloads → ECS containerized Python jobs. 6,000+ endpoints, 8 years production, Oracle alongside for existing reporting.</div>
     </div>
 
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 14 ── -->
-    <h2 id="s14">14. Your Citi Story Angles</h2>
+    <h2 id="s14">14. Your Story Angles</h2>
     <table>
-        <tr><th>Concept</th><th>Your Citi Experience</th></tr>
+        <tr><th>Concept</th><th>Your Experience</th></tr>
         <tr><td>Three-zone data lake</td><td>Raw telemetry → processed → Redshift curated</td></tr>
         <tr><td>Glue ETL</td><td>Transformed BMC TrueSight telemetry, type-cast, deduped</td></tr>
         <tr><td>Redshift COPY</td><td>Loaded processed Parquet files into forecasting tables</td></tr>
@@ -705,6 +720,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
         <tr><td>Event notifications</td><td>File landing triggered downstream Glue crawler</td></tr>
         <tr><td>Partitioning</td><td>year/month/day + source system prefix for query efficiency</td></tr>
     </table>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> In interviews, quantify impact (cost reduction, throughput gain, reliability improvement) to make the story memorable.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── Cheat Sheet ── -->
@@ -723,6 +739,8 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
         <div class="cheat-row"><span class="ct">DynamicFrame</span><span class="cd">Glue's schema-flexible version of Spark DataFrame</span></div>
         <div class="cheat-row"><span class="ct">Compaction</span><span class="cd">Merging small files into larger ones for performance</span></div>
     </div>
+    <div class="hi"><strong>Helpful Addition for Learners (Quick Reference):</strong> Iceberg/Delta on S3 add schema evolution, time travel, and ACID transactions while keeping data in open object storage.</div>
+    <div class="warn">Feed this page source to NotebookLM and ask the hosts to focus on sections 4, 5, 8, 9, and 13 for the audio overview.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
 </div><!-- /doc -->
