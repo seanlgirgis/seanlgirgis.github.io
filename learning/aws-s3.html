@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon S3 — Master Engineering Reference | Sean Girgis</title>
+    <meta name="description" content="Complete Amazon S3 engineering reference: data lake patterns, partitioning, security, Glue/Redshift/ECS integration, and interview Q&A.">
+    <link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-s3.html">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* ── Page-level overrides ─────────────────────────────── */
+        body {
+            background: var(--bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px 80px;
+        }
+
+        /* ── Back nav ─────────────────────────────────────────── */
+        .back-nav {
+            margin-bottom: 24px;
+        }
+        .back-nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+        .back-nav a:hover { text-decoration: underline; }
+
+        /* ── Hero ─────────────────────────────────────────────── */
+        .hero {
+            background: var(--primary);
+            color: white;
+            padding: 36px 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: 1.9em;
+        }
+        .hero .meta-row {
+            display: flex;
+            gap: 20px;
+            font-size: 0.88em;
+            opacity: 0.85;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .hero-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .hero-tag {
+            background: rgba(255,255,255,0.18);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.82em;
+        }
+
+        /* ── Media embeds ─────────────────────────────────────── */
+        .media-section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-left: 5px solid var(--accent);
+            border-radius: 8px;
+            padding: 24px 28px;
+            margin-bottom: 30px;
+        }
+        .media-section h3 {
+            margin: 0 0 16px;
+            color: var(--primary);
+            font-size: 1.05em;
+        }
+        .media-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 640px) { .media-grid { grid-template-columns: 1fr; } }
+        .media-player {
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
+        .media-player .media-icon { font-size: 2em; margin-bottom: 8px; }
+        .media-player .media-label { font-weight: 600; color: var(--primary); margin-bottom: 6px; font-size:0.95em; }
+        .media-player .media-hint { font-size: 0.82em; color: #999; font-style: italic; }
+        .media-player audio, .media-player video { width: 100%; border-radius: 4px; margin-top: 8px; }
+
+        /* ── TOC ──────────────────────────────────────────────── */
+        .toc {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 22px 28px;
+            margin-bottom: 30px;
+        }
+        .toc h3 { margin: 0 0 12px; color: var(--primary); font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em; }
+        .toc ol { margin: 0; padding-left: 20px; }
+        .toc li { margin-bottom: 5px; }
+        .toc a { color: var(--primary); text-decoration: none; font-size: 0.92em; }
+        .toc a:hover { text-decoration: underline; }
+
+        /* ── Content sections ─────────────────────────────────── */
+        .content-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 32px 36px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--primary);
+        }
+        .content-section h2 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 1.3em;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .content-section h3 {
+            color: #333;
+            font-size: 1.05em;
+            margin-top: 24px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9em;
+        }
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 9px 12px;
+            text-align: left;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:nth-child(even) td { background: #f9f9f9; }
+
+        /* Code blocks */
+        pre {
+            background: #1e2a38;
+            color: #e8edf2;
+            padding: 18px 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.88em;
+            line-height: 1.55;
+            margin: 14px 0;
+        }
+        code {
+            background: #f0f4f8;
+            color: #004a99;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        /* Blockquotes (interview answers) */
+        blockquote {
+            border-left: 4px solid var(--accent);
+            margin: 16px 0;
+            padding: 14px 18px;
+            background: #fffaf5;
+            border-radius: 0 6px 6px 0;
+            color: #444;
+            font-style: italic;
+            line-height: 1.7;
+        }
+        blockquote strong { font-style: normal; }
+
+        /* Q&A styling */
+        .qa-block {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .qa-question {
+            background: #f0f5ff;
+            padding: 14px 18px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.97em;
+        }
+        .qa-answer {
+            padding: 16px 18px;
+            line-height: 1.75;
+            color: #444;
+            font-style: italic;
+        }
+
+        /* Story map table */
+        .story-table th { background: #004a99; }
+
+        /* Cheat sheet */
+        .cheat-sheet {
+            background: #1e2a38;
+            color: #e8edf2;
+            border-radius: 8px;
+            padding: 24px 28px;
+        }
+        .cheat-row {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            font-size: 0.9em;
+        }
+        .cheat-row:last-child { border-bottom: none; }
+        .cheat-term { color: #f5a623; font-family: monospace; font-weight: bold; }
+        .cheat-def { color: #c8d8e8; }
+
+        /* Highlight box */
+        .highlight-box {
+            background: #e8f4fd;
+            border-left: 4px solid var(--primary);
+            padding: 14px 18px;
+            border-radius: 0 6px 6px 0;
+            margin: 14px 0;
+        }
+        .highlight-box strong { color: var(--primary); }
+
+        /* Warning box */
+        .warn-box {
+            background: #fff8e6;
+            border-left: 4px solid var(--accent);
+            padding: 14px 18px;
+            border-radius: 0 6px 6px 0;
+            margin: 14px 0;
+        }
+
+        ul li, ol li { margin-bottom: 5px; line-height: 1.65; }
+    </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+    <!-- Back navigation -->
+    <div class="back-nav">
+        <a href="https://seanlgirgis.github.io/#learning">&larr; Learning Hub</a>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+        <h1>Amazon S3 — Master Engineering Reference</h1>
+        <div class="meta-row">
+            <span>📅 Last updated: April 2026</span>
+            <span>⏱ 30–40 min read</span>
+            <span>🎯 Interview prep · Capital One Lead DE</span>
+        </div>
+        <div class="hero-tags">
+            <span class="hero-tag">AWS S3</span>
+            <span class="hero-tag">Data Lake</span>
+            <span class="hero-tag">AWS Glue</span>
+            <span class="hero-tag">Amazon Redshift</span>
+            <span class="hero-tag">ECS/EC2</span>
+            <span class="hero-tag">Security</span>
+            <span class="hero-tag">Partitioning</span>
+        </div>
+    </div>
+
+    <!-- Media Section -->
+    <div class="media-section">
+        <h3>🎙️ Audio &amp; Video Overview — NotebookLM Generated</h3>
+        <div class="media-grid">
+
+            <div class="media-player" id="audio-player">
+                <div class="media-icon">🎧</div>
+                <div class="media-label">Audio Podcast Overview</div>
+                <!-- To enable: replace the src below with your OneDrive direct-download link -->
+                <!-- OneDrive direct link format: https://onedrive.live.com/download?resid=... -->
+                <div class="media-hint" id="audio-hint">No audio uploaded yet.<br>Upload to OneDrive → share → paste link below.</div>
+                <!-- <audio controls>
+                    <source src="YOUR_ONEDRIVE_AUDIO_LINK_HERE" type="audio/mpeg">
+                    Your browser does not support audio playback.
+                </audio> -->
+            </div>
+
+            <div class="media-player" id="video-player">
+                <div class="media-icon">🎬</div>
+                <div class="media-label">Video Deep-Dive</div>
+                <div class="media-hint" id="video-hint">No video uploaded yet.<br>Upload to OneDrive → share → paste link below.</div>
+                <!-- <video controls poster="">
+                    <source src="YOUR_ONEDRIVE_VIDEO_LINK_HERE" type="video/mp4">
+                    Your browser does not support video playback.
+                </video> -->
+            </div>
+
+        </div>
+        <p style="font-size:0.82em; color:#999; margin-top:14px; margin-bottom:0;">
+            To add media: upload the file to OneDrive, get a shareable direct-download link, then uncomment the
+            <code>&lt;audio&gt;</code> or <code>&lt;video&gt;</code> tag above and replace <code>YOUR_ONEDRIVE_..._LINK_HERE</code>.
+        </p>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+            <li><a href="#s1">What S3 Actually Is</a></li>
+            <li><a href="#s2">Core Concepts</a></li>
+            <li><a href="#s3">Storage Classes</a></li>
+            <li><a href="#s4">Data Lake Patterns</a></li>
+            <li><a href="#s5">Partitioning Strategy</a></li>
+            <li><a href="#s6">Security Model</a></li>
+            <li><a href="#s7">Performance at Scale</a></li>
+            <li><a href="#s8">S3 + Glue Integration</a></li>
+            <li><a href="#s9">S3 + Redshift Integration</a></li>
+            <li><a href="#s10">S3 + ECS/EC2 Pipelines</a></li>
+            <li><a href="#s11">Event Notifications and Pipeline Triggers</a></li>
+            <li><a href="#s12">Consistency Model</a></li>
+            <li><a href="#s13">10 Interview Questions and Answers</a></li>
+            <li><a href="#s14">Your Citi Story Angles</a></li>
+            <li><a href="#cheatsheet">Quick Reference Cheat Sheet</a></li>
+        </ol>
+    </div>
+
+    <!-- ── Section 1 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s1">
+        <h2>1. What S3 Actually Is</h2>
+        <p>
+            S3 is <strong>object storage</strong> — not a file system, not a database. Think of it as an
+            infinitely large key-value store where:
+        </p>
+        <ul>
+            <li>The <strong>key</strong> is the full path: <code>s3://my-bucket/raw/2026/04/13/telemetry.json</code></li>
+            <li>The <strong>value</strong> is the file content (any format, any size)</li>
+            <li>There are <strong>no real "folders"</strong> — the <code>/</code> in the key is just a naming convention</li>
+        </ul>
+        <div class="highlight-box">
+            <strong>Why this matters in interviews:</strong> When someone asks "how does S3 work under the hood,"
+            the answer is: flat namespace, keys that look like paths, metadata attached to each object.
+            The folder illusion is just the console making it friendly.
+        </div>
+
+        <h3>S3 vs Other Storage Types</h3>
+        <table>
+            <tr><th>Storage Type</th><th>Example</th><th>Best For</th></tr>
+            <tr><td><strong>Object</strong></td><td>S3</td><td>Data lakes, backups, pipeline staging</td></tr>
+            <tr><td><strong>Block</strong></td><td>EBS</td><td>Databases, OS volumes</td></tr>
+            <tr><td><strong>File</strong></td><td>EFS</td><td>Shared file systems across EC2</td></tr>
+            <tr><td><strong>Warehouse</strong></td><td>Redshift</td><td>Structured analytics queries</td></tr>
+        </table>
+    </div>
+
+    <!-- ── Section 2 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s2">
+        <h2>2. Core Concepts</h2>
+
+        <h3>Buckets</h3>
+        <ul>
+            <li>Global namespace — bucket names must be <strong>globally unique</strong> across all AWS accounts</li>
+            <li>Tied to a <strong>region</strong> — data stays in that region unless you replicate</li>
+            <li>Flat container — no true hierarchy, just key prefixes</li>
+        </ul>
+
+        <h3>Objects</h3>
+        <ul>
+            <li>Max object size: <strong>5 TB</strong></li>
+            <li>Each object = data + metadata (system metadata like <code>Content-Type</code> + custom metadata)</li>
+            <li>Identified uniquely by: <strong>bucket + key + version ID</strong> (if versioning enabled)</li>
+        </ul>
+
+        <h3>Keys</h3>
+        <ul>
+            <li>The full "path" of an object</li>
+            <li>Example: <code>telemetry/raw/year=2026/month=04/day=13/host=srv001/data.parquet</code></li>
+            <li>Key design directly impacts <strong>Glue performance</strong>, <strong>Athena query cost</strong>, and <strong>request throughput</strong></li>
+        </ul>
+
+        <h3>Versioning</h3>
+        <ul>
+            <li>Once enabled, every PUT creates a new version — old versions preserved</li>
+            <li>DELETE creates a <strong>delete marker</strong>, doesn't actually remove the object</li>
+            <li>Useful for: audit trails, accidental deletion protection, pipeline replay</li>
+        </ul>
+
+        <h3>Lifecycle Policies</h3>
+        <ul>
+            <li>Rules that automatically transition objects between storage classes or expire them</li>
+            <li>Example rule: After 30 days → S3-IA → After 90 days → Glacier → After 365 days → delete</li>
+            <li>Critical for cost management on large data lakes</li>
+        </ul>
+    </div>
+
+    <!-- ── Section 3 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s3">
+        <h2>3. Storage Classes</h2>
+        <p>Understanding when to use each class is a common interview question.</p>
+
+        <table>
+            <tr>
+                <th>Class</th>
+                <th>Access Pattern</th>
+                <th>Retrieval</th>
+                <th>Use Case</th>
+            </tr>
+            <tr>
+                <td><strong>S3 Standard</strong></td>
+                <td>Frequent</td>
+                <td>Milliseconds</td>
+                <td>Active pipeline data, hot landing zone</td>
+            </tr>
+            <tr>
+                <td><strong>S3 Intelligent-Tiering</strong></td>
+                <td>Unknown/changing</td>
+                <td>Milliseconds</td>
+                <td>Data with unpredictable access patterns</td>
+            </tr>
+            <tr>
+                <td><strong>S3 Standard-IA</strong></td>
+                <td>Infrequent</td>
+                <td>Milliseconds</td>
+                <td>Processed data accessed occasionally</td>
+            </tr>
+            <tr>
+                <td><strong>S3 One Zone-IA</strong></td>
+                <td>Infrequent, non-critical</td>
+                <td>Milliseconds</td>
+                <td>Reproducible data, dev/test</td>
+            </tr>
+            <tr>
+                <td><strong>S3 Glacier Instant</strong></td>
+                <td>Rare, needs fast access</td>
+                <td>Milliseconds</td>
+                <td>Compliance archives</td>
+            </tr>
+            <tr>
+                <td><strong>S3 Glacier Flexible</strong></td>
+                <td>Rare</td>
+                <td>Minutes–hours</td>
+                <td>Long-term backups</td>
+            </tr>
+            <tr>
+                <td><strong>S3 Glacier Deep Archive</strong></td>
+                <td>Almost never</td>
+                <td>12 hours</td>
+                <td>7-year regulatory retention</td>
+            </tr>
+        </table>
+
+        <div class="highlight-box">
+            <strong>Rule of thumb for pipelines:</strong><br>
+            Landing zone (hot, actively written) → <code>S3 Standard</code><br>
+            Processed/curated (read occasionally) → <code>S3 Standard-IA</code> or <code>Intelligent-Tiering</code><br>
+            Archive (compliance, rarely touched) → <code>Glacier</code>
+        </div>
+    </div>
+
+    <!-- ── Section 4 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s4">
+        <h2>4. Data Lake Patterns</h2>
+        <p>This is the most important section for your interview. Capital One will care about how you design an S3-based data platform.</p>
+
+        <h3>The Three-Zone Pattern</h3>
+        <pre>s3://company-datalake/
+    ├── raw/           ← Landing zone: exactly as received, never modified
+    ├── processed/     ← Cleaned, validated, transformed
+    └── curated/       ← Business-ready, optimized for analytics</pre>
+
+        <ul>
+            <li><strong>Raw</strong> = source of truth. If processing goes wrong, you replay from raw. Never delete raw.</li>
+            <li><strong>Processed</strong> = cleansed, deduplicated, type-cast. Glue jobs write here.</li>
+            <li><strong>Curated</strong> = aggregated, partitioned optimally for query patterns. Redshift or Athena reads from here.</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>Your Citi Parallel</strong> — your pipeline flow was:<br>
+            <code>BMC TrueSight telemetry → S3 raw/ → Glue ETL → S3 processed/ → Redshift → Forecasting models</code><br>
+            This is exactly the three-zone pattern. You lived it — just name it properly in the interview.
+        </div>
+
+        <h3>Naming Conventions</h3>
+        <pre>s3://citi-capacity/raw/source=bmc-truesight/year=2026/month=04/day=13/
+s3://citi-capacity/processed/entity=server/year=2026/month=04/
+s3://citi-capacity/curated/domain=capacity/report=monthly-utilization/</pre>
+    </div>
+
+    <!-- ── Section 5 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s5">
+        <h2>5. Partitioning Strategy</h2>
+        <p><strong>Partitioning = how you organize key prefixes to make queries faster and cheaper.</strong></p>
+
+        <h3>Hive-Style Partitioning</h3>
+        <p>The standard pattern — used by Glue, Athena, Spark, and most analytics tools:</p>
+        <pre>s3://bucket/table/year=2026/month=04/day=13/hour=10/filename.parquet</pre>
+        <ul>
+            <li>Glue crawlers automatically detect this pattern and build the catalog</li>
+            <li>Athena uses partition pruning — only scans folders matching your WHERE clause</li>
+            <li>Result: <strong>lower cost, faster queries</strong></li>
+        </ul>
+
+        <h3>Choosing Partition Keys</h3>
+        <p>Ask: "What columns appear most in my WHERE clauses?"</p>
+        <pre>-- If queries filter by date:
+WHERE year='2026' AND month='04'        → partition by year/month
+
+-- If queries filter by server:
+WHERE host='srv001'                     → partition by host
+
+-- If queries filter by both:
+WHERE year='2026' AND region='us-east'  → partition by year/region</pre>
+
+        <div class="warn-box">
+            <strong>Over-Partitioning Anti-Pattern:</strong> Don't partition by high-cardinality columns
+            like <code>host_id</code> if you have 10,000 hosts — creates 10,000 folders with tiny files,
+            Glue metadata overhead kills performance.
+        </div>
+
+        <h3>The Small Files Problem</h3>
+        <p>Parquet files under ~128MB are inefficient. Fix with:</p>
+        <ul>
+            <li><strong>Compaction jobs</strong>: Glue job that reads many small files → writes fewer large files</li>
+            <li><strong>Coalesce in Spark</strong>: <code>df.coalesce(10).write.parquet(path)</code></li>
+        </ul>
+    </div>
+
+    <!-- ── Section 6 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s6">
+        <h2>6. Security Model</h2>
+
+        <div class="highlight-box">
+            <strong>The "Private By Default" Rule:</strong> Every bucket and object in S3 is private by default.
+            Access must be explicitly granted. This is the first thing to say in any security discussion.
+        </div>
+
+        <h3>Four Layers of Access Control</h3>
+        <pre>1. IAM Policies          → Who (user/role) can do what across AWS
+2. Bucket Policies       → What actions are allowed on this specific bucket
+3. S3 Access Points      → Named endpoints with their own policies (for shared datasets)
+4. Block Public Access   → Nuclear override — blocks ALL public access regardless of other policies</pre>
+
+        <h3>IAM Role vs Bucket Policy — When to Use Which</h3>
+        <table>
+            <tr><th>Scenario</th><th>Use</th></tr>
+            <tr><td>EC2/ECS container needs to read S3</td><td>IAM Role attached to EC2/ECS task</td></tr>
+            <tr><td>Glue job needs to read/write S3</td><td>IAM Role attached to Glue job</td></tr>
+            <tr><td>Cross-account access</td><td>Bucket Policy</td></tr>
+            <tr><td>Restrict a specific prefix</td><td>Bucket Policy with Condition on <code>s3:prefix</code></td></tr>
+        </table>
+
+        <h3>Encryption</h3>
+        <ul>
+            <li><strong>SSE-S3</strong>: AWS manages keys, transparent, no cost — default since 2023</li>
+            <li><strong>SSE-KMS</strong>: You manage keys via AWS KMS — auditable, required for compliance (PCI, SOX)</li>
+            <li><strong>Client-side</strong>: You encrypt before upload — maximum control, maximum complexity</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>For Capital One specifically:</strong> Financial services = SSE-KMS + bucket policies + no public access.
+            <br>Answer: <em>"All S3 buckets had Block Public Access enabled at the account level. Data at rest used SSE-KMS
+            so every access was auditable through CloudTrail. IAM roles were scoped to least-privilege —
+            Glue jobs had read on raw/, write on processed/ only."</em>
+        </div>
+    </div>
+
+    <!-- ── Section 7 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s7">
+        <h2>7. Performance at Scale</h2>
+
+        <h3>Request Rate Limits</h3>
+        <ul>
+            <li><strong>3,500 PUT/COPY/POST/DELETE</strong> requests per second per prefix</li>
+            <li><strong>5,500 GET/HEAD</strong> requests per second per prefix</li>
+            <li>If exceeded: throttling (503 errors) → fix by spreading requests across multiple prefixes</li>
+        </ul>
+
+        <h3>Prefix Randomization (Pre-2018 Pattern)</h3>
+        <pre># Old: bad — all traffic hits one prefix
+s3://bucket/2026/04/13/file.parquet
+
+# Old: good — spread across prefixes
+s3://bucket/a3f2/2026/04/13/file.parquet
+s3://bucket/b7d1/2026/04/13/file.parquet</pre>
+        <p><strong>Post-2018: S3 auto-scales per prefix. You no longer need to randomize for performance.</strong> But knowing the history shows depth.</p>
+
+        <h3>Multipart Upload</h3>
+        <p>For objects &gt; 100MB, use multipart upload:</p>
+        <ul>
+            <li>Uploads parts in parallel → faster</li>
+            <li>If one part fails, retry just that part</li>
+            <li>Required for objects &gt; 5GB</li>
+        </ul>
+
+        <h3>Transfer Acceleration</h3>
+        <p>Routes uploads through AWS CloudFront edge locations → faster for geographically distributed sources.</p>
+    </div>
+
+    <!-- ── Section 8 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s8">
+        <h2>8. S3 + Glue Integration</h2>
+        <p>This is your core stack. Know this cold.</p>
+
+        <h3>How Glue Uses S3</h3>
+        <pre>S3 (data store)
+    ↓
+Glue Crawler (scans S3, infers schema, writes to Data Catalog)
+    ↓
+Glue Data Catalog (metadata: table name, schema, partition info, S3 location)
+    ↓
+Glue ETL Job (reads from catalog, transforms, writes back to S3 or Redshift)
+    ↓
+Athena / Redshift Spectrum (queries using catalog metadata)</pre>
+
+        <h3>Glue Crawler</h3>
+        <ul>
+            <li>Scans S3 paths, detects Hive-style partitions, infers schema from Parquet/JSON/CSV</li>
+            <li>Creates/updates tables in the Glue Data Catalog</li>
+            <li>Run on schedule or triggered by S3 event notification</li>
+            <li>Key setting: <code>TableThreshold</code> — how many tables created per crawler run</li>
+        </ul>
+
+        <h3>Glue ETL Job</h3>
+        <ul>
+            <li>Runs PySpark or Python shell</li>
+            <li>Reads from S3 via catalog or direct path</li>
+            <li>Transforms data (cleanse, join, aggregate)</li>
+            <li>Writes back to S3 in Parquet format</li>
+            <li><strong>DynamicFrame</strong> vs <strong>DataFrame</strong>: DynamicFrame handles schema inconsistencies, DataFrame is standard Spark</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>Your Citi connection:</strong> Glue jobs read raw telemetry from <code>s3://raw/</code>
+            (BMC TrueSight dumps), transformed and typed the data, wrote Parquet to <code>s3://processed/</code>,
+            Redshift then loaded from <code>s3://processed/</code> via COPY command.
+        </div>
+    </div>
+
+    <!-- ── Section 9 ──────────────────────────────────────────── -->
+    <div class="content-section" id="s9">
+        <h2>9. S3 + Redshift Integration</h2>
+
+        <h3>COPY Command — The Primary Load Mechanism</h3>
+        <pre>COPY capacity_metrics
+FROM 's3://citi-capacity/processed/entity=server/year=2026/month=04/'
+IAM_ROLE 'arn:aws:iam::123456789:role/RedshiftS3Role'
+FORMAT AS PARQUET;</pre>
+        <ul>
+            <li>Massively parallel — Redshift nodes read S3 files in parallel</li>
+            <li>Parquet is preferred (columnar, compressed, schema embedded)</li>
+            <li>IAM Role must have <code>s3:GetObject</code> and <code>s3:ListBucket</code> permissions</li>
+        </ul>
+
+        <h3>UNLOAD Command — Export From Redshift to S3</h3>
+        <pre>UNLOAD ('SELECT * FROM monthly_utilization WHERE year=2026')
+TO 's3://citi-capacity/curated/exports/'
+IAM_ROLE 'arn:aws:iam::123456789:role/RedshiftS3Role'
+FORMAT AS PARQUET
+PARALLEL ON;</pre>
+
+        <h3>Redshift Spectrum</h3>
+        <ul>
+            <li>Query S3 data directly without loading into Redshift</li>
+            <li>Uses Glue Data Catalog for schema</li>
+            <li>Great for: querying historical data in S3 without paying for Redshift storage</li>
+        </ul>
+
+        <h3>Distribution Styles</h3>
+        <ul>
+            <li><code>EVEN</code> — round-robin distribution, good for large tables with no clear join key</li>
+            <li><code>KEY</code> — distribute on a column, good for join-heavy queries</li>
+            <li><code>ALL</code> — copy to every node, good for small dimension tables</li>
+        </ul>
+    </div>
+
+    <!-- ── Section 10 ─────────────────────────────────────────── -->
+    <div class="content-section" id="s10">
+        <h2>10. S3 + ECS/EC2 Pipelines</h2>
+
+        <h3>How Your Citi Containers Worked</h3>
+        <pre>ECS Task (Python ETL container)
+    ├── Reads config from S3 or environment
+    ├── Pulls raw data from S3 raw/
+    ├── Processes (pandas, scikit-learn, Prophet)
+    └── Writes output to S3 processed/ or pushes to Redshift</pre>
+
+        <h3>IAM Role for ECS Tasks</h3>
+        <p>ECS tasks use <strong>Task Roles</strong> — an IAM role attached to the task definition:</p>
+        <pre>{
+  "Effect": "Allow",
+  "Action": ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
+  "Resource": [
+    "arn:aws:s3:::citi-capacity",
+    "arn:aws:s3:::citi-capacity/*"
+  ]
+}</pre>
+        <div class="warn-box">
+            <strong>Never hardcode AWS credentials in containers.</strong> Always use task roles.
+        </div>
+
+        <h3>boto3 — Python SDK for S3</h3>
+        <pre>import boto3
+
+s3 = boto3.client('s3')
+
+# Read file
+obj = s3.get_object(Bucket='citi-capacity', Key='raw/2026/04/13/data.json')
+data = obj['Body'].read().decode('utf-8')
+
+# Write file
+s3.put_object(
+    Bucket='citi-capacity',
+    Key='processed/2026/04/13/data.parquet',
+    Body=parquet_bytes
+)
+
+# List files with prefix
+response = s3.list_objects_v2(Bucket='citi-capacity', Prefix='raw/2026/04/13/')
+files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
+    </div>
+
+    <!-- ── Section 11 ─────────────────────────────────────────── -->
+    <div class="content-section" id="s11">
+        <h2>11. Event Notifications and Pipeline Triggers</h2>
+        <p>S3 can trigger downstream systems when objects are created, deleted, or restored.</p>
+
+        <h3>Supported Targets</h3>
+        <ul>
+            <li><strong>AWS Lambda</strong> — run a function when a file lands</li>
+            <li><strong>Amazon SQS</strong> — queue the event for a worker to process</li>
+            <li><strong>Amazon SNS</strong> — fan out notifications to multiple subscribers</li>
+            <li><strong>Amazon EventBridge</strong> — route events to any AWS service</li>
+        </ul>
+
+        <h3>Pipeline Trigger Pattern</h3>
+        <pre>New telemetry file lands in s3://raw/
+    → S3 Event Notification
+    → SQS Queue
+    → ECS Task polls queue
+    → Task processes file → writes to s3://processed/
+    → Glue Crawler triggered → updates Data Catalog
+    → Redshift COPY job runs</pre>
+
+        <h3>EventBridge (Modern Approach)</h3>
+        <pre>{
+  "source": ["aws.s3"],
+  "detail-type": ["Object Created"],
+  "detail": {
+    "bucket": {"name": ["citi-capacity"]},
+    "object": {"key": [{"prefix": "raw/"}]}
+  }
+}</pre>
+        <p>Route to Step Functions, ECS, Glue — anything.</p>
+    </div>
+
+    <!-- ── Section 12 ─────────────────────────────────────────── -->
+    <div class="content-section" id="s12">
+        <h2>12. Consistency Model</h2>
+        <div class="highlight-box">
+            S3 provides <strong>strong read-after-write consistency</strong> for all operations (since December 2020).
+        </div>
+
+        <ul>
+            <li>You PUT a file → immediately GET it → you see the new file ✅</li>
+            <li>You DELETE a file → immediately LIST the bucket → file is gone ✅</li>
+            <li>Two writers PUT to the same key simultaneously → <strong>last writer wins</strong> (timestamp-based)</li>
+        </ul>
+
+        <div class="warn-box">
+            <strong>Pre-December 2020:</strong> S3 had eventual consistency for overwrites and deletes.
+            You may see this in older articles — it no longer applies.
+        </div>
+
+        <p><strong>Why this matters for pipelines:</strong></p>
+        <ul>
+            <li>You can safely read a file immediately after writing it</li>
+            <li>No need for sleep/retry loops waiting for consistency</li>
+            <li>For concurrent writes to the same key: design your pipeline to avoid races</li>
+        </ul>
+    </div>
+
+    <!-- ── Section 13 ─────────────────────────────────────────── -->
+    <div class="content-section" id="s13">
+        <h2>13. Ten Interview Questions and Answers</h2>
+
+        <div class="qa-block">
+            <div class="qa-question">Q1: "How would you design an S3-based data lake for a high-volume telemetry pipeline?"</div>
+            <div class="qa-answer">
+                "I'd use a three-zone pattern — raw, processed, curated. Raw is the immutable landing zone, exactly as received.
+                Processed is cleansed and transformed by Glue ETL jobs. Curated is optimized for the query patterns —
+                Hive-partitioned Parquet files that Redshift or Athena can read efficiently. S3 lifecycle policies move data
+                to Standard-IA after 30 days and Glacier after a year. Glue crawlers maintain the Data Catalog so everything is discoverable."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q2: "What's your approach to partitioning data in S3?"</div>
+            <div class="qa-answer">
+                "I partition by the columns that appear most in query WHERE clauses — typically date (year/month/day) and sometimes
+                an entity like region or service. I use Hive-style prefixes so Glue and Athena can prune partitions automatically.
+                I also watch for the small files problem — if a job generates thousands of tiny files I add a compaction step to
+                merge them into ~128MB Parquet files. Over-partitioning on high-cardinality columns like host ID is an anti-pattern I actively avoid."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q3: "How do you secure S3 buckets in a financial services environment?"</div>
+            <div class="qa-answer">
+                "Private by default, Block Public Access enabled at the account level. Data at rest encrypted with SSE-KMS so every
+                key usage is auditable through CloudTrail. IAM roles scoped to least-privilege — Glue jobs get read on raw, write on
+                processed only. Bucket policies for cross-account access. S3 Access Points for shared datasets where multiple teams
+                need different scoped access. And S3 Object Lock for compliance data that can't be modified or deleted."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q4: "What's the difference between IAM policies and bucket policies?"</div>
+            <div class="qa-answer">
+                "IAM policies are attached to principals — users, roles, groups. They define what that principal can do across all
+                of AWS. Bucket policies are attached to the bucket itself and define who can access that specific bucket. For most
+                pipeline use cases I use IAM roles on EC2 and ECS tasks. Bucket policies come in when I need cross-account access
+                or want to restrict access to specific prefixes regardless of what IAM allows."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q5: "How does Glue interact with S3?"</div>
+            <div class="qa-answer">
+                "Glue crawlers scan S3 paths, detect Hive-style partitions, infer schema from Parquet or JSON files, and write
+                table definitions to the Glue Data Catalog. ETL jobs then read from the catalog — they don't need to know the S3
+                path directly. Jobs transform the data and write back to S3 in Parquet format. The catalog makes everything
+                discoverable to Athena, Redshift Spectrum, and other consumers without duplicating metadata."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q6: "How do you load data from S3 into Redshift efficiently?"</div>
+            <div class="qa-answer">
+                "The COPY command — it's massively parallel. Redshift's compute nodes read S3 files in parallel, so the more
+                files you have the faster it loads. I use Parquet format because it's columnar and compressed — much faster than
+                CSV. I make sure the IAM role attached to the Redshift cluster has GetObject and ListBucket on the source S3 path.
+                For very large loads I also tune the distribution style and sort keys on the target table to match the query patterns."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q7: "What is S3 Intelligent-Tiering and when would you use it?"</div>
+            <div class="qa-answer">
+                "Intelligent-Tiering automatically moves objects between Frequent Access and Infrequent Access tiers based on
+                access patterns — no retrieval fee, just a small monitoring fee per object. I'd use it for data where access
+                patterns are unpredictable or change over time — like historical reports that are accessed heavily after
+                generation then rarely touched. For data with known patterns I'd use explicit lifecycle policies instead —
+                it's more predictable on cost."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q8: "How do you trigger a pipeline when a new file lands in S3?"</div>
+            <div class="qa-answer">
+                "S3 Event Notifications sent to SQS is the reliable pattern for pipeline triggers — the queue decouples the
+                producer from the consumer and handles bursts gracefully. The downstream ECS task or Lambda polls the queue
+                and processes files as they arrive. For more complex routing I use EventBridge — it lets me pattern-match on
+                bucket name and key prefix and route to Step Functions or Glue jobs. The key is idempotency — the consumer
+                should handle duplicate events gracefully."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q9: "What is the S3 consistency model?"</div>
+            <div class="qa-answer">
+                "Since December 2020 S3 provides strong read-after-write consistency for all operations. A file you just wrote
+                is immediately readable — no eventual consistency delays for normal operations. The one nuance is concurrent
+                writes to the same key — last writer wins based on timestamp. In pipeline design I avoid concurrent writes to
+                the same key by including unique identifiers like timestamps or UUIDs in the file names."
+            </div>
+        </div>
+
+        <div class="qa-block">
+            <div class="qa-question">Q10: "Tell me about a time you used S3 in a production data pipeline."</div>
+            <div class="qa-answer">
+                Use <strong>Story 4 from your interview prep file.</strong><br>
+                Citi → hybrid platform → S3 landing zone → Glue ETL → Redshift forecasting workloads → ECS containerized Python jobs.
+                6,000+ endpoints, 8 years production, Oracle alongside for existing reporting.
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Section 14 ─────────────────────────────────────────── -->
+    <div class="content-section" id="s14">
+        <h2>14. Your Citi Story Angles</h2>
+        <p>Map your real experience to the concepts in this doc:</p>
+
+        <table class="story-table">
+            <tr><th>Concept</th><th>Your Citi Experience</th></tr>
+            <tr><td>Three-zone data lake</td><td>Raw telemetry → processed → Redshift curated</td></tr>
+            <tr><td>Glue ETL</td><td>Transformed BMC TrueSight telemetry, type-cast, deduped</td></tr>
+            <tr><td>Redshift COPY</td><td>Loaded processed Parquet files into forecasting tables</td></tr>
+            <tr><td>ECS containers</td><td>Containerized Python ETL and forecasting jobs</td></tr>
+            <tr><td>S3 as landing zone</td><td>6,000+ endpoints dumping telemetry to S3 raw/</td></tr>
+            <tr><td>Lifecycle policies</td><td>Archived historical telemetry after retention period</td></tr>
+            <tr><td>IAM roles</td><td>ECS task roles scoped to specific S3 prefixes</td></tr>
+            <tr><td>SSE-KMS</td><td>Financial data encrypted, auditable via CloudTrail</td></tr>
+            <tr><td>Event notifications</td><td>File landing triggered downstream Glue crawler</td></tr>
+            <tr><td>Partitioning</td><td>year/month/day + source system prefix for query efficiency</td></tr>
+        </table>
+    </div>
+
+    <!-- ── Cheat Sheet ─────────────────────────────────────────── -->
+    <div class="content-section" id="cheatsheet" style="border-top-color: var(--accent);">
+        <h2 style="color: var(--accent);">⚡ Quick Reference Cheat Sheet</h2>
+        <div class="cheat-sheet">
+            <div class="cheat-row"><span class="cheat-term">Bucket</span><span class="cheat-def">Globally unique container tied to a region</span></div>
+            <div class="cheat-row"><span class="cheat-term">Key</span><span class="cheat-def">Full object path (the "filename")</span></div>
+            <div class="cheat-row"><span class="cheat-term">Prefix</span><span class="cheat-def">Simulated folder (just part of the key)</span></div>
+            <div class="cheat-row"><span class="cheat-term">Partition</span><span class="cheat-def">Hive-style key prefix for query pruning</span></div>
+            <div class="cheat-row"><span class="cheat-term">COPY</span><span class="cheat-def">Load from S3 to Redshift (parallel, fast)</span></div>
+            <div class="cheat-row"><span class="cheat-term">UNLOAD</span><span class="cheat-def">Export from Redshift to S3</span></div>
+            <div class="cheat-row"><span class="cheat-term">Task Role</span><span class="cheat-def">IAM role for ECS containers (never hardcode credentials)</span></div>
+            <div class="cheat-row"><span class="cheat-term">Block Public</span><span class="cheat-def">Account-level switch, overrides everything</span></div>
+            <div class="cheat-row"><span class="cheat-term">SSE-KMS</span><span class="cheat-def">Encryption with auditable key usage</span></div>
+            <div class="cheat-row"><span class="cheat-term">Crawler</span><span class="cheat-def">Glue tool that infers schema and builds Data Catalog</span></div>
+            <div class="cheat-row"><span class="cheat-term">DynamicFrame</span><span class="cheat-def">Glue's schema-flexible version of Spark DataFrame</span></div>
+            <div class="cheat-row"><span class="cheat-term">Compaction</span><span class="cheat-def">Merging small files into larger ones for performance</span></div>
+        </div>
+    </div>
+
+    <!-- Footer nav -->
+    <div style="text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #e0e0e0;">
+        <a href="https://seanlgirgis.github.io/#learning" style="color:var(--primary); text-decoration:none; font-weight:600;">
+            &larr; Back to Learning Hub
+        </a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <a href="https://seanlgirgis.github.io/" style="color:var(--primary); text-decoration:none; font-weight:600;">
+            Home
+        </a>
+    </div>
+
+</div><!-- /page-wrap -->
+
+</body>
+</html>

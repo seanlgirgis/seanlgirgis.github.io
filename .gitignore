@@ -7,6 +7,7 @@ __pycache__/
 !components/*.html
 !blog/*.html
 !blog/**/*.html
+!learning/*.html
 !templates/*.html
 !index.html
 !googled5fb877a5db7013f.html
