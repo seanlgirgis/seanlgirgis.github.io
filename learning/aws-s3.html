@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amazon S3 — Master Engineering Reference | Sean Girgis</title>
-    <meta name="description" content="Complete Amazon S3 engineering reference: data lake patterns, partitioning, security, Glue/Redshift/ECS integration, and interview Q&A.">
+    <meta name="description" content="Complete Amazon S3 engineering reference: data lake patterns, partitioning, security, Glue/Redshift/ECS integration, and engineering Q&A.">
     <link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-s3.html">
     <style>
         :root {
@@ -274,10 +274,10 @@
 
     <!-- Title -->
     <h1>Amazon S3 — Master Engineering Reference</h1>
-    <p class="subtitle">Interview refresh + NotebookLM source &nbsp;·&nbsp; Senior Data Engineer &nbsp;·&nbsp; Last updated 2026-04-13 &nbsp;·&nbsp; 30–40 min read</p>
+    <p class="subtitle">Engineering reference &nbsp;·&nbsp; Senior Data Engineer &nbsp;·&nbsp; Last updated 2026-04-13 &nbsp;·&nbsp; 30–40 min read</p>
     <div class="hi">
         <strong>Purpose:</strong> refresh<br>
-        <strong>Audience:</strong> Senior Data Engineer preparing for Lead DE interview
+        <strong>Audience:</strong> Senior Data Engineer and platform practitioners
     </div>
     <div class="tag-row">
         <span class="tag">AWS S3</span>
@@ -291,7 +291,7 @@
 
     <!-- Audio -->
     <div class="audio-box">
-        <div class="audio-label">🎧 Audio Podcast Overview — NotebookLM Generated</div>
+        <div class="audio-label">🎧 Audio Podcast Overview</div>
         <div class="video-hint">Audio link coming later</div>
         <div class="video-hint">Video link coming later</div>
     </div>
@@ -312,7 +312,7 @@
             <li><a href="#s10">S3 + ECS/EC2 Pipelines</a></li>
             <li><a href="#s11">Event Notifications</a></li>
             <li><a href="#s12">Consistency Model</a></li>
-            <li><a href="#s13">10 Interview Q&amp;A</a></li>
+            <li><a href="#s13">10 Engineering Q&amp;A</a></li>
             <li><a href="#s14">Your Story Angles</a></li>
             <li><a href="#cheat">Quick Reference Cheat Sheet</a></li>
         </ol>
@@ -326,7 +326,7 @@
         <li>The <strong>value</strong> is the file content (any format, any size)</li>
         <li>There are <strong>no real folders</strong> — the <code>/</code> in the key is just a naming convention</li>
     </ul>
-    <div class="hi"><strong>Why this matters in interviews:</strong> When someone asks "how does S3 work under the hood," the answer is: flat namespace, keys that look like paths, metadata attached to each object. The folder illusion is just the console making it friendly.</div>
+    <div class="hi"><strong>Why this matters in architecture discussions:</strong> When someone asks "how does S3 work under the hood," the answer is: flat namespace, keys that look like paths, metadata attached to each object. The folder illusion is just the console making it friendly.</div>
     <h3>S3 vs Other Storage Types</h3>
     <table>
         <tr><th>Type</th><th>Example</th><th>Best For</th></tr>
@@ -395,7 +395,7 @@
 
     <!-- ── 4 ── -->
     <h2 id="s4">4. Data Lake Patterns</h2>
-    <p>This is the most important section for your interview. Hiring teams will care about how you design an S3-based data platform.</p>
+    <p>This is one of the most important sections for platform design. Teams care about how you design an S3-based data platform.</p>
     <h3>The Three-Zone Pattern</h3>
     <pre>s3://company-datalake/
     ├── raw/           ← Landing zone: exactly as received, never modified
@@ -409,12 +409,12 @@
     <div class="hi">
         <strong>Your parallel:</strong><br>
         <code>BMC TrueSight telemetry → S3 raw/ → Glue ETL → S3 processed/ → Redshift → Forecasting models</code><br>
-        This is exactly the three-zone pattern. You lived it — just name it properly in the interview.
+        This is exactly the three-zone pattern. You can map real production work directly to this structure.
     </div>
     <h3>Naming Conventions</h3>
-    <pre>s3://citi-capacity/raw/source=bmc-truesight/year=2026/month=04/day=13/
-s3://citi-capacity/processed/entity=server/year=2026/month=04/
-s3://citi-capacity/curated/domain=capacity/report=monthly-utilization/</pre>
+    <pre>s3://capacity/raw/source=bmc-truesight/year=2026/month=04/day=13/
+s3://capacity/processed/entity=server/year=2026/month=04/
+s3://capacity/curated/domain=capacity/report=monthly-utilization/</pre>
     <div class="hi"><strong>Helpful Addition for Learners:</strong> A common extension is a fourth analytics/consumption zone for BI-optimized outputs and feature-store-ready datasets.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
@@ -534,7 +534,7 @@ Athena / Redshift Spectrum (queries using catalog metadata)</pre>
         <li><strong>DynamicFrame</strong> vs <strong>DataFrame</strong>: DynamicFrame handles schema inconsistencies, DataFrame is standard Spark</li>
     </ul>
     <div class="hi">
-        <strong>Your Citi connection:</strong> Glue jobs read raw telemetry from <code>s3://raw/</code>, transformed and typed the data, wrote Parquet to <code>s3://processed/</code>. Redshift loaded from <code>s3://processed/</code> via COPY command.
+        <strong>Production stack connection:</strong> Glue jobs read raw telemetry from <code>s3://raw/</code>, transformed and typed the data, wrote Parquet to <code>s3://processed/</code>. Redshift loaded from <code>s3://processed/</code> via COPY command.
     </div>
     <div class="hi"><strong>Helpful Addition for Learners:</strong> Use Glue job bookmarks to avoid reprocessing and add data quality rules before writing to processed/.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
@@ -543,7 +543,7 @@ Athena / Redshift Spectrum (queries using catalog metadata)</pre>
     <h2 id="s9">9. S3 + Redshift Integration</h2>
     <h3>COPY Command — Primary Load Mechanism</h3>
     <pre>COPY capacity_metrics
-FROM 's3://citi-capacity/processed/entity=server/year=2026/month=04/'
+FROM 's3://capacity/processed/entity=server/year=2026/month=04/'
 IAM_ROLE 'arn:aws:iam::123456789:role/RedshiftS3Role'
 FORMAT AS PARQUET;</pre>
     <ul>
@@ -553,7 +553,7 @@ FORMAT AS PARQUET;</pre>
     </ul>
     <h3>UNLOAD Command — Export Redshift → S3</h3>
     <pre>UNLOAD ('SELECT * FROM monthly_utilization WHERE year=2026')
-TO 's3://citi-capacity/curated/exports/'
+TO 's3://capacity/curated/exports/'
 IAM_ROLE 'arn:aws:iam::123456789:role/RedshiftS3Role'
 FORMAT AS PARQUET PARALLEL ON;</pre>
     <h3>Redshift Spectrum</h3>
@@ -573,7 +573,7 @@ FORMAT AS PARQUET PARALLEL ON;</pre>
 
     <!-- ── 10 ── -->
     <h2 id="s10">10. S3 + ECS/EC2 Pipelines</h2>
-    <h3>How Your Citi Containers Worked</h3>
+    <h3>How Container Pipelines Worked</h3>
     <pre>ECS Task (Python ETL container)
     ├── Reads config from S3 or environment
     ├── Pulls raw data from S3 raw/
@@ -585,8 +585,8 @@ FORMAT AS PARQUET PARALLEL ON;</pre>
   "Effect": "Allow",
   "Action": ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
   "Resource": [
-    "arn:aws:s3:::citi-capacity",
-    "arn:aws:s3:::citi-capacity/*"
+    "arn:aws:s3:::capacity",
+    "arn:aws:s3:::capacity/*"
   ]
 }</pre>
     <div class="warn"><strong>Never hardcode AWS credentials in containers.</strong> Always use task roles.</div>
@@ -595,14 +595,14 @@ FORMAT AS PARQUET PARALLEL ON;</pre>
 s3 = boto3.client('s3')
 
 # Read file
-obj  = s3.get_object(Bucket='citi-capacity', Key='raw/2026/04/13/data.json')
+obj  = s3.get_object(Bucket='capacity', Key='raw/2026/04/13/data.json')
 data = obj['Body'].read().decode('utf-8')
 
 # Write file
-s3.put_object(Bucket='citi-capacity', Key='processed/2026/04/13/data.parquet', Body=parquet_bytes)
+s3.put_object(Bucket='capacity', Key='processed/2026/04/13/data.parquet', Body=parquet_bytes)
 
 # List files with prefix
-response = s3.list_objects_v2(Bucket='citi-capacity', Prefix='raw/2026/04/13/')
+response = s3.list_objects_v2(Bucket='capacity', Prefix='raw/2026/04/13/')
 files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
     <div class="hi"><strong>Helpful Addition for Learners:</strong> Prefer streaming helpers like <code>upload_fileobj()</code>/<code>download_fileobj()</code> for large files and explicit encryption settings in writes.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
@@ -629,7 +629,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
   "source": ["aws.s3"],
   "detail-type": ["Object Created"],
   "detail": {
-    "bucket": {"name": ["citi-capacity"]},
+    "bucket": {"name": ["capacity"]},
     "object": {"key": [{"prefix": "raw/"}]}
   }
 }</pre>
@@ -651,7 +651,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── 13 ── -->
-    <h2 id="s13">13. Ten Interview Questions and Answers</h2>
+    <h2 id="s13">13. Ten Engineering Questions and Answers</h2>
 
     <div class="qa">
         <div class="qa-q">Q1 — "How would you design an S3-based data lake for a high-volume telemetry pipeline?"</div>
@@ -700,7 +700,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
 
     <div class="qa">
         <div class="qa-q">Q10 — "Tell me about a time you used S3 in a production data pipeline."</div>
-        <div class="qa-a">Use <strong>Story 4 from your interview prep file.</strong> Previous role → hybrid platform → S3 landing zone → Glue ETL → Redshift forecasting workloads → ECS containerized Python jobs. 6,000+ endpoints, 8 years production, Oracle alongside for existing reporting.</div>
+        <div class="qa-a">Use a structured production story: hybrid platform → S3 landing zone → Glue ETL → Redshift forecasting workloads → ECS containerized Python jobs. 6,000+ endpoints, 8 years production, Oracle alongside for existing reporting.</div>
     </div>
 
     <a class="back-top" href="#top">↑ Back to top</a>
@@ -720,7 +720,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
         <tr><td>Event notifications</td><td>File landing triggered downstream Glue crawler</td></tr>
         <tr><td>Partitioning</td><td>year/month/day + source system prefix for query efficiency</td></tr>
     </table>
-    <div class="hi"><strong>Helpful Addition for Learners:</strong> In interviews, quantify impact (cost reduction, throughput gain, reliability improvement) to make the story memorable.</div>
+    <div class="hi"><strong>Helpful Addition for Learners:</strong> In technical storytelling, quantify impact (cost reduction, throughput gain, reliability improvement) to make the story memorable.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
     <!-- ── Cheat Sheet ── -->
@@ -740,7 +740,7 @@ files = [obj['Key'] for obj in response.get('Contents', [])]</pre>
         <div class="cheat-row"><span class="ct">Compaction</span><span class="cd">Merging small files into larger ones for performance</span></div>
     </div>
     <div class="hi"><strong>Helpful Addition for Learners (Quick Reference):</strong> Iceberg/Delta on S3 add schema evolution, time travel, and ACID transactions while keeping data in open object storage.</div>
-    <div class="warn">Feed this page source to NotebookLM and ask the hosts to focus on sections 4, 5, 8, 9, and 13 for the audio overview.</div>
+    <div class="warn">For an audio overview workflow, focus on sections 4, 5, 8, 9, and 13.</div>
     <a class="back-top" href="#top">↑ Back to top</a>
 
 </div><!-- /doc -->
