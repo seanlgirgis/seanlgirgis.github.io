@@ -121,10 +121,12 @@ function injectLearningNav(pageName) {
 /**
  * Loads page content dynamically.
  */
+let loadSequence = 0;
 async function loadPage(pageName) {
     const mainContent = document.getElementById('content-area');
     if (!mainContent) return;
 
+    const currentLoad = ++loadSequence;
     mainContent.innerHTML = '';
     mainContent.scrollTop = 0;
     window.scrollTo(0, 0);
@@ -140,6 +142,10 @@ async function loadPage(pageName) {
                 return response.text();
             })
         );
+
+        if (currentLoad !== loadSequence) {
+            return;
+        }
 
         htmlParts.forEach((html) => {
             const wrapper = document.createElement('div');
