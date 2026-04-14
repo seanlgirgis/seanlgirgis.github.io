@@ -5,13 +5,13 @@
         Each section opens as its own focused page.
     </p>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:36px;">
-        <span style="background:#e8f4fd; color:#004a99; padding:5px 13px; border-radius:5px; font-size:0.85em; font-weight:600;">📚 Layer 1 — Technology References</span>
-        <span style="background:#fff8e6; color:#b7650a; padding:5px 13px; border-radius:5px; font-size:0.85em; font-weight:600;">🔧 Layer 2 — Engineering Craft &amp; Patterns</span>
-        <span style="background:#f0f0ff; color:#5b4fcf; padding:5px 13px; border-radius:5px; font-size:0.85em; font-weight:600;">🏗️ Layer 3 — System Design</span>
+        <a href="#layer1" onclick="document.getElementById('layer1').scrollIntoView({behavior:'smooth'});return false;" style="background:#e8f4fd; color:#004a99; padding:5px 13px; border-radius:5px; font-size:0.85em; font-weight:600; text-decoration:none; cursor:pointer;">📚 Layer 1 — Technology References</a>
+        <a href="#layer2" onclick="document.getElementById('layer2').scrollIntoView({behavior:'smooth'});return false;" style="background:#fff8e6; color:#b7650a; padding:5px 13px; border-radius:5px; font-size:0.85em; font-weight:600; text-decoration:none; cursor:pointer;">🔧 Layer 2 — Engineering Craft &amp; Patterns</a>
+        <a href="#layer3" onclick="document.getElementById('layer3').scrollIntoView({behavior:'smooth'});return false;" style="background:#f0f0ff; color:#5b4fcf; padding:5px 13px; border-radius:5px; font-size:0.85em; font-weight:600; text-decoration:none; cursor:pointer;">🏗️ Layer 3 — System Design</a>
     </div>
 
     <!-- ── Layer 1 ─────────────────────────────────── -->
-    <div style="font-size:0.78em; font-weight:700; color:#004a99; letter-spacing:0.07em; text-transform:uppercase; margin-bottom:14px;">📚 Layer 1 — Technology References</div>
+    <div id="layer1" style="font-size:0.78em; font-weight:700; color:#004a99; letter-spacing:0.07em; text-transform:uppercase; margin-bottom:14px;">📚 Layer 1 — Technology References</div>
     <div class="blog-list">
 
         <div class="blog-card" onclick="loadPage('learning-aws-analytics')" style="cursor:pointer;">
@@ -119,7 +119,7 @@
     </div>
 
     <!-- ── Layer 2 ─────────────────────────────────── -->
-    <div style="font-size:0.78em; font-weight:700; color:#b7650a; letter-spacing:0.07em; text-transform:uppercase; margin:44px 0 14px;">🔧 Layer 2 — Engineering Craft &amp; Patterns</div>
+    <div id="layer2" style="font-size:0.78em; font-weight:700; color:#b7650a; letter-spacing:0.07em; text-transform:uppercase; margin:44px 0 14px;">🔧 Layer 2 — Engineering Craft &amp; Patterns</div>
     <div class="blog-list">
 
         <div class="blog-card" onclick="loadPage('learning-craft')" style="cursor:pointer;">
@@ -131,7 +131,7 @@
     </div>
 
     <!-- ── Layer 3 ─────────────────────────────────── -->
-    <div style="font-size:0.78em; font-weight:700; color:#5b4fcf; letter-spacing:0.07em; text-transform:uppercase; margin:44px 0 14px;">🏗️ Layer 3 — System Design</div>
+    <div id="layer3" style="font-size:0.78em; font-weight:700; color:#5b4fcf; letter-spacing:0.07em; text-transform:uppercase; margin:44px 0 14px;">🏗️ Layer 3 — System Design</div>
     <div class="blog-list">
 
         <div class="blog-card" onclick="loadPage('learning-design')" style="cursor:pointer;">
