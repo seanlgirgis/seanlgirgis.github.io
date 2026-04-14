@@ -1,0 +1,101 @@
+<div class="container">
+
+    <!-- ─────────────────────────────────────────────────
+         SYSTEM DESIGN FOR DATA ENGINEERS  (Layer 3)
+    ───────────────────────────────────────────────────── -->
+    <h2 id="system-design">System Design for Data Engineers
+        <span style="font-size:0.62em; color:#888; font-weight:400;">/ Architecture · Open-ended design scenarios</span>
+    </h2>
+    <p style="color:#666; font-size:0.9em; margin:-8px 0 22px;">
+        Senior-level open-ended architecture questions. Each page walks through the design
+        process — requirements, trade-offs, component choices, and failure modes.
+    </p>
+    <div class="blog-list">
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a High-Volume Event Ingestion Pipeline</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Kafka</span><span class="tag">S3</span><span class="tag">Scale</span></div>
+            <p>Requirements gathering, throughput sizing, Kafka vs Kinesis vs SQS choice, partitioning strategy, S3 landing zone, deduplication at scale, backpressure handling, monitoring and alerting design.</p>
+            <span style="font-size:0.82em;color:#e67e22;font-weight:600;">⬜ Tier 1 — Build Next</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Batch ETL Pipeline on AWS</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">AWS</span><span class="tag">Glue</span><span class="tag">Airflow</span></div>
+            <p>Source ingestion, S3 three-zone layout, Glue ETL, orchestration with Airflow or Step Functions, error handling and retry, schema evolution, data quality gates, cost model and optimisation.</p>
+            <span style="font-size:0.82em;color:#e67e22;font-weight:600;">⬜ Tier 1 — Build Next</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Slowly Changing Dimension System at Scale</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">SCD</span><span class="tag">Data Modeling</span></div>
+            <p>SCD Type 2 at high volume, merge/upsert strategies in Spark and SQL, storage trade-offs, querying point-in-time snapshots, performance implications, implementation in Redshift vs Databricks vs dbt.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 2</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Data Quality Monitoring Platform</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Data Quality</span><span class="tag">Alerting</span></div>
+            <p>Quality dimensions (completeness, accuracy, timeliness), automated checks at pipeline stages, anomaly detection on metrics, alerting routing, lineage tracking, SLA dashboards, quarantine patterns for bad data.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 2</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Real-Time + Batch Hybrid Pipeline (Lambda Architecture)</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Lambda Arch</span><span class="tag">Streaming</span><span class="tag">Batch</span></div>
+            <p>Speed layer vs batch layer, serving layer design, reconciliation between layers, when to use Lambda vs Kappa architecture, implementation with Kafka + Spark + S3 + Redshift.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 2</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Metrics Aggregation System</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Metrics</span><span class="tag">TSDB</span><span class="tag">Aggregation</span></div>
+            <p>Pre-aggregation vs query-time aggregation, roll-up strategies by time granularity, storage layout for time-series, approximate vs exact aggregation (HLL, approx_distinct), dashboarding layer design.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 3</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Multi-Tenant Data Lake</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Multi-Tenant</span><span class="tag">S3</span><span class="tag">IAM</span></div>
+            <p>Tenant isolation strategies (bucket vs prefix vs account), IAM and Lake Formation access control, shared vs dedicated compute, cost attribution per tenant, encryption boundaries, cross-tenant query prevention.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 3</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Pipeline That Handles Late-Arriving Data</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Late Data</span><span class="tag">Watermarks</span><span class="tag">Reprocessing</span></div>
+            <p>Watermarking strategies, event time vs processing time, acceptable lateness thresholds, partition correction patterns, reprocessing without duplication, SLA impact analysis.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 3</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Cost-Optimised Analytics Platform on AWS</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">AWS</span><span class="tag">Cost</span><span class="tag">Athena</span><span class="tag">Redshift</span></div>
+            <p>Workload classification (ad-hoc vs scheduled vs interactive), right-sizing Redshift vs Athena vs Redshift Serverless, S3 storage class tiering, Spot for ETL, query result caching, reserved capacity planning.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 3</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Data Ingestion System for Third-Party APIs</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">API</span><span class="tag">Ingestion</span><span class="tag">Idempotency</span></div>
+            <p>Connector architecture, pagination and rate limit handling, schema normalisation, idempotent writes, incremental extraction strategies, handling API outages and retries, metadata tracking and lineage.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 3</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Forecasting Pipeline for Infrastructure Capacity</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">Forecasting</span><span class="tag">Prophet</span><span class="tag">Capacity Planning</span></div>
+            <p>Telemetry collection at scale, feature engineering for infrastructure metrics, Prophet model selection and tuning, batch prediction pipeline, serving forecasts to operational teams, model refresh strategy.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 2</span>
+        </div>
+
+        <div class="blog-card" style="opacity:0.55;">
+            <h3>Design a Text-to-SQL Agent for Data Access</h3>
+            <div class="meta"><span class="tag">System Design</span><span class="tag">GenAI</span><span class="tag">Text-to-SQL</span><span class="tag">Agents</span></div>
+            <p>Schema grounding, prompt construction, query validation and safety, handling ambiguous questions, feedback loops for correction, access control — who can query what, production deployment patterns.</p>
+            <span style="font-size:0.82em;color:#bbb;">⬜ Planned — Tier 3</span>
+        </div>
+
+    </div>
+
+</div>

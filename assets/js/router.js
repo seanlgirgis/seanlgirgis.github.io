@@ -9,7 +9,13 @@ const routes = {
     'articles': ['components/articles.html'],
     'leetcode': ['components/leetcode.html'],
     'tutorials': ['components/tutorials.html'],
-    'learning': ['components/learning.html'],
+    'learning': [
+        'components/learning-nav.html',
+        'components/learning-aws.html',
+        'components/learning-platform.html',
+        'components/learning-craft.html',
+        'components/learning-design.html'
+    ],
     'blog': ['components/blog.html'],
     'site-map': ['components/site_map.html'],
     'about': ['components/about.html']
