@@ -61,732 +61,317 @@ tr:nth-child(even) td { background:#f8fafc; }
 </head>
 <body id="top">
 <div class="doc">
-
-  <div class="topnav">
-    <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Amazon EC2 - Master Engineering Reference
-  </div>
-
-  <h1>Amazon EC2</h1>
-  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-24 &middot; 25-35 min read</p>
-
-  <div class="tag-row">
-    <span class="tag">AWS</span>
-    <span class="tag">EC2</span>
-    <span class="tag">Compute</span>
-    <span class="tag">Auto Scaling</span>
-    <span class="tag">Networking</span>
-    <span class="tag">IAM</span>
-    <span class="tag">Storage</span>
-  </div>
-
-    <div class="audio-box">
-    <div class="audio-label">&#127911; Audio Overview</div>
-    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-ec2.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
-    <div class="video-hint" style="margin-top:10px;">&#127916; Video Overview (NotebookLM)</div>
-    <video controls preload="metadata" style="width:100%;max-width:100%;border-radius:4px;margin-top:8px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/EC2__Engineering_Deep_Dive_small.mp4" type="video/mp4">
-    </video>
-  </div>
-    
-
-  <div class="toc">
-    <h2>Contents</h2>
-    <ol>
-      <li><a href="#s1">What EC2 Actually Is</a></li>
-      <li><a href="#s2">Instance Types &amp; Families</a></li>
-      <li><a href="#s3">Purchasing Options - On-Demand, Reserved, Spot</a></li>
-      <li><a href="#s4">AMIs - Amazon Machine Images</a></li>
-      <li><a href="#s5">Storage - EBS, Instance Store, EFS</a></li>
-      <li><a href="#s6">Networking - VPC, ENI, Security Groups</a></li>
-      <li><a href="#s7">IAM Roles &amp; Instance Profiles</a></li>
-      <li><a href="#s8">User Data &amp; Instance Initialization</a></li>
-      <li><a href="#s9">Auto Scaling Groups</a></li>
-      <li><a href="#s10">Load Balancers - ALB, NLB, CLB</a></li>
-      <li><a href="#s11">EC2 in Data Pipelines</a></li>
-      <li><a href="#s12">Monitoring - CloudWatch, SSM, Status Checks</a></li>
-      <li><a href="#s13">Security Best Practices</a></li>
-      <li><a href="#s14">Common Gotchas and Anti-Patterns</a></li>
-      <li><a href="#s15">10 Key Engineering Questions</a></li>
-      <li><a href="#s16">Production Story Angles</a></li>
-      <li><a href="#s17">Quick Reference Cheat Sheet</a></li>
-    </ol>
-  </div>
-
-  <!-- SECTION 1 -->
-  <h2 id="s1">1. What EC2 Actually Is</h2>
-
-  <p>Amazon EC2 (Elastic Compute Cloud) is AWS's core Infrastructure-as-a-Service virtual machine offering. You provision virtual servers - called instances - that run on AWS's physical hardware, choosing the operating system, CPU, memory, storage, and network configuration. Unlike serverless services (Lambda, Glue) where you never touch the underlying compute, EC2 gives you full control over the machine: you SSH in, install software, configure the OS, and manage the runtime environment yourself.</p>
-
-  <p>EC2's importance in data engineering extends beyond running application code. It underpins nearly every managed AWS service: EMR clusters run on EC2 instances, Redshift nodes are EC2 under the hood, RDS databases run on EC2, and ECS containers execute on EC2 hosts. Understanding EC2 - particularly its networking model, IAM integration, storage types, and Auto Scaling behavior - makes every other AWS service more comprehensible because the same primitives appear everywhere.</p>
-
-  <p>Positioning EC2 against modern alternatives: compared to Lambda, EC2 has no time limits, no cold starts, and full OS control - appropriate for long-running workloads, stateful processes, and anything requiring persistent network connections or custom system software. Compared to ECS/Fargate, EC2 provides the underlying compute that ECS can run on (ECS EC2 launch type), or Fargate abstracts it away entirely. For data engineering, EC2 commonly appears as: self-managed Kafka brokers, EMR cluster nodes, custom ETL workers that outgrow Lambda's constraints, and jump hosts or bastion servers for accessing private-network resources.</p>
-
-  <div class="hi">EC2 is not obsolete in the serverless era. It remains the right tool for workloads requiring persistent processes, high-throughput I/O, custom runtimes, or state that doesn't fit the 15-minute Lambda ceiling or the container abstraction of ECS/Fargate.</div>
-
-<pre>
-EC2 in the AWS Compute Spectrum
----------------------------------------------------------
-
-More Control ?------------------------------? Less Control
-More Ops                                        Less Ops
-
-  EC2          ECS/EC2       ECS/Fargate     Lambda
-  --------     ----------    ------------    ----------
-  Full OS      Container     Container       Function
-  control      on your EC2   on managed      only
-               hosts         hosts
-  You manage:  You manage:   You manage:     You manage:
-  OS, runtime  containers    containers      handler code
-  networking   task defs     task defs
-  patching     scaling       scaling
-</pre>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 2 -->
-  <h2 id="s2">2. Instance Types &amp; Families</h2>
-
-  <p>EC2 instance types encode the hardware profile of the virtual machine. The naming convention is: <strong>family</strong> + <strong>generation</strong> + <strong>attributes</strong> + <strong>.</strong> + <strong>size</strong>. For example, <code>r7g.2xlarge</code> means: memory-optimized family (r), 7th generation, Graviton3 processor (g), 2xlarge size (8 vCPU, 64 GB RAM).</p>
-
-  <h3>Instance Families</h3>
-  <table>
-    <tr><th>Family</th><th>Optimized For</th><th>Data Engineering Use Cases</th></tr>
-    <tr><td>m (General Purpose)</td><td>Balanced CPU/memory</td><td>Application servers, dev/test, moderate ETL workloads</td></tr>
-    <tr><td>c (Compute Optimized)</td><td>High CPU, lower memory ratio</td><td>CPU-bound transformations, batch processing, Kafka brokers</td></tr>
-    <tr><td>r (Memory Optimized)</td><td>High memory, large RAM</td><td>In-memory processing, Spark executors, Redis, large joins</td></tr>
-    <tr><td>i (Storage Optimized)</td><td>High local NVMe I/O</td><td>High-throughput I/O, local Hadoop HDFS nodes, Cassandra</td></tr>
-    <tr><td>p / g (GPU)</td><td>GPU accelerators</td><td>ML training, inference, GPU-accelerated data processing</td></tr>
-    <tr><td>t (Burstable)</td><td>Baseline CPU + burst credits</td><td>Dev/test, light workloads, jump hosts, cron runners</td></tr>
-    <tr><td>x (Extra Memory)</td><td>Largest RAM (up to 24 TB)</td><td>In-memory databases, SAP HANA, massive dataset caching</td></tr>
-  </table>
-
-  <h3>Graviton (ARM) Instances</h3>
-  <p>AWS Graviton processors (Graviton2 = 6th gen suffix <code>g</code>, Graviton3 = 7th gen suffix <code>g</code>) are ARM-based chips designed by AWS. Graviton instances typically offer 20-40% better price/performance than equivalent x86 instances for the same workload. For data engineering workloads running Python, Java (JVM runs natively on ARM), or containerized applications, Graviton is worth evaluating. The constraint: binaries compiled for x86 don't run on Graviton - validate all dependencies support ARM64 before migrating.</p>
-
-<pre>
-# Instance naming examples
-t3.micro       # General purpose burstable, 3rd gen, 2 vCPU, 1 GB
-m6i.xlarge     # General purpose, 6th gen Intel, 4 vCPU, 16 GB
-r7g.2xlarge    # Memory optimized, 7th gen Graviton, 8 vCPU, 64 GB
-c6i.4xlarge    # Compute optimized, 6th gen Intel, 16 vCPU, 32 GB
-i3en.3xlarge   # Storage optimized, NVMe, 12 vCPU, 96 GB, 7.5 TB NVMe
-</pre>
-
-  <div class="hi">For Spark executor nodes (EMR, self-managed), the r family is typically optimal - Spark is memory-bound and needs high RAM-to-CPU ratios. For Kafka brokers, the c or m family with gp3 EBS volumes delivers the right balance of network throughput and cost. For jump hosts and cron runners, t3.micro or t3.small is sufficient and cheap.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 3 -->
-  <h2 id="s3">3. Purchasing Options - On-Demand, Reserved, Spot</h2>
-
-  <p>EC2 offers three primary purchasing models that trade flexibility for cost. Choosing the right model for each workload is one of the most impactful cost optimization decisions in an AWS environment.</p>
-
-  <h3>On-Demand</h3>
-  <p>Pay for compute capacity by the second (minimum 60 seconds) with no upfront commitment. The highest per-hour rate of all options. Use On-Demand for: workloads with unpredictable duration, short-lived dev/test environments, new workloads being profiled before committing, and capacity that must always be available without interruption risk.</p>
-
-  <h3>Reserved Instances (RIs) and Savings Plans</h3>
-  <p>Commit to a specific instance type (Standard RI) or a family/region (Convertible RI or Savings Plan) for 1 or 3 years in exchange for 40-72% discounts versus On-Demand. Standard RIs offer the highest discount but lock you to a specific instance type and AZ. Convertible RIs allow changing instance family/OS mid-term but at a lower discount. Compute Savings Plans (the modern replacement for RIs) apply the discount to any EC2 instance in a region regardless of family or size, offering the most flexibility at a slightly lower discount.</p>
-
-  <div class="hi">For stable, predictable workloads (production Kafka brokers, always-on Redshift nodes, persistent application servers), 1-year Savings Plans or Convertible RIs typically cut the compute bill by 40-50% with minimal risk. The break-even for a 1-year commitment is roughly 7-8 months of On-Demand usage.</div>
-
-  <h3>Spot Instances</h3>
-  <p>Bid for unused EC2 capacity at discounts of 60-90% off On-Demand. The catch: AWS can reclaim Spot instances with a 2-minute warning when demand for the capacity increases. Spot is appropriate for: fault-tolerant batch workloads, EMR transient clusters, stateless worker pools behind SQS, and any workload that can checkpoint progress and resume after interruption. Spot is inappropriate for: stateful single-node databases, primary application servers, or any workload that cannot tolerate sudden termination.</p>
-
-<pre>
-# Request a Spot instance via boto3
-ec2 = boto3.client('ec2')
-
-response = ec2.run_instances(
-    ImageId='ami-0abcdef1234567890',
-    InstanceType='r6i.xlarge',
-    MinCount=1,
-    MaxCount=1,
-    InstanceMarketOptions={
-        'MarketType': 'spot',
-        'SpotOptions': {
-            'SpotInstanceType': 'one-time',
-            'InstanceInterruptionBehavior': 'terminate'
-        }
-    },
-    IamInstanceProfile={'Name': 'MyEC2InstanceProfile'},
-    SubnetId='subnet-0a1b2c3d',
-    SecurityGroupIds=['sg-0123456789abcdef0']
-)
-</pre>
-
-  <table>
-    <tr><th>Model</th><th>Discount vs On-Demand</th><th>Interruption Risk</th><th>Best For</th></tr>
-    <tr><td>On-Demand</td><td>0%</td><td>None</td><td>Unpredictable workloads, new deployments</td></tr>
-    <tr><td>Reserved / Savings Plan</td><td>40-72%</td><td>None</td><td>Stable, always-on workloads</td></tr>
-    <tr><td>Spot</td><td>60-90%</td><td>2-min warning, can be reclaimed</td><td>Fault-tolerant batch, stateless workers</td></tr>
-  </table>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 4 -->
-  <h2 id="s4">4. AMIs - Amazon Machine Images</h2>
-
-  <p>An AMI is a snapshot of a complete machine configuration: the operating system, pre-installed software, filesystem layout, and boot instructions. Every EC2 instance is launched from an AMI. AMIs are region-specific - an AMI in us-east-1 cannot directly launch instances in eu-west-1 (you must copy the AMI to the target region first).</p>
-
-  <h3>AMI Components</h3>
-  <p>An AMI consists of: one or more EBS snapshots (or an instance store template for instance-store-backed AMIs), a block device mapping (which snapshots attach as which device, root volume size), launch permissions (public, private, or shared with specific accounts), and virtualization type (HVM - the current standard - vs paravirtual, which is legacy).</p>
-
-  <h3>Custom AMIs - The Golden Image Pattern</h3>
-  <p>Rather than relying on user data scripts to configure instances at launch (which is slow, error-prone, and requires internet access at boot), mature pipelines bake a <strong>golden AMI</strong> - a pre-configured AMI with all dependencies, monitoring agents, security hardening, and application code already installed. New instances launched from the golden AMI are ready in seconds rather than minutes of bootstrapping. Rebuilding the golden AMI is part of the CI/CD pipeline whenever dependencies change.</p>
-
-<pre>
-# Create an AMI from a running instance (boto3)
-ec2 = boto3.client('ec2')
-
-response = ec2.create_image(
-    InstanceId='i-0abcdef1234567890',
-    Name='my-etl-worker-golden-ami-2026-04-13',
-    Description='Pre-baked ETL worker: Python 3.12, pandas, pyarrow, CloudWatch agent',
-    NoReboot=False,   # Reboot for a consistent filesystem state
-    BlockDeviceMappings=[
-        {
-            'DeviceName': '/dev/xvda',
-            'Ebs': {
-                'VolumeSize': 30,
-                'VolumeType': 'gp3',
-                'DeleteOnTermination': True,
-                'Encrypted': True
-            }
-        }
-    ]
-)
-ami_id = response['ImageId']
-print(f"AMI creation started: {ami_id}")
-</pre>
-
-  <div class="warn"><strong>AMI region lock-in:</strong> AMIs are regional. If your infrastructure spans multiple regions for DR or multi-region active-active, you must copy the AMI to each region and maintain region-specific AMI IDs in your IaC (Terraform, CDK). A common mistake is hardcoding a us-east-1 AMI ID into a CloudFormation template and then trying to deploy it in eu-west-1.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 5 -->
-  <h2 id="s5">5. Storage - EBS, Instance Store, EFS</h2>
-
-  <p>EC2 instances have access to three distinct storage models with fundamentally different performance, persistence, and cost profiles. Choosing the right storage type for each use case is critical for both performance and reliability.</p>
-
-  <h3>EBS (Elastic Block Store)</h3>
-  <p>EBS volumes are network-attached block storage that persist independently of the instance. Data on EBS survives instance stops, restarts, and terminations (unless DeleteOnTermination is set). EBS volumes are AZ-scoped - they can only attach to instances in the same AZ. EBS is the right choice for: root volumes, database storage, any data that must persist across instance restarts.</p>
-
-  <table>
-    <tr><th>EBS Type</th><th>Max IOPS</th><th>Max Throughput</th><th>Use Case</th></tr>
-    <tr><td>gp3 (General Purpose SSD)</td><td>16,000</td><td>1,000 MB/s</td><td>Default for most workloads; IOPS/throughput configurable independently</td></tr>
-    <tr><td>io2 Block Express</td><td>256,000</td><td>4,000 MB/s</td><td>High-performance databases, latency-sensitive I/O</td></tr>
-    <tr><td>st1 (Throughput HDD)</td><td>500</td><td>500 MB/s</td><td>Sequential large-file workloads, log storage, infrequent access</td></tr>
-    <tr><td>sc1 (Cold HDD)</td><td>250</td><td>250 MB/s</td><td>Lowest cost; cold archival data rarely accessed</td></tr>
-  </table>
-
-<pre>
-# Create and attach a gp3 EBS volume
-ec2 = boto3.client('ec2')
-
-vol = ec2.create_volume(
-    AvailabilityZone='us-east-1a',
-    VolumeType='gp3',
-    Size=500,           # GB
-    Iops=6000,          # gp3: independently configurable up to 16,000
-    Throughput=500,     # MB/s, up to 1,000
-    Encrypted=True,
-    KmsKeyId='arn:aws:kms:us-east-1:123456789:key/my-key-id'
-)
-
-ec2.attach_volume(
-    VolumeId=vol['VolumeId'],
-    InstanceId='i-0abcdef1234567890',
-    Device='/dev/sdf'
-)
-</pre>
-
-  <h3>Instance Store</h3>
-  <p>Instance store volumes are physically attached NVMe SSDs on the host hardware. They deliver the highest possible IOPS and throughput (up to millions of IOPS on i3en instances) with sub-millisecond latency, because there is no network hop. The critical constraint: <strong>instance store data is lost when the instance is stopped or terminated</strong>. It survives reboots only. Use instance store for: Spark shuffle data, temporary sort buffers, HDFS DataNode local storage, and any ephemeral high-I/O scratch space that can be regenerated.</p>
-
-  <div class="warn"><strong>Instance store is ephemeral - no exceptions:</strong> A stopped instance loses all instance store data. An EC2 retirement (host hardware maintenance) forces a stop/start, not a reboot - instance store is wiped. If you use instance store for Spark local directories or shuffle, ensure Spark can recover from missing shuffle data (it will re-compute) rather than storing anything irreplaceable there.</div>
-
-  <h3>EFS (Elastic File System)</h3>
-  <p>EFS is a managed NFS file system that can be mounted on multiple EC2 instances simultaneously across multiple AZs. Unlike EBS (one-to-one instance-to-volume) and instance store (local only), EFS is a shared, multi-attach file system. Use EFS for: shared configuration or code that multiple instances need to read, shared scratch space for a distributed job where all workers need read/write access to common files, and ML training data that needs to be accessible from multiple training instances in parallel.</p>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 6 -->
-  <h2 id="s6">6. Networking - VPC, ENI, Security Groups</h2>
-
-  <p>Every EC2 instance lives inside a VPC (Virtual Private Cloud), in a specific subnet within a specific Availability Zone. The subnet determines the instance's IP address range, routing rules, and network ACL. Understanding EC2 networking is essential for designing secure, correctly-routable architectures.</p>
-
-  <h3>ENI - Elastic Network Interface</h3>
-  <p>Every instance has at least one primary ENI (eth0) created at launch. An ENI has a primary private IPv4 address (from the subnet's CIDR range), optionally one or more secondary private IPs, an optional public IP (if the subnet has auto-assign public IP or an Elastic IP is attached), one or more security groups, and a MAC address. Additional ENIs can be attached to an instance for use cases like dual-homed instances (connecting to two different subnets), or for high-availability failover by detaching an ENI from a failed instance and attaching it to a replacement.</p>
-
-  <h3>Security Groups</h3>
-  <p>Security groups are stateful, instance-level virtual firewalls. Rules specify allowed traffic by protocol, port range, and source/destination (CIDR block or another security group ID). Security groups are stateful - if you allow inbound TCP 443, the return traffic is automatically allowed outbound without an explicit outbound rule. The default outbound rule allows all traffic; restrict it for defense-in-depth.</p>
-
-<pre>
-# Create a security group for an ETL worker
-ec2 = boto3.client('ec2')
-
-sg = ec2.create_security_group(
-    GroupName='etl-worker-sg',
-    Description='ETL worker: outbound to S3 (via endpoint), RDS, Redshift',
-    VpcId='vpc-0a1b2c3d4e5f67890'
-)
-
-# Allow SSH from bastion only (not the world)
-ec2.authorize_security_group_ingress(
-    GroupId=sg['GroupId'],
-    IpPermissions=[
-        {
-            'IpProtocol': 'tcp',
-            'FromPort': 22,
-            'ToPort': 22,
-            'UserIdGroupPairs': [{'GroupId': 'sg-bastion-id'}]  # bastion SG only
-        }
-    ]
-)
-
-# Allow outbound HTTPS (S3 via VPC endpoint, SSM, Secrets Manager)
-ec2.authorize_security_group_egress(
-    GroupId=sg['GroupId'],
-    IpPermissions=[
-        {'IpProtocol': 'tcp', 'FromPort': 443, 'ToPort': 443, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
-        {'IpProtocol': 'tcp', 'FromPort': 5439, 'ToPort': 5439, 'IpRanges': [{'CidrIp': '10.0.0.0/8'}]},  # Redshift
-        {'IpProtocol': 'tcp', 'FromPort': 5432, 'ToPort': 5432, 'IpRanges': [{'CidrIp': '10.0.0.0/8'}]},  # RDS
-    ]
-)
-</pre>
-
-  <h3>Public vs Private Subnets</h3>
-  <p>A public subnet has a route to an Internet Gateway - instances in it can have public IPs and reach the internet directly. A private subnet has no IGW route - instances cannot be reached from the internet and can only reach the internet via a NAT Gateway in a public subnet. Production EC2 instances should almost always be in private subnets. Public subnets are for load balancers and NAT Gateways only. SSH access to private instances goes through a bastion host (jump server) in the public subnet, or preferably via AWS Systems Manager Session Manager (no inbound SSH required).</p>
-
-  <div class="hi">Prefer SSM Session Manager over bastion hosts for instance access. Session Manager requires no open inbound SSH port, no key pair management, logs all session activity to CloudWatch/S3, and integrates with IAM for access control. It eliminates the most common EC2 attack surface - exposed SSH on port 22.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 7 -->
-  <h2 id="s7">7. IAM Roles &amp; Instance Profiles</h2>
-
-  <p>EC2 instances interact with other AWS services using an IAM role attached via an <strong>instance profile</strong>. When your application code on the instance calls <code>boto3.client('s3')</code>, the SDK automatically retrieves temporary credentials from the EC2 instance metadata service (IMDS) - credentials issued by AWS STS for the attached IAM role. No hardcoded access keys are needed or appropriate.</p>
-
-  <h3>Instance Metadata Service (IMDS)</h3>
-  <p>IMDS is an HTTP endpoint accessible only from within an EC2 instance at <code>169.254.169.254</code>. It serves instance metadata (instance ID, region, AZ, security groups) and temporary IAM credentials. IMDSv2 (the current version) requires a session token obtained via a PUT request before metadata can be read, preventing SSRF attacks that could steal credentials via IMDSv1's unauthenticated GET interface.</p>
-
-<pre>
-# boto3 retrieves credentials from IMDS automatically - no key config needed
-import boto3
-
-# This works on any EC2 instance with an attached IAM role
-s3 = boto3.client('s3', region_name='us-east-1')
-response = s3.list_objects_v2(Bucket='my-data-bucket', Prefix='raw/')
-
-# Manually query IMDSv2 for instance metadata
-import requests
-
-# Step 1: get session token
-token_response = requests.put(
-    'http://169.254.169.254/latest/api/token',
-    headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'}
-)
-token = token_response.text
-
-# Step 2: use token to query metadata
-metadata = requests.get(
-    'http://169.254.169.254/latest/meta-data/instance-id',
-    headers={'X-aws-ec2-metadata-token': token}
-)
-print(metadata.text)  # e.g. i-0abcdef1234567890
-</pre>
-
-  <div class="warn"><strong>Enforce IMDSv2 on all instances:</strong> IMDSv1 allows unauthenticated GET requests to the metadata endpoint. An SSRF vulnerability in any application on the instance (a web app that fetches user-supplied URLs, for example) can be exploited to retrieve IAM credentials via IMDSv1. Always set <code>HttpTokens=required</code> (IMDSv2 only) at instance launch or in the account-level default settings. Enforce it with an SCP or IAM condition key.</div>
-
-<pre>
-# Launch instance with IMDSv2 enforced
-ec2.run_instances(
-    ...
-    MetadataOptions={
-        'HttpTokens': 'required',      # IMDSv2 only
-        'HttpEndpoint': 'enabled',
-        'HttpPutResponseHopLimit': 1   # Prevents container escape to host IMDS
-    }
-)
-</pre>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 8 -->
-  <h2 id="s8">8. User Data &amp; Instance Initialization</h2>
-
-  <p>User data is a script (bash, PowerShell, or cloud-init YAML) that runs once at instance first boot. It is the standard mechanism for configuring instances at launch: installing packages, writing config files, pulling application code, registering the instance with a configuration management system, or starting services.</p>
-
-<pre>
-#!/bin/bash
-# User data script - runs as root at first boot
-
-set -e  # Exit on any error
-
-# Update OS and install dependencies
-yum update -y
-yum install -y python3.12 python3.12-pip git amazon-cloudwatch-agent
-
-# Install Python dependencies
-pip3.12 install pandas==2.2.0 pyarrow==15.0.0 boto3
-
-# Pull application code from S3
-aws s3 cp s3://my-config-bucket/etl-worker/app.tar.gz /opt/app.tar.gz
-tar -xzf /opt/app.tar.gz -C /opt/
-
-# Configure and start CloudWatch agent
-aws s3 cp s3://my-config-bucket/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/etc/
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-    -a fetch-config -m ec2 \
-    -c file:/opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json -s
-
-# Signal CloudFormation/ASG that init is complete
-/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource MyASG --region us-east-1
-</pre>
-
-  <h3>User Data Limitations</h3>
-  <p>User data has a 16 KB size limit. For complex initialization, store the full script in S3 and have a minimal user data script download and execute it. User data runs at boot with root privileges and no interactive terminal - capture stdout/stderr to a log file (<code>/var/log/user-data.log</code>) for debugging failed initializations. User data only runs on first boot by default; to run on every boot, use cloud-init's <code>runcmd</code> module with the appropriate frequency setting.</p>
-
-  <div class="warn"><strong>Don't put secrets in user data:</strong> User data is visible to anyone with <code>ec2:DescribeInstanceAttribute</code> permission and is stored in plaintext in the EC2 service. Never pass passwords, API keys, or credentials via user data. Retrieve secrets at runtime from Secrets Manager or SSM Parameter Store using the instance's IAM role.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 9 -->
-  <h2 id="s9">9. Auto Scaling Groups</h2>
-
-  <p>An Auto Scaling Group (ASG) manages a fleet of EC2 instances as a logical unit. The ASG maintains a desired capacity, scales out (adds instances) when demand increases, and scales in (removes instances) when demand decreases. ASGs integrate with load balancers to automatically register and deregister instances as they join and leave the group.</p>
-
-  <h3>Launch Templates</h3>
-  <p>A Launch Template specifies the configuration for instances the ASG creates: AMI ID, instance type, key pair, security groups, IAM instance profile, user data, EBS volumes, network interfaces, and purchasing options (On-Demand vs Spot mix). Launch Templates replaced the older Launch Configurations - they support versioning, mixed instance policies (multiple instance types in one ASG), and Spot + On-Demand mixing.</p>
-
-<pre>
-# Create a launch template
-ec2.create_launch_template(
-    LaunchTemplateName='etl-worker-template',
-    VersionDescription='Initial version',
-    LaunchTemplateData={
-        'ImageId': 'ami-0abcdef1234567890',
-        'InstanceType': 'r6i.xlarge',
-        'IamInstanceProfile': {'Name': 'ETLWorkerInstanceProfile'},
-        'SecurityGroupIds': ['sg-0123456789abcdef0'],
-        'UserData': base64.b64encode(user_data_script.encode()).decode(),
-        'BlockDeviceMappings': [{
-            'DeviceName': '/dev/xvda',
-            'Ebs': {'VolumeSize': 50, 'VolumeType': 'gp3', 'Encrypted': True}
-        }],
-        'MetadataOptions': {'HttpTokens': 'required', 'HttpEndpoint': 'enabled'}
-    }
-)
-</pre>
-
-  <h3>Scaling Policies</h3>
-  <ul>
-    <li><strong>Target Tracking:</strong> Maintain a target metric value (e.g., keep average CPU at 60%). ASG adds/removes instances automatically to maintain the target. Simplest to configure.</li>
-    <li><strong>Step Scaling:</strong> Define thresholds with specific scaling adjustments (e.g., +2 instances if CPU > 70%, +4 if CPU > 90%). More control than target tracking, useful for workloads with known burst patterns.</li>
-    <li><strong>Scheduled Scaling:</strong> Pre-scale to a known capacity at a specific time (e.g., increase to 20 instances before a daily 9am batch run). Useful when load patterns are predictable.</li>
-    <li><strong>Predictive Scaling:</strong> Uses ML to forecast load and scale proactively. Useful for recurring cyclical patterns.</li>
-  </ul>
-
-  <h3>Instance Refresh</h3>
-  <p>When you update a Launch Template (new AMI, new instance type), existing instances in the ASG continue running the old configuration. Instance Refresh replaces running instances with new ones based on the updated template, rolling through the fleet while maintaining a configurable minimum healthy percentage. This is the standard zero-downtime deployment mechanism for EC2-backed services.</p>
-
-  <div class="hi">For data pipeline worker pools backed by SQS, the pattern is: ASG scales based on SQS <code>ApproximateNumberOfMessagesVisible</code> via a Step Scaling policy. When the queue is empty, scale to zero (or minimum 0). When messages arrive, scale out proportionally. Workers dequeue, process, and delete messages. The ASG + SQS combination provides elastic, fault-tolerant batch processing without managing a job scheduler.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 10 -->
-  <h2 id="s10">10. Load Balancers - ALB, NLB, CLB</h2>
-
-  <p>Elastic Load Balancing distributes incoming traffic across multiple EC2 instances (or containers, or Lambda functions) to improve availability and scalability. There are three load balancer types with distinct use cases.</p>
-
-  <h3>Application Load Balancer (ALB)</h3>
-  <p>Layer 7 (HTTP/HTTPS) load balancer. Routes requests based on URL path, hostname, HTTP headers, or query string parameters. Supports host-based and path-based routing to different target groups, WebSocket connections, HTTP/2, and native authentication via Cognito or OIDC. ALB is the right choice for: web applications, REST APIs, microservices with path-based routing, and any HTTP/HTTPS workload where you need content-based routing.</p>
-
-  <h3>Network Load Balancer (NLB)</h3>
-  <p>Layer 4 (TCP/UDP/TLS) load balancer. Operates at the connection level without inspecting HTTP content. Handles millions of requests per second with ultra-low latency (~100 microseconds). Preserves the client's source IP address. NLB is the right choice for: TCP-based protocols (Kafka clients, database connections, gRPC), latency-critical applications, and workloads needing static IP addresses (NLB provides one Elastic IP per AZ).</p>
-
-  <h3>Classic Load Balancer (CLB)</h3>
-  <p>The original AWS load balancer - operates at both Layer 4 and Layer 7 but with limited features compared to ALB and NLB. CLB is legacy; AWS recommends migrating to ALB or NLB. New architectures should not use CLB.</p>
-
-  <table>
-    <tr><th>Feature</th><th>ALB</th><th>NLB</th></tr>
-    <tr><td>Layer</td><td>7 (HTTP/HTTPS)</td><td>4 (TCP/UDP/TLS)</td></tr>
-    <tr><td>Routing</td><td>Path, host, header, query string</td><td>Connection-level only</td></tr>
-    <tr><td>Latency</td><td>~1ms</td><td>~100&micro;s</td></tr>
-    <tr><td>Static IP</td><td>No (DNS only)</td><td>Yes (1 Elastic IP per AZ)</td></tr>
-    <tr><td>WebSocket</td><td>Yes</td><td>Yes (TCP passthrough)</td></tr>
-    <tr><td>Auth integration</td><td>Yes (Cognito, OIDC)</td><td>No</td></tr>
-    <tr><td>Best for</td><td>Web apps, REST APIs, microservices</td><td>TCP services, Kafka, low-latency, static IP</td></tr>
-  </table>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 11 -->
-  <h2 id="s11">11. EC2 in Data Pipelines</h2>
-
-  <p>While Lambda and Glue handle most serverless ETL in modern AWS architectures, EC2 remains essential in several data engineering contexts where managed services hit their limits.</p>
-
-  <h3>EMR on EC2</h3>
-  <p>Amazon EMR (Elastic MapReduce) provisions EC2 instances as Spark/Hadoop cluster nodes. The master node, core nodes, and task nodes are all EC2 instances - understanding EC2 instance types, Spot purchasing, EBS vs instance store, and Auto Scaling is directly applicable to EMR cluster design. Task nodes (no HDFS, compute-only) are ideal Spot candidates; core nodes (hold HDFS data) should be On-Demand or Reserved.</p>
-
-  <h3>Self-Managed Kafka on EC2</h3>
-  <p>Amazon MSK (Managed Kafka) is the AWS-managed option, but some teams run self-managed Kafka on EC2 for greater version control, custom plugin support, or cost reasons at scale. Kafka brokers benefit from: compute-optimized (c family) or storage-optimized (i family) instances, dedicated EBS gp3 volumes with high IOPS configured independently of size, and placement groups (cluster placement) for low-latency broker-to-broker replication traffic.</p>
-
-<pre>
-# Kafka broker recommended EC2 config (IaC reference)
-Instance type:  r6i.2xlarge or c6i.2xlarge
-EBS:            gp3, 2 TB, 6000 IOPS, 500 MB/s throughput
-Placement:      Partition placement group (AZ-resilient)
-Spot:           No - brokers hold state; use On-Demand or Reserved
-Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
-</pre>
-
-  <h3>Long-Running ETL Workers</h3>
-  <p>For ETL workloads that exceed Lambda's 15-minute limit, process large local files, or require persistent network connections (streaming consumers, long-running DB transactions), EC2 worker instances in an ASG backed by SQS provide a robust pattern. Workers poll SQS, process jobs, and report completion. The ASG scales to zero when the queue is empty, minimizing cost during idle periods.</p>
-
-  <div class="hi">The key design decision for EC2-based ETL workers: make each worker stateless and idempotent. The SQS message contains the job description; the worker fetches input from S3, processes it, writes output to S3 or a database, and deletes the SQS message only on success. If the instance is terminated mid-job (Spot interruption, AZ failure), the SQS message becomes visible again after the visibility timeout and another worker picks it up.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 12 -->
-  <h2 id="s12">12. Monitoring - CloudWatch, SSM, Status Checks</h2>
-
-  <h3>CloudWatch Metrics</h3>
-  <p>EC2 publishes basic metrics to CloudWatch every 5 minutes (free) or every 1 minute with detailed monitoring enabled (paid). Basic metrics: <code>CPUUtilization</code>, <code>NetworkIn</code>/<code>NetworkOut</code>, <code>DiskReadOps</code>/<code>DiskWriteOps</code> (instance store only - EBS metrics are separate), <code>StatusCheckFailed</code>. Notably absent from default metrics: memory utilization and disk usage for EBS volumes. These require the CloudWatch agent installed on the instance.</p>
-
-<pre>
-# CloudWatch agent config - collect memory + disk metrics
-# /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-{
-  "metrics": {
-    "namespace": "MyApp/EC2",
-    "metrics_collected": {
-      "mem": {
-        "measurement": ["mem_used_percent"],
-        "metrics_collection_interval": 60
-      },
-      "disk": {
-        "measurement": ["used_percent"],
-        "metrics_collection_interval": 60,
-        "resources": ["/", "/data"]
-      }
-    }
-  }
-}
-</pre>
-
-  <h3>EC2 Status Checks</h3>
-  <p>EC2 runs two automatic status checks per instance:</p>
-  <ul>
-    <li><strong>System Status Check:</strong> Tests the underlying AWS hardware and hypervisor. A failure means the physical host has a problem. Resolution is usually a stop/start (which migrates to new hardware), not a reboot.</li>
-    <li><strong>Instance Status Check:</strong> Tests the operating system and network configuration of the instance itself. A failure means the OS is unresponsive or the network is misconfigured. May require a reboot or OS-level investigation.</li>
-  </ul>
-  <p>Configure CloudWatch alarms on <code>StatusCheckFailed_System</code> and <code>StatusCheckFailed_Instance</code> for production instances. You can configure automatic recovery actions (stop/start for system failures) via CloudWatch alarm actions.</p>
-
-  <h3>AWS Systems Manager (SSM)</h3>
-  <p>SSM provides fleet-wide instance management without SSH. Key features for data engineering: <strong>Session Manager</strong> for secure shell-less access, <strong>Run Command</strong> for executing scripts across multiple instances simultaneously, <strong>Patch Manager</strong> for automated OS patching, and <strong>Parameter Store</strong> for centralized configuration storage accessed by instances at runtime.</p>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 13 -->
-  <h2 id="s13">13. Security Best Practices</h2>
-
-  <h3>Principle of Least Privilege for IAM Roles</h3>
-  <p>Instance profiles should grant only the permissions the application actually uses. An ETL worker that reads from S3 and writes to a specific Redshift table needs S3 GetObject on the input prefix, S3 PutObject on the output prefix, and Redshift credentials access - nothing more. Avoid attaching <code>AmazonS3FullAccess</code> or broad managed policies to instance profiles.</p>
-
-  <h3>No SSH Keys in Production</h3>
-  <p>Launch production instances with no key pair. Use SSM Session Manager for access instead. Key pairs stored on developer laptops or in shared credential stores are a persistent security liability. SSM access is controlled by IAM, audited in CloudTrail, and requires no inbound port 22.</p>
-
-  <h3>Patch Management</h3>
-  <p>EC2 instances run OS software that accumulates CVEs over time. Use SSM Patch Manager to automate OS patching on a defined schedule. For immutable infrastructure patterns (golden AMI), rebuild and replace instances rather than patching in place - rotating AMIs ensures all instances start from a known-good, fully patched baseline.</p>
-
-  <h3>VPC Endpoints for AWS Service Access</h3>
-  <p>Instances in private subnets accessing S3, DynamoDB, SSM, Secrets Manager, or other AWS services can use VPC Endpoints to route traffic within the AWS network rather than through a NAT Gateway. Gateway endpoints (S3, DynamoDB) are free and automatically route traffic within AWS. Interface endpoints (SSM, Secrets Manager, ECR, etc.) have an hourly charge but eliminate NAT Gateway data processing fees for high-volume traffic, often resulting in net cost savings.</p>
-
-  <div class="warn"><strong>Security group drift:</strong> Security groups accumulate rules over time as developers add temporary access for debugging and forget to remove it. Periodically audit security groups with AWS Config rules (<code>restricted-ssh</code>, <code>vpc-sg-open-only-to-authorized-ports</code>) or AWS Trusted Advisor. A single overly permissive inbound rule can expose an entire fleet.</div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 14 -->
-  <h2 id="s14">14. Common Gotchas and Anti-Patterns</h2>
-
-  <div class="warn">
-    <strong>1. Using IMDSv1 in production:</strong> IMDSv1 allows unauthenticated access to instance metadata, including IAM credentials, via a simple HTTP GET. An SSRF vulnerability in any application on the instance can steal credentials. Always enforce IMDSv2 (<code>HttpTokens=required</code>) at account level via a default setting or SCP.
-  </div>
-
-  <div class="warn">
-    <strong>2. Hardcoding IAM credentials in application code or environment variables:</strong> EC2 applications should always use the instance profile via IMDS - boto3 does this automatically. Hardcoded access keys in code, config files, or environment variables are a critical security risk, create key rotation pain, and are regularly discovered by automated secret scanners.
-  </div>
-
-  <div class="warn">
-    <strong>3. Putting production instances in public subnets:</strong> Instances in public subnets with public IPs are directly reachable from the internet. Even with a restrictive security group, this is unnecessary exposure. Use private subnets for all production EC2 instances. Put load balancers and NAT Gateways in public subnets only.
-  </div>
-
-  <div class="warn">
-    <strong>4. Using instance store for data that must persist:</strong> Instance store is ephemeral - data is lost on stop, termination, or host hardware failure. Using instance store for application databases, logs that need to be retained, or any data that isn't regenerable from a source of truth will cause data loss at the first instance interruption.
-  </div>
-
-  <div class="warn">
-    <strong>5. gp2 vs gp3 - not migrating to gp3:</strong> gp2 EBS volumes scale IOPS with size (3 IOPS/GB, max 16,000), forcing you to over-provision size to get IOPS. gp3 decouples IOPS and throughput from size - you can get 16,000 IOPS on a 20 GB volume. gp3 is also 20% cheaper than gp2 for the same size. There is no reason to use gp2 for new volumes; existing gp2 volumes can be modified to gp3 in place with zero downtime.
-  </div>
-
-  <div class="warn">
-    <strong>6. Not setting DeleteOnTermination for EBS root volumes in ASGs:</strong> By default, the root EBS volume of an instance has DeleteOnTermination=true. Non-root volumes added via Launch Template may default to false depending on how they are configured. An ASG that terminates and replaces instances will accumulate orphaned EBS volumes if DeleteOnTermination is not set, generating storage cost with no attached instance.
-  </div>
-
-  <div class="warn">
-    <strong>7. Scaling based on CPU alone for queue-backed workers:</strong> An ASG scaling on CPU utilization doesn't react to SQS queue depth directly - if workers are idle waiting for messages, CPU stays low even if the queue has 50,000 messages. Scale queue-backed worker ASGs on <code>ApproximateNumberOfMessagesVisible</code> in SQS rather than (or in addition to) CPU, to ensure workers spin up as work arrives.
-  </div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 15 -->
-  <h2 id="s15">15. 10 Key Engineering Questions</h2>
-
-  <div class="qa">
-    <div class="qa-q">Q1. What is the difference between stopping and terminating an EC2 instance?</div>
-    <div class="qa-a">Stopping an instance shuts down the OS and deallocates the underlying hardware, but the EBS root volume and attached EBS volumes are preserved. A stopped instance can be started again, resuming from the same EBS state. Instance store data is lost on stop. Terminating permanently deletes the instance - EBS volumes with DeleteOnTermination=true are deleted, others are detached and retained. A terminated instance cannot be recovered. The distinction matters for cost (stopped instances don't bill for compute, only for EBS storage) and data recovery.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q2. What is an instance profile and how does it differ from an IAM role?</div>
-    <div class="qa-a">An IAM role is the identity and permission set. An instance profile is the container that associates an IAM role with an EC2 instance - it's the mechanism by which the instance can assume the role. When you launch an EC2 instance and specify an IAM role in the console, AWS automatically creates an instance profile with the same name. In CloudFormation/CDK, you must create the instance profile resource explicitly. The instance profile is what you reference in the launch template; the role is what you attach policies to.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q3. What is the difference between EBS-backed and instance store-backed instances?</div>
-    <div class="qa-a">EBS-backed instances use an EBS volume as their root device - data persists across stop/start cycles, instances can be stopped and restarted, and snapshots can be taken. Instance store-backed instances use a local ephemeral disk as the root device - all data is lost on stop, termination, or host failure; they can only be rebooted (not stopped). Most modern instance types are EBS-backed. Instance store is available as additional volumes (not root) on storage-optimized instances (i3, i3en, d2) for high-I/O ephemeral scratch space.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q4. When would you choose a Spot instance and what safeguards are required?</div>
-    <div class="qa-a">Spot instances are appropriate for fault-tolerant, stateless, or checkpointing workloads where a 2-minute interruption warning allows graceful shutdown: EMR task nodes, batch processing workers behind SQS, distributed training jobs that checkpoint to S3. Required safeguards: handle the SIGTERM signal sent 2 minutes before termination (complete current work, checkpoint state, delete in-flight SQS messages back to queue), use Spot with multiple instance types (mixed instance ASG) to reduce interruption probability, and never use Spot for stateful single-node databases or primary application servers.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q5. How do Auto Scaling Groups maintain high availability across Availability Zones?</div>
-    <div class="qa-a">An ASG is configured with multiple subnets across multiple AZs. When an instance in one AZ fails its health check, the ASG terminates it and launches a replacement - ideally in the AZ with the fewest instances to maintain balance. The ASG's load balancer integration automatically deregisters unhealthy instances and registers new ones. For true AZ-resilient availability, distribute instances across at least 3 AZs, ensure the load balancer spans all AZs, and test AZ failure scenarios by manually terminating all instances in one AZ.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q6. What is IMDSv2 and why is it important?</div>
-    <div class="qa-a">IMDSv2 (Instance Metadata Service version 2) requires a session token obtained via a PUT request before metadata can be read, unlike IMDSv1 which accepts unauthenticated GET requests. This prevents Server-Side Request Forgery (SSRF) attacks where an attacker tricks the instance's application into fetching the metadata URL and leaking IAM credentials. IMDSv2 should be enforced (<code>HttpTokens=required</code>) on all instances. The hop limit should be set to 1 to prevent container workloads from accessing the host instance's metadata.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q7. What is the difference between gp2 and gp3 EBS volumes?</div>
-    <div class="qa-a">gp2 ties IOPS to volume size (3 IOPS per GB, max 16,000 at 5,333 GB) - you must over-provision size to get IOPS. gp3 decouples IOPS and throughput from size: baseline 3,000 IOPS and 125 MB/s, configurable up to 16,000 IOPS and 1,000 MB/s independently of size. gp3 is also approximately 20% cheaper per GB than gp2. There is no use case where gp2 is preferable to gp3 for new volumes. Existing gp2 volumes can be modified to gp3 in place with no downtime or data movement.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q8. How does an ALB differ from an NLB and when would you choose each?</div>
-    <div class="qa-a">ALB operates at Layer 7 (HTTP/HTTPS) and can route based on URL path, hostname, and headers - appropriate for web applications, REST APIs, and microservices. NLB operates at Layer 4 (TCP/UDP) and passes connections through without HTTP inspection - appropriate for non-HTTP protocols (Kafka, databases, gRPC), latency-critical workloads (NLB adds ~100&micro;s vs ALB's ~1ms), and workloads needing static Elastic IPs per AZ. NLB preserves client source IP; ALB uses X-Forwarded-For headers.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q9. What is a Launch Template and how does it improve on Launch Configurations?</div>
-    <div class="qa-a">Launch Templates support versioning (multiple versions with a default), mixed instance policies (combine multiple instance types in one ASG for Spot diversity), Spot + On-Demand mixing in a single ASG, and all the latest EC2 features (T3 unlimited, Nitro, IMDSv2 settings). Launch Configurations are immutable - any change requires creating a new one. They also don't support mixed instance policies or some newer EC2 features. AWS recommends Launch Templates for all new Auto Scaling Groups; Launch Configurations are a legacy feature.</div>
-  </div>
-
-  <div class="qa">
-    <div class="qa-q">Q10. How would you design an EC2-based worker fleet to process messages from SQS reliably?</div>
-    <div class="qa-a">Launch an ASG using a Launch Template pointing to a golden AMI with the worker software pre-baked. Scale the ASG based on SQS <code>ApproximateNumberOfMessagesVisible</code> via a Step Scaling policy (scale to 0 when queue empty, scale out proportionally when messages arrive). Workers: long-poll SQS for messages, set an appropriate visibility timeout (longer than the maximum expected processing time), process the message idempotently, delete the message only on success, and handle the SIGTERM signal (Spot interruption, ASG scale-in) by not deleting the message - it will become visible again after the visibility timeout for another worker to pick up.</div>
-  </div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 16 -->
-  <h2 id="s16">16. Production Story Angles</h2>
-
-  <p>At a large financial institution, EC2 served as the compute layer for a custom ETL worker fleet that processed jobs exceeding Lambda's 15-minute ceiling. Jobs involved reading multi-gigabyte encrypted files from S3, decrypting them using customer-managed KMS keys, applying complex validation and transformation rules, and loading the results into a PostgreSQL-compatible database. Each job took 20-45 minutes - clearly outside Lambda's scope. The fleet ran as an ASG scaling on SQS queue depth, allowing it to idle at 0 instances overnight and scale to 30+ workers during peak morning processing windows.</p>
-
-  <p>Instance selection required careful trade-off analysis. The workload was memory-bound (large in-memory DataFrames during transformation) but also needed reasonable I/O for the decryption and write phases. The r6i.2xlarge (8 vCPU, 64 GB RAM) was chosen after benchmarking - it provided sufficient memory to process the largest expected input files without spilling to disk, and the 6th-gen Intel processor delivered acceptable throughput on the CPU-bound decryption step. Graviton3 (r7g) was evaluated and showed a 25% cost reduction for the same performance profile, driving a subsequent migration.</p>
-
-  <p>All instances launched with IMDSv2 enforced, no key pair, and no public IP. Access for debugging and operational tasks went exclusively through SSM Session Manager - no bastion hosts, no open port 22. The IAM instance profile was scoped tightly: S3 GetObject on the input prefix, KMS Decrypt for the specific key, and Secrets Manager GetSecretValue for the database password. CloudWatch Logs received all application logs via the CloudWatch agent, with structured JSON output that made querying with CloudWatch Insights practical.</p>
-
-  <p>Spot instances were used for the task nodes, not the workers in this case - job state was not easily checkpointed mid-transform, making Spot interruption too disruptive for the 20-45 minute jobs. However, a second fleet of shorter validation-only workers (under 5 minutes per job, easily restarted) did use Spot with significant cost savings. The two fleets used separate SQS queues and separate ASGs with different scaling and purchasing strategies.</p>
-
-  <p>EBS gp3 volumes were sized conservatively at 50 GB for the OS and application layer, with IOPS and throughput configured to the minimum needed. The key insight discovered during load testing: default gp3 baseline (3,000 IOPS) was the bottleneck during the write phase, not CPU or memory. Increasing the configured IOPS to 6,000 on the same volume (no size increase, modest cost increase) eliminated the bottleneck entirely - something that would have required doubling the volume size on gp2 to achieve.</p>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
-  <!-- SECTION 17 -->
-  <h2 id="s17">17. Quick Reference Cheat Sheet</h2>
-
-  <div class="cheat">
-    <div class="cheat-row">
-      <div class="ct">Instance Families</div>
-      <div class="cd">m=general, c=compute, r=memory, i=storage, t=burstable, p/g=GPU</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Graviton (g suffix)</div>
-      <div class="cd">ARM-based, 20-40% better price/performance; requires ARM64-compatible binaries</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Spot Instances</div>
-      <div class="cd">60-90% discount; 2-min termination warning; fault-tolerant/stateless workloads only</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Savings Plans</div>
-      <div class="cd">1 or 3-year commitment; 40-72% discount; Compute SP applies to any instance in region</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">gp3 vs gp2</div>
-      <div class="cd">gp3 decouples IOPS/throughput from size; 20% cheaper; always prefer gp3</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Instance Store</div>
-      <div class="cd">Highest I/O; ephemeral - data lost on stop/termination; use for Spark shuffle only</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">IMDSv2</div>
-      <div class="cd">Session-token-required metadata access; prevents SSRF credential theft; enforce via HttpTokens=required</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Instance Profile</div>
-      <div class="cd">Container that binds an IAM role to an EC2 instance; boto3 auto-fetches credentials from IMDS</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">SSM Session Manager</div>
-      <div class="cd">SSH-free instance access via IAM; no key pairs, no port 22; full audit trail</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">ASG + SQS scaling</div>
-      <div class="cd">Scale on ApproximateNumberOfMessagesVisible, not CPU - reacts to actual work, not utilization</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Launch Template</div>
-      <div class="cd">Versioned instance config for ASG; supports mixed instance policies and Spot+On-Demand mixing</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">ALB vs NLB</div>
-      <div class="cd">ALB=Layer 7 HTTP routing; NLB=Layer 4 TCP/UDP, ultra-low latency, static IP per AZ</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">User Data</div>
-      <div class="cd">Boot script; 16 KB limit; runs as root; never put secrets here - use Secrets Manager</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Status Check Types</div>
-      <div class="cd">System = host hardware (stop/start to fix); Instance = OS/network (reboot or investigate)</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">DeleteOnTermination</div>
-      <div class="cd">EBS volumes default true for root; explicitly set for non-root to avoid orphaned volumes in ASG</div>
-    </div>
-  </div>
-
-  <a class="back-top" href="#top">&uarr; Back to top</a>
-
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Amazon EC2 - Master Engineering Reference
+</div>
+
+<h1>Amazon EC2</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 28-34 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">EC2</span>
+  <span class="tag">Compute</span>
+  <span class="tag">EBS</span>
+  <span class="tag">VPC</span>
+  <span class="tag">Auto Scaling</span>
+  <span class="tag">IAM</span>
+  <span class="tag">Data Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-ec2.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">EC2 Mental Model</a></li>
+    <li><a href="#s2">Instance Families</a></li>
+    <li><a href="#s3">Pricing Models</a></li>
+    <li><a href="#s4">EBS vs Instance Store</a></li>
+    <li><a href="#s5">EBS Volume Types</a></li>
+    <li><a href="#s6">VPC Networking</a></li>
+    <li><a href="#s7">IAM Instance Profiles</a></li>
+    <li><a href="#s8">Auto Scaling Groups</a></li>
+    <li><a href="#s9">Load Balancers</a></li>
+    <li><a href="#s10">Placement Groups</a></li>
+    <li><a href="#s11">EC2 for Data Engineering</a></li>
+    <li><a href="#s12">AMIs and Bootstrap</a></li>
+    <li><a href="#s13">Cost Optimization</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">EC2 Mental Model</h2>
+<p>Amazon EC2 is raw, configurable compute capacity in AWS. You choose the instance family, CPU architecture, memory, network profile, storage layout, operating system, placement, IAM role, lifecycle behavior, and scaling model. Managed services such as Lambda, Glue, EMR Serverless, and Fargate hide those details. EC2 exposes them because sometimes performance, dependency control, local disk, daemon processes, GPU scheduling, or long-running workload behavior matters more than convenience.</p>
+<p>For a senior data engineer, EC2 is not just a virtual machine. It is the fallback layer when a workload does not fit cleanly into a serverless box: custom Spark workers, Kafka clients, Airflow workers, long-running feature generation, GPU inference endpoints, file conversion pipelines, legacy ETL binaries, or high-throughput collectors that need stable network and disk behavior.</p>
+<div class="hi">Key insight: EC2 gives maximum control over compute shape, OS dependencies, disk layout, networking, and lifecycle. That control is valuable only when the workload needs it.</div>
+<div class="warn">Production gotcha: EC2 is easy to start and easy to forget. Idle instances, unattached EBS volumes, oversized disks, stale AMIs, and orphaned Elastic IPs can quietly become a large bill.</div>
+<pre><code># Basic launch example
+aws ec2 run-instances \
+  --image-id ami-xxxxxxxxxxxxxxxxx \
+  --instance-type m7i.large \
+  --subnet-id subnet-xxxxxxxx \
+  --security-group-ids sg-xxxxxxxx \
+  --iam-instance-profile Name=ec2-data-engineering-role \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=etl-worker}]'</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Instance Families</h2>
+<p>Instance selection is a workload-shaping decision. The wrong instance type can waste money, throttle jobs, or create misleading performance conclusions. Start from the bottleneck: CPU, memory, disk throughput, network throughput, GPU, or per-core licensing cost.</p>
+<table>
+  <tr><th>Family</th><th>Examples</th><th>Best fit</th><th>Data engineering angle</th></tr>
+  <tr><td>General purpose</td><td><code>m7i</code>, <code>m7g</code>, <code>t4g</code></td><td>Balanced CPU and memory</td><td>Airflow workers, API services, light ETL, metadata jobs</td></tr>
+  <tr><td>Compute optimized</td><td><code>c7i</code>, <code>c7g</code></td><td>High CPU-to-memory ratio</td><td>Compression, parsing, stateless transforms, CPU-heavy batch</td></tr>
+  <tr><td>Memory optimized</td><td><code>r7i</code>, <code>x2idn</code></td><td>Large memory footprint</td><td>Spark executors, joins, caching, graph workloads, large Pandas jobs</td></tr>
+  <tr><td>Storage optimized</td><td><code>i4i</code>, <code>i8g</code>, <code>d3</code></td><td>Local NVMe or dense storage</td><td>Shuffle-heavy jobs, temporary sort, Kafka brokers, search indexing</td></tr>
+  <tr><td>Accelerated/GPU</td><td><code>g6</code>, <code>p5</code>, <code>trn1</code>, <code>inf2</code></td><td>GPU, Trainium, Inferentia</td><td>ML training, batch inference, embedding generation, model serving</td></tr>
+</table>
+<div class="hi">Key insight: choose instance families by bottleneck, then tune size. Do not start by asking for the biggest machine; start by asking what resource saturates first.</div>
+<div class="warn">Production gotcha: burstable <code>t</code> instances can look cheap but fail under sustained CPU. For steady ETL workers, CPU credits can turn a simple job into a mystery slowdown.</div>
+<h3>Architecture choice: x86 vs Arm</h3>
+<p>Graviton instances can be excellent for cost/performance, especially for Linux workloads using Python, Java, Go, Spark, or containers with Arm-compatible images. The migration risk is native dependencies: compiled wheels, vendor binaries, old ODBC/JDBC drivers, monitoring agents, and proprietary software.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Pricing Models</h2>
+<p>EC2 has several buying models. The practical question is not which one is cheapest on a pricing page. The question is how predictable the workload is and how much interruption or commitment risk the team can tolerate.</p>
+<table>
+  <tr><th>Model</th><th>Commitment</th><th>Discount pattern</th><th>Use when</th></tr>
+  <tr><td>On-Demand</td><td>None</td><td>Highest flexibility, highest unit cost</td><td>Experiments, unpredictable jobs, production baseline before sizing</td></tr>
+  <tr><td>Reserved Instances</td><td>1 or 3 years</td><td>Discount tied to attributes; Standard less flexible, Convertible more flexible</td><td>Stable instance families and steady state capacity</td></tr>
+  <tr><td>Savings Plans</td><td>1 or 3 years hourly spend</td><td>Commit to dollars per hour, often more flexible than classic RIs</td><td>Predictable baseline spend across evolving instance types</td></tr>
+  <tr><td>Spot</td><td>Interruptible</td><td>Deep discount using spare capacity</td><td>Batch, stateless workers, retryable data jobs, distributed compute</td></tr>
+</table>
+<div class="hi">Key insight: the clean pattern is On-Demand for discovery, Savings Plans or RIs for the stable baseline, and Spot for elastic fault-tolerant overflow.</div>
+<div class="warn">Production gotcha: commitment math should be based on actual utilization, not wishful capacity. A 40% discount on a machine used 30% of the time can still lose to On-Demand.</div>
+<pre><code># Simple break-even thinking
+monthly_on_demand = hourly_rate * hours_used
+monthly_commitment = committed_hourly_rate * 730
+
+# Good commitment candidate:
+# - runs most hours
+# - stable family/region/OS
+# - right-sized from real CloudWatch data
+# - unlikely to be replaced by Glue, Fargate, or serverless in the term</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">EBS vs Instance Store</h2>
+<p>EC2 storage has two major personalities. EBS is network-attached block storage that persists independently of the instance lifecycle. Instance store is physically attached local storage that is fast and temporary. The choice affects durability, restart behavior, backup strategy, throughput, and operational risk.</p>
+<table>
+  <tr><th>Storage</th><th>Persists after stop?</th><th>Performance shape</th><th>Best use</th></tr>
+  <tr><td>EBS</td><td>Yes</td><td>Provisioned or baseline IOPS and throughput</td><td>Root volumes, databases, durable state, application data</td></tr>
+  <tr><td>Instance store</td><td>No</td><td>Very high local NVMe performance on supported families</td><td>Scratch space, shuffle, cache, temporary staging</td></tr>
+</table>
+<div class="hi">Key insight: use EBS for data you must keep; use instance store for data you can rebuild.</div>
+<div class="warn">Production gotcha: instance store data does not survive stop, hibernate, or termination. Treat it like a local cache, not a database backup plan.</div>
+<h3>Data engineering examples</h3>
+<p>For Spark shuffle, local NVMe can be excellent because failed partitions can be recomputed. For Kafka brokers, storage optimized instances can work, but the operational design must account for replication, broker replacement, partition rebalancing, and AZ failure. For a single-node Postgres lab, EBS is usually the safer default because snapshots and stop/start behavior matter more than raw local speed.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">EBS Volume Types</h2>
+<p>EBS volume type selection is a cost/performance contract. Modern general-purpose workloads usually start with <code>gp3</code> because performance can be provisioned independently from size. High-end transactional workloads move to <code>io2</code>. Throughput-heavy sequential workloads may use <code>st1</code>, but not for latency-sensitive databases.</p>
+<table>
+  <tr><th>Volume</th><th>Performance profile</th><th>Use when</th><th>Avoid when</th></tr>
+  <tr><td><code>gp3</code></td><td>General-purpose SSD, configurable IOPS and throughput</td><td>Most EC2 roots, app disks, moderate databases, ETL staging</td><td>You need extreme durability or very high sustained IOPS</td></tr>
+  <tr><td><code>io2</code></td><td>Provisioned IOPS SSD</td><td>Critical databases, latency-sensitive write-heavy systems</td><td>The workload is mostly sequential scan or cheap scratch</td></tr>
+  <tr><td><code>st1</code></td><td>Throughput optimized HDD</td><td>Large sequential workloads, logs, big file processing</td><td>Boot volumes, random I/O, OLTP databases</td></tr>
+</table>
+<div class="hi">Key insight: <code>gp3</code> is usually the default. Move to <code>io2</code> only when measured latency and IOPS requirements justify the price.</div>
+<div class="warn">Production gotcha: increasing instance size does not automatically fix EBS bottlenecks. You can be limited by volume IOPS, volume throughput, instance EBS bandwidth, file system settings, or application queue depth.</div>
+<pre><code># Create a gp3 data volume
+aws ec2 create-volume \
+  --availability-zone us-east-1a \
+  --volume-type gp3 \
+  --size 500 \
+  --iops 6000 \
+  --throughput 500 \
+  --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=etl-data}]'</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">VPC Networking on EC2</h2>
+<p>Every EC2 instance sits inside a VPC subnet and communicates through elastic network interfaces, route tables, security groups, network ACLs, and optional endpoints or gateways. For data platforms, networking is often where good designs fail quietly: blocked S3 access, wrong subnet, no NAT path, public IP exposure, asymmetric routes, or over-permissive security groups.</p>
+<table>
+  <tr><th>Component</th><th>Role</th><th>Data engineering concern</th></tr>
+  <tr><td>Subnet</td><td>Places instance in an AZ and routing boundary</td><td>Private subnets are preferred for workers that do not need public ingress</td></tr>
+  <tr><td>ENI</td><td>Virtual network card</td><td>Can attach secondary IPs; useful for appliances or stable network identity</td></tr>
+  <tr><td>Security group</td><td>Stateful instance firewall</td><td>Use least-privilege ingress; allow egress intentionally</td></tr>
+  <tr><td>Route table</td><td>Controls network paths</td><td>S3 endpoint routes can avoid NAT cost for data-heavy jobs</td></tr>
+  <tr><td>VPC endpoint</td><td>Private AWS service access</td><td>Important for S3, STS, ECR, CloudWatch Logs, Secrets Manager</td></tr>
+</table>
+<div class="hi">Key insight: data-heavy EC2 jobs should usually read S3 through private networking paths, not through public internet paths or expensive NAT bottlenecks.</div>
+<div class="warn">Production gotcha: a private subnet without NAT or required VPC endpoints may launch fine but fail during bootstrap when it cannot reach package repositories, ECR, S3, STS, or CloudWatch Logs.</div>
+<pre><code># Security group idea: inbound only from ALB or bastion, not the world
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-worker \
+  --protocol tcp \
+  --port 22 \
+  --source-group sg-bastion</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">IAM Instance Profiles and Metadata Service</h2>
+<p>An EC2 instance should not store long-lived AWS keys on disk. Instead, attach an IAM role through an instance profile. The AWS SDK automatically obtains temporary credentials from the Instance Metadata Service. This is how a Python process on EC2 can read S3, write CloudWatch metrics, call Secrets Manager, or publish to SNS without hardcoded secrets.</p>
+<div class="hi">Key insight: instance profiles turn EC2 into an AWS-native workload identity. The application asks the SDK for credentials; the SDK retrieves short-lived credentials from metadata.</div>
+<div class="warn">Production gotcha: require IMDSv2 where possible. Metadata credential exposure through SSRF, proxies, or unsafe local services can turn an application bug into AWS account access.</div>
+<pre><code># Inspect role credentials from inside the instance for troubleshooting only
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/</code></pre>
+<pre><code># Force IMDSv2 on an instance
+aws ec2 modify-instance-metadata-options \
+  --instance-id i-xxxxxxxxxxxxxxxxx \
+  --http-tokens required \
+  --http-endpoint enabled</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Auto Scaling Groups</h2>
+<p>Auto Scaling Groups manage a fleet of EC2 instances from a launch template. They replace unhealthy instances, scale capacity, spread across Availability Zones, and provide hooks for controlled lifecycle actions. In data engineering, ASGs are useful for worker fleets, collectors, self-managed processing nodes, and batch clusters that need predictable EC2 control without manually launching machines.</p>
+<table>
+  <tr><th>Feature</th><th>Purpose</th><th>Senior-level concern</th></tr>
+  <tr><td>Launch template</td><td>Defines AMI, instance type, IAM role, security groups, user data</td><td>Version it. Pin known-good versions for production rollouts.</td></tr>
+  <tr><td>Scaling policy</td><td>Changes capacity based on metrics or schedules</td><td>Scale on queue depth, lag, or job backlog, not only CPU.</td></tr>
+  <tr><td>Cooldown/warmup</td><td>Prevents rapid oscillation</td><td>Long bootstrap jobs need realistic warmup values.</td></tr>
+  <tr><td>Lifecycle hook</td><td>Run custom logic before launch or terminate completes</td><td>Drain workers, flush logs, deregister consumers, checkpoint progress.</td></tr>
+</table>
+<div class="hi">Key insight: for worker fleets, the best scaling metric is often backlog per worker, not CPU percentage.</div>
+<div class="warn">Production gotcha: terminating a worker without lifecycle draining can duplicate work, lose partial files, break Kafka consumer groups, or leave jobs half-committed.</div>
+<pre><code># Example scaling idea: target tracking on SQS backlog per instance
+# CloudWatch metric math can combine ApproximateNumberOfMessagesVisible / GroupInServiceInstances</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Load Balancers: ALB vs NLB</h2>
+<p>Load balancers matter when EC2 instances expose APIs, ingestion endpoints, dashboards, model endpoints, or internal services. The main choice is between Application Load Balancer and Network Load Balancer.</p>
+<table>
+  <tr><th>Balancer</th><th>Layer</th><th>Best for</th><th>Data engineering examples</th></tr>
+  <tr><td>ALB</td><td>Layer 7 HTTP/HTTPS</td><td>Path routing, host routing, TLS termination, web APIs</td><td>FastAPI data service, Airflow webserver, internal metadata API</td></tr>
+  <tr><td>NLB</td><td>Layer 4 TCP/UDP/TLS</td><td>High throughput, static IPs, non-HTTP protocols, low latency</td><td>Kafka bootstrap endpoints, custom collectors, TCP ingestion</td></tr>
+</table>
+<div class="hi">Key insight: use ALB when the protocol is HTTP-aware; use NLB when the protocol is TCP-native or latency/throughput behavior matters more.</div>
+<div class="warn">Production gotcha: health checks must match application readiness, not just process liveness. A server can accept TCP while its DB pool, model, or downstream dependency is broken.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">Placement Groups</h2>
+<p>Placement groups influence how EC2 instances are placed on AWS infrastructure. They are not everyday settings, but they matter for distributed systems where network latency, failure isolation, or partitioned topology changes performance and resilience.</p>
+<table>
+  <tr><th>Type</th><th>Goal</th><th>Use when</th><th>Tradeoff</th></tr>
+  <tr><td>Cluster</td><td>Low-latency, high-bandwidth placement</td><td>HPC, tightly coupled Spark or MPI-style workloads</td><td>Less fault isolation; capacity can be harder to obtain</td></tr>
+  <tr><td>Spread</td><td>Each instance on distinct hardware</td><td>Small critical fleets, quorum systems</td><td>Limited number of instances per AZ</td></tr>
+  <tr><td>Partition</td><td>Groups instances into hardware partitions</td><td>Large distributed systems like Hadoop, Cassandra, Kafka</td><td>Application must understand partition-aware placement</td></tr>
+</table>
+<div class="hi">Key insight: placement groups are architecture tools. They do not replace replication, multi-AZ design, backups, or application-level fault handling.</div>
+<div class="warn">Production gotcha: changing placement strategy later can require instance replacement. Decide early for clusters where topology is part of the reliability model.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">EC2 in Data Engineering</h2>
+<p>EC2 beats Lambda, Fargate, and Glue when the workload needs long runtimes, custom system packages, local disk, stable daemons, specialized hardware, unusual networking, or precise performance tuning. It loses when the workload is short, event-driven, simple, and better served by managed scaling.</p>
+<table>
+  <tr><th>Choose EC2 when</th><th>Prefer managed/serverless when</th></tr>
+  <tr><td>Jobs run for hours or need local scratch space</td><td>Jobs are short and event-driven</td></tr>
+  <tr><td>You need OS-level agents, custom drivers, or legacy binaries</td><td>Dependencies fit cleanly into container or Glue runtime</td></tr>
+  <tr><td>You need GPU or instance-store optimized shapes</td><td>Compute can be abstracted behind Lambda, Fargate, or Glue</td></tr>
+  <tr><td>You operate persistent services like collectors or brokers</td><td>You want AWS to own patching, scaling, and worker lifecycle</td></tr>
+</table>
+<div class="hi">Key insight: EC2 is often the right answer for hard workloads, not because it is simpler, but because it gives you the knobs managed services intentionally remove.</div>
+<div class="warn">Production gotcha: when teams choose EC2 only because it feels familiar, they often rebuild weaker versions of ECS, Glue, EMR, or managed Kafka.</div>
+<h3>Common EC2 data workloads</h3>
+<p>Examples include Kafka connector workers, custom CDC collectors, batch file converters, high-throughput API ingestion, Spark executors, ML inference nodes, Airflow workers with native drivers, and isolated vendor tools that cannot run inside managed runtimes.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">AMIs, Golden Images, User Data, and Cloud-Init</h2>
+<p>An AMI is the machine image used to launch EC2 instances. User data and cloud-init bootstrap the instance at first boot. The design tradeoff is baking versus bootstrapping. Baking dependencies into a golden image makes launches faster and more repeatable. Bootstrapping at launch is more flexible but slower and more failure-prone.</p>
+<table>
+  <tr><th>Approach</th><th>Strength</th><th>Weakness</th></tr>
+  <tr><td>Golden AMI</td><td>Fast, repeatable, less external dependency at launch</td><td>Requires image pipeline and patch discipline</td></tr>
+  <tr><td>User data bootstrap</td><td>Flexible, easy to change</td><td>Can fail due to package repos, network, secrets, or slow installs</td></tr>
+  <tr><td>Hybrid</td><td>Base dependencies baked; environment config at boot</td><td>Requires clear boundary between image and runtime config</td></tr>
+</table>
+<div class="hi">Key insight: bake slow, stable dependencies; bootstrap fast, environment-specific configuration.</div>
+<div class="warn">Production gotcha: user data runs only during initial launch by default. Teams often edit user data and expect stopped instances to rerun bootstrap magically.</div>
+<pre><code>#!/bin/bash
+set -euo pipefail
+
+# cloud-init user data example
+hostnamectl set-hostname etl-worker
+aws s3 cp s3://company-bootstrap/ec2/worker.env /etc/worker.env
+systemctl enable amazon-cloudwatch-agent
+systemctl start amazon-cloudwatch-agent
+systemctl enable etl-worker
+systemctl start etl-worker</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s13">Cost Optimization</h2>
+<p>EC2 cost optimization is a system, not a one-time resize. The main levers are rightsizing, commitment coverage, Spot adoption, schedule-based shutdown, storage cleanup, data transfer reduction, and architecture replacement where managed services are cheaper overall.</p>
+<table>
+  <tr><th>Lever</th><th>How it saves</th><th>Risk</th></tr>
+  <tr><td>Rightsizing</td><td>Match CPU, memory, network, and EBS to real usage</td><td>Undersizing creates slow jobs and missed SLAs</td></tr>
+  <tr><td>Spot for batch</td><td>Uses spare capacity at large discount</td><td>Interruptions require checkpoint/retry design</td></tr>
+  <tr><td>Savings Plans</td><td>Discounts steady hourly spend</td><td>Overcommitment wastes money</td></tr>
+  <tr><td>EBS cleanup</td><td>Deletes orphaned volumes and stale snapshots</td><td>Bad tagging can delete needed recovery points</td></tr>
+  <tr><td>S3/VPC endpoints</td><td>Can reduce NAT and data path costs</td><td>Endpoint policies and routes must be maintained</td></tr>
+</table>
+<div class="hi">Key insight: optimize the fleet, not just the instance. The real bill includes compute, EBS, snapshots, NAT, data transfer, load balancers, CloudWatch logs, and idle capacity.</div>
+<div class="warn">Production gotcha: Spot is not free money. Without idempotent jobs, durable checkpoints, and interruption handling, savings can be eaten by reruns and operational pain.</div>
+<pre><code># Spot interruption notice from instance metadata
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/spot/instance-action</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose EC2 over Lambda, Fargate, or Glue for a data workload?</div>
+  <div class="qa-a">A: I choose EC2 when I need long-running compute, local disk, GPU, custom OS dependencies, specialized networking, persistent daemons, or precise tuning. I prefer Lambda, Fargate, or Glue when the workload fits their runtime, scaling, and dependency model because they reduce operational ownership.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you decide between compute optimized, memory optimized, and storage optimized instances?</div>
+  <div class="qa-a">A: I profile the bottleneck. CPU-heavy parsing and compression lean toward compute optimized. Large joins, caches, and Spark executors often need memory optimized. Shuffle-heavy, indexing, Kafka, and temporary high-I/O workloads may need storage optimized local NVMe.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Explain EBS versus instance store in production terms.</div>
+  <div class="qa-a">A: EBS is persistent network-attached block storage with snapshots and independent lifecycle. Instance store is fast local ephemeral storage. I use EBS for durable data and root volumes; I use instance store for scratch, cache, shuffle, and data that can be recomputed.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the safest way for an EC2 process to access S3?</div>
+  <div class="qa-a">A: Attach an IAM role through an instance profile, grant least-privilege S3 permissions, require IMDSv2, and use the AWS SDK default credential chain. For private subnets, add the required VPC endpoints or NAT path so the instance can reach S3 and STS reliably.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you design an Auto Scaling Group for retryable ETL workers?</div>
+  <div class="qa-a">A: I would use a launch template with a versioned AMI, scale on queue backlog per instance, add lifecycle hooks to drain work on termination, make jobs idempotent, emit custom metrics, and use mixed On-Demand plus Spot capacity if interruption is acceptable.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are common EC2 cost surprises?</div>
+  <div class="qa-a">A: Oversized always-on instances, orphaned EBS volumes, excessive snapshots, NAT charges from private subnet downloads, data transfer, forgotten Elastic IPs, verbose CloudWatch logs, and unused commitment coverage. The compute hourly rate is only part of the bill.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row"><div class="ct">EC2</div><div class="cd">Elastic virtual machine capacity with control over instance type, OS, networking, storage, and lifecycle.</div></div>
+  <div class="cheat-row"><div class="ct">AMI</div><div class="cd">Machine image used to launch instances; bake stable dependencies into golden images.</div></div>
+  <div class="cheat-row"><div class="ct">User data</div><div class="cd">Bootstrap script passed at launch, commonly executed by cloud-init on first boot.</div></div>
+  <div class="cheat-row"><div class="ct">Instance profile</div><div class="cd">Container that attaches an IAM role to EC2 so SDKs can get temporary credentials.</div></div>
+  <div class="cheat-row"><div class="ct">IMDSv2</div><div class="cd">Token-based Instance Metadata Service mode; prefer required tokens for better credential protection.</div></div>
+  <div class="cheat-row"><div class="ct">gp3</div><div class="cd">Default general-purpose EBS choice; configurable IOPS and throughput independent of size.</div></div>
+  <div class="cheat-row"><div class="ct">io2</div><div class="cd">Provisioned IOPS EBS for critical, latency-sensitive, high-I/O workloads.</div></div>
+  <div class="cheat-row"><div class="ct">st1</div><div class="cd">Throughput-optimized HDD EBS for large sequential workloads, not low-latency databases.</div></div>
+  <div class="cheat-row"><div class="ct">Instance store</div><div class="cd">Fast local ephemeral disk; data does not survive stop or termination.</div></div>
+  <div class="cheat-row"><div class="ct">Security group</div><div class="cd">Stateful firewall attached to ENIs; use least-privilege ingress and intentional egress.</div></div>
+  <div class="cheat-row"><div class="ct">ASG</div><div class="cd">Auto Scaling Group manages fleet size, health replacement, AZ spread, and scaling policies.</div></div>
+  <div class="cheat-row"><div class="ct">Launch template</div><div class="cd">Versioned EC2 launch configuration for AMI, instance type, IAM role, security groups, and user data.</div></div>
+  <div class="cheat-row"><div class="ct">ALB</div><div class="cd">Layer 7 load balancer for HTTP/HTTPS routing, APIs, dashboards, and TLS termination.</div></div>
+  <div class="cheat-row"><div class="ct">NLB</div><div class="cd">Layer 4 load balancer for TCP/UDP/TLS, static IPs, high throughput, and non-HTTP protocols.</div></div>
+  <div class="cheat-row"><div class="ct">Spot</div><div class="cd">Discounted spare EC2 capacity that can be interrupted; best for retryable batch and elastic workers.</div></div>
+  <div class="cheat-row"><div class="ct">Savings Plans</div><div class="cd">Commit to hourly spend for discounted compute; useful for stable baseline usage.</div></div>
+</div>
 </div>
 </body>
 </html>
-
-
-
-
-
-
