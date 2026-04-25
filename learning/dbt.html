@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dbt for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/dbt.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / dbt for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>dbt for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">dbt</span>
+  <span class="tag">SQL</span>
+  <span class="tag">Analytics Engineering</span>
+  <span class="tag">Data Warehousing</span>
+  <span class="tag">CI/CD</span>
+  <span class="tag">Airflow</span>
+  <span class="tag">Testing</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_dbt.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What dbt Is &mdash; and what it is not</a></li>
+    <li><a href="#s2">Models &amp; ref() &mdash; dependency graph basics</a></li>
+    <li><a href="#s3">Materializations &mdash; view, table, incremental, ephemeral</a></li>
+    <li><a href="#s4">Incremental Models &mdash; strategies and unique_key</a></li>
+    <li><a href="#s5">Sources, Seeds &amp; Built-in Tests</a></li>
+    <li><a href="#s6">Custom Tests &amp; Macros</a></li>
+    <li><a href="#s7">dbt Docs &amp; Lineage DAG</a></li>
+    <li><a href="#s8">SCD Type 2 Snapshots</a></li>
+    <li><a href="#s9">dbt + Airflow &amp; CI/CD</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What dbt Is &mdash; and what it is not</h2>
+<p>dbt is a SQL transformation framework. It takes SQL model files, compiles Jinja templates, resolves dependencies, and executes the resulting SQL inside the target warehouse. The compute happens in Snowflake, BigQuery, Redshift, Databricks, Postgres, or another adapter-backed engine &mdash; not inside dbt itself.</p>
+<p>That boundary matters. dbt is not a loader, not a message bus, and not a full orchestrator. It shines after raw data has landed and been cataloged, when the work becomes modeling, testing, documenting, and deploying transformation logic safely.</p>
+<div class="hi">Key insight: dbt turns warehouse SQL into a software engineering workflow: modular code, dependency graphs, environments, tests, documentation, review, and repeatable deployment.</div>
+<div class="warn">Production gotcha: do not make dbt responsible for file arrival, CDC extraction, API ingestion, or long-running operational retries. Pair it with Airflow, Dagster, Prefect, cloud schedulers, or managed ELT tools.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Models &amp; ref() &mdash; dependency graph basics</h2>
+<p>A dbt model is usually a SQL <code>SELECT</code> statement stored in a <code>.sql</code> file. Depending on its materialization, dbt builds that model as a view, table, incremental table, or CTE-only fragment. The file name becomes the model name, and the model becomes a node in dbt's DAG.</p>
+<p>The <code>ref()</code> function is the center of dbt's dependency system. It resolves the correct relation name for the target environment and tells dbt that one model depends on another. That dependency graph controls run order, lineage, documentation, and selective builds.</p>
+<pre><code>{{ config(materialized='table') }}
+
+select
+    customer_id,
+    min(order_date) as first_order_date,
+    count(*) as lifetime_orders
+from {{ ref('stg_orders') }}
+group by customer_id</code></pre>
+<div class="hi">Key insight: <code>ref()</code> is not just string substitution. It is dependency declaration, environment-aware naming, and lineage metadata in one small function.</div>
+<div class="warn">Production gotcha: hardcoding database.schema.table names bypasses dbt's graph. It makes lineage incomplete and breaks promotion across dev, staging, and production targets.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Materializations &mdash; view, table, incremental, ephemeral</h2>
+<p>Materialization controls what dbt creates in the warehouse. The choice is not cosmetic; it affects cost, freshness, downstream performance, rebuild behavior, storage footprint, and debugging. A senior data engineer should pick materialization based on workload shape, not habit.</p>
+<table>
+  <tr><th>Materialization</th><th>Best use</th><th>Tradeoff</th></tr>
+  <tr><td><code>view</code></td><td>Light logic, small data, always-fresh reads</td><td>Pushes compute to every downstream query</td></tr>
+  <tr><td><code>table</code></td><td>Expensive joins, stable dimensions, BI speed</td><td>Full rebuild can be costly</td></tr>
+  <tr><td><code>incremental</code></td><td>Large facts where only new or changed rows arrive</td><td>Needs careful keys, filters, and backfill design</td></tr>
+  <tr><td><code>ephemeral</code></td><td>Small reusable logic blocks</td><td>No physical object for debugging or reuse outside compiled SQL</td></tr>
+</table>
+<div class="hi">Key insight: views optimize storage and freshness; tables optimize read performance; incremental models optimize large-scale repeated builds.</div>
+<div class="warn">Production gotcha: too many stacked views can create monster SQL at query time. If BI dashboards crawl, inspect the compiled query chain before blaming the warehouse.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Incremental Models &mdash; strategies and unique_key</h2>
+<p>Incremental models let dbt process only new or changed data after the first build. The common pattern uses <code>is_incremental()</code> to filter source rows during incremental runs while still allowing a full refresh when needed. For append-only event streams this is straightforward; for mutable business records it requires more care.</p>
+<p><code>unique_key</code> is what makes many incremental models idempotent. With a merge-capable adapter, dbt can update existing keys and insert new ones. Without the right key, reruns can duplicate records or leave stale values behind.</p>
+<pre><code>{{ config(
+    materialized='incremental',
+    unique_key='order_id',
+    incremental_strategy='merge'
+) }}
+
+select *
+from {{ ref('stg_orders') }}
+{% if is_incremental() %}
+where updated_at &gt;= (
+  select coalesce(max(updated_at), '1900-01-01') from {{ this }}
+)
+{% endif %}</code></pre>
+<div class="warn">Production gotcha: a pure max timestamp filter can miss late-arriving updates. Use a lookback window, source change tracking, or periodic full refresh for critical facts.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Sources, Seeds &amp; Built-in Tests</h2>
+<p>Sources declare upstream raw tables that dbt does not own. They give raw data a formal contract: database, schema, table name, freshness expectations, and documentation. This is how dbt connects transformation lineage back to ingestion outputs from Fivetran, Airbyte, Glue, Kafka sinks, or custom pipelines.</p>
+<p>Seeds are small static CSV files loaded by dbt, usually for controlled lookup tables: country codes, mapping tables, test fixtures, or business categories. They are not a replacement for large reference datasets or operational master data systems.</p>
+<pre><code>version: 2
+
+sources:
+  - name: raw_sales
+    freshness:
+      warn_after: {count: 2, period: hour}
+    tables:
+      - name: orders
+        loaded_at_field: ingested_at
+        columns:
+          - name: order_id
+            tests: [not_null, unique]</code></pre>
+<div class="hi">Key insight: built-in tests are SQL assertions. <code>not_null</code>, <code>unique</code>, <code>accepted_values</code>, and <code>relationships</code> turn data assumptions into repeatable gates.</div>
+<div class="warn">Production gotcha: dbt tests prove specific assumptions, not total correctness. A table can pass all tests and still be semantically wrong if the wrong business rules were encoded.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Custom Tests &amp; Macros</h2>
+<p>Custom tests handle rules that built-ins cannot express cleanly: valid date ranges, mutually exclusive flags, revenue reconciliation, duplicate natural keys within active records, or source-specific quality checks. Singular tests are standalone SQL files that return failing rows; generic tests are reusable Jinja macros parameterized across models and columns.</p>
+<p>Macros are reusable Jinja SQL blocks. They reduce duplication, hide warehouse-specific syntax, and let teams standardize logic like surrogate key generation, safe casting, date spine generation, or audit columns. Packages from dbt Hub extend this pattern, but each dependency becomes part of your production surface area.</p>
+<pre><code>{% macro cents_to_dollars(column_name) %}
+    round({{ column_name }} / 100.0, 2)
+{% endmacro %}
+
+select
+    order_id,
+    {{ cents_to_dollars('amount_cents') }} as amount_usd
+from {{ ref('stg_payments') }}</code></pre>
+<div class="warn">Production gotcha: macro cleverness can hide expensive SQL. Always inspect compiled SQL when a macro touches large tables, joins, window functions, or adapter-specific behavior.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">dbt Docs &amp; Lineage DAG</h2>
+<p>dbt docs generate a browsable catalog of models, sources, columns, descriptions, tests, exposures, and lineage. For a senior data team, this is not just documentation polish; it is an operational map showing how raw inputs become trusted marts and dashboard-facing assets.</p>
+<p>The lineage DAG is especially useful during impact analysis. Before changing a staging column, you can see downstream marts, tests, and exposures that may break. Combined with CI selection syntax, the DAG lets teams test only the impacted slice instead of rebuilding everything on every pull request.</p>
+<div class="hi">Key insight: dbt docs become valuable when descriptions, tests, owners, and exposures are maintained. Auto-generated empty docs are just a prettier version of technical debt.</div>
+<div class="warn">Production gotcha: lineage only sees what dbt owns or what you declare. External BI tools, notebooks, ad hoc warehouse jobs, and hardcoded table references may sit outside the graph.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">SCD Type 2 Snapshots</h2>
+<p>dbt snapshots track changes to mutable source records over time. They create history rows with validity windows, commonly using <code>dbt_valid_from</code> and <code>dbt_valid_to</code>. This is a natural fit for slowly changing dimensions where analysts need to know what a customer, account, product, or policy looked like at a point in time.</p>
+<p>The two common strategies are <code>timestamp</code> and <code>check</code>. Timestamp is cleaner when the source has a reliable <code>updated_at</code>. Check compares selected columns and is useful when the source lacks trustworthy change timestamps, but it can be more expensive and sensitive to noisy fields.</p>
+<pre><code>{% snapshot snap_customer_status %}
+{{ config(
+  target_schema='snapshots',
+  unique_key='customer_id',
+  strategy='timestamp',
+  updated_at='updated_at'
+) }}
+
+select customer_id, status, tier, updated_at
+from {{ source('raw_crm', 'customers') }}
+{% endsnapshot %}</code></pre>
+<div class="warn">Production gotcha: snapshots are not magic CDC. If the source overwrites a row multiple times between snapshot runs, dbt only sees the state at run time and misses intermediate changes.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">dbt + Airflow &amp; CI/CD</h2>
+<p>Airflow and dbt solve different layers. Airflow coordinates workflows: file arrival, ingestion jobs, warehouse loads, dbt runs, notifications, and retries. dbt owns transformation logic, model dependency order, tests, and documentation. The clean design is orchestration outside, transformation graph inside.</p>
+<p>CI/CD is where dbt starts feeling like professional software delivery. Pull requests can run <code>dbt parse</code>, compile checks, unit-sized model builds, state-based selection, and tests against a dev schema. Production jobs should publish artifacts such as <code>manifest.json</code> and <code>run_results.json</code> for observability and debugging.</p>
+<pre><code>dbt deps
+ dbt build \
+  --select state:modified+ \
+  --defer \
+  --state ./prod_artifacts \
+  --target ci</code></pre>
+<div class="hi">Key insight: <code>dbt build</code> is usually the safest production primitive because it runs models, tests, snapshots, and seeds in graph order.</div>
+<div class="warn">Production gotcha: avoid one giant Airflow task that runs the entire dbt project blindly. It hides failure blast radius and makes retry behavior expensive.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: What is dbt, and where does it fit in a modern data platform?</div>
+  <div class="qa-a">A: dbt is a SQL transformation framework that runs inside the warehouse. It fits after ingestion and before BI, ML features, data products, and analytical marts. It gives SQL projects dependency management, testing, documentation, environments, and deployment discipline.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you decide between view, table, and incremental materializations?</div>
+  <div class="qa-a">A: Use views for light logic and freshness, tables for expensive reusable outputs, and incremental models for large datasets where only a slice changes each run. The decision balances compute cost, storage, query latency, and rebuild complexity. At scale, incremental models need extra attention around late-arriving data and idempotency.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why is <code>ref()</code> important beyond convenience?</div>
+  <div class="qa-a">A: <code>ref()</code> declares dependency edges in the dbt graph. That graph controls build order, lineage, selection syntax, documentation, and impact analysis. Hardcoded table names bypass that system and make production changes riskier.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What can go wrong with incremental models?</div>
+  <div class="qa-a">A: They can duplicate rows, miss late-arriving updates, fail to delete records that disappeared upstream, or drift from a full-refresh equivalent. The usual controls are a reliable <code>unique_key</code>, merge strategy, lookback window, source audit columns, and periodic reconciliation. The design depends heavily on whether the upstream data is append-only or mutable.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you use dbt tests in production?</div>
+  <div class="qa-a">A: I would gate critical assumptions such as primary keys, non-null foreign keys, accepted domain values, relationship integrity, and source freshness. Severity should be deliberate: some failures should block deployment, while others should warn and create operational follow-up. Tests should focus on business risk, not just easy-to-write checks.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How should dbt be orchestrated with Airflow?</div>
+  <div class="qa-a">A: Airflow should coordinate upstream ingestion, dbt execution, downstream publication, and alerting. dbt should own the transformation graph and model-level dependencies. In mature setups, Airflow tasks call targeted dbt commands and preserve dbt artifacts for debugging.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row"><div class="ct">model</div><div class="cd">A SQL SELECT file that dbt builds into a warehouse object or inlines as a CTE.</div></div>
+  <div class="cheat-row"><div class="ct">ref()</div><div class="cd">Resolves model relation names and declares DAG dependencies.</div></div>
+  <div class="cheat-row"><div class="ct">source()</div><div class="cd">References upstream raw tables that dbt does not own but can document and freshness-check.</div></div>
+  <div class="cheat-row"><div class="ct">view</div><div class="cd">Default lightweight materialization; no stored data, but compute repeats at query time.</div></div>
+  <div class="cheat-row"><div class="ct">table</div><div class="cd">Physical rebuild each run; good for expensive logic and fast downstream reads.</div></div>
+  <div class="cheat-row"><div class="ct">incremental</div><div class="cd">Processes only changed slices after initial build; needs careful filters and keys.</div></div>
+  <div class="cheat-row"><div class="ct">unique_key</div><div class="cd">Model key used by merge/delete+insert strategies to make reruns idempotent.</div></div>
+  <div class="cheat-row"><div class="ct">is_incremental()</div><div class="cd">Jinja condition used to apply filters only during incremental runs.</div></div>
+  <div class="cheat-row"><div class="ct">seed</div><div class="cd">Small CSV-managed lookup table loaded by dbt; not for large reference data.</div></div>
+  <div class="cheat-row"><div class="ct">snapshot</div><div class="cd">SCD Type 2 history capture for mutable source records.</div></div>
+  <div class="cheat-row"><div class="ct">macro</div><div class="cd">Reusable Jinja SQL block for shared logic or adapter-specific abstraction.</div></div>
+  <div class="cheat-row"><div class="ct">generic test</div><div class="cd">Reusable parameterized test macro applied to models or columns.</div></div>
+  <div class="cheat-row"><div class="ct">dbt build</div><div class="cd">Runs seeds, models, snapshots, and tests in dependency order.</div></div>
+  <div class="cheat-row"><div class="ct">manifest.json</div><div class="cd">dbt artifact containing parsed graph metadata used for docs, selection, and CI state comparison.</div></div>
+  <div class="cheat-row"><div class="ct">state:modified+</div><div class="cd">Selection pattern for changed nodes and downstream dependents, useful in pull-request CI.</div></div>
+</div>
+
+</div>
+</body>
+</html>
