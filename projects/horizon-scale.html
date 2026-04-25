@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HorizonScale — Time-Series ML Forecasting at Scale | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/projects/horizon-scale.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; vertical-align:top; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+.phase-badge { display:inline-block; font-size:0.78em; font-weight:700; padding:2px 9px; border-radius:10px; margin-right:8px; vertical-align:middle; }
+.phase1 { background:#e8f4fd; color:var(--primary); }
+.phase2 { background:#fff3e8; color:var(--accent); }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+  <div class="topnav">
+    <a href="https://seanlgirgis.github.io/projects.html">&#128196; Projects Showcase</a> / HorizonScale
+  </div>
+
+  <h1>HorizonScale — Time-Series ML Forecasting at Scale</h1>
+  <p class="subtitle">Project deep-dive &middot; ML Engineering &middot; Two-phase: Apache Stack &rarr; AWS &middot; Last updated 2026-04-25</p>
+
+  <div class="tag-row">
+    <span class="tag">ML Engineering</span>
+    <span class="tag">Time-Series</span>
+    <span class="tag">Prophet</span>
+    <span class="tag">SARIMA</span>
+    <span class="tag">XGBoost</span>
+    <span class="tag">PySpark</span>
+    <span class="tag">AWS Glue</span>
+    <span class="tag">AWS S3</span>
+    <span class="tag">Amazon Athena</span>
+    <span class="tag">DuckDB</span>
+    <span class="tag">Polars</span>
+    <span class="tag">Parquet</span>
+    <span class="tag">Streamlit</span>
+    <span class="tag">MLflow</span>
+    <span class="tag">Forecasting</span>
+    <span class="tag">8K+ Series</span>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">&#127911; Project Walkthrough — Audio</div>
+    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_horizon-scale.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">Project Overview</a></li>
+      <li><a href="#s2">The Dataset — 2 Years of P95 Telemetry</a></li>
+      <li><a href="#s3">Confidence Tiers: 3-Month vs 6-Month</a></li>
+      <li><a href="#s4">Seasonality &amp; Business Cycles</a></li>
+      <li><a href="#s5">Fleet Behavioral Classification</a></li>
+      <li><a href="#s6">Phase 1 — Apache Stack Architecture</a></li>
+      <li><a href="#s7">Forecasting Models</a></li>
+      <li><a href="#s8">Model Tournament — Champion Selection</a></li>
+      <li><a href="#s9">Phase 2 — AWS Migration</a></li>
+      <li><a href="#s10">AWS Glue: Distributed PySpark Forecasting</a></li>
+      <li><a href="#s11">Risk Detection &amp; Reporting</a></li>
+      <li><a href="#s12">Streamlit Risk Dashboard</a></li>
+      <li><a href="#s13">Engineering Practices</a></li>
+      <li><a href="#s14">Lessons Learned</a></li>
+      <li><a href="#qa">Interview Q&amp;A</a></li>
+      <li><a href="#cheat">Quick Reference</a></li>
+    </ol>
+  </div>
+
+  <!-- S1 -->
+  <h2 id="s1">Project Overview</h2>
+  <p>HorizonScale is a two-phase infrastructure capacity forecasting platform. The input is two years of P95 utilization telemetry across 2,000+ servers and four KPIs — CPU, memory, disk, and network. The output is a six-month rolling forecast per server per KPI, with a model tournament selecting the best-performing algorithm for each of the 8,000+ individual time series, and a risk report surfacing every system projected to breach capacity thresholds within the forecast window.</p>
+  <p><span class="phase-badge phase1">Phase 1</span> Built on a local Apache open-source stack — DuckDB, Parquet, Polars, Prophet, SARIMA, ETS — to validate the forecasting approach end to end before committing to cloud infrastructure. <span class="phase-badge phase2">Phase 2</span> Migrated to AWS: S3 data lake, AWS Glue with PySpark Grouped Map UDFs for distributed Prophet execution across the full fleet, and Amazon Athena for ad-hoc querying of forecast outputs.</p>
+  <div class="hi">2,000+ servers &middot; 4 KPIs &middot; 8,000+ time series &middot; 180-day forecast horizon &middot; Champion model selected per series via backtest tournament &middot; Phase 1: local · Phase 2: AWS</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S2 -->
+  <h2 id="s2">The Dataset — 2 Years of P95 Telemetry</h2>
+  <p>The historical input is two years of daily P95 utilization measurements — the 95th percentile across intra-day readings — for every monitored endpoint across four resource types. P95 rather than average is the right metric for capacity planning: it captures what the system experiences at high load, not what it averages across quiet periods. An average CPU utilization of 45% can coexist with a P95 of 88% if workloads are bursty — and it's the 88% that drives capacity decisions.</p>
+  <p>Data is stored in Parquet format partitioned by resource type. The master Parquet file contains one row per date-host-resource combination with columns for P95 utilization and the host's physical resource capacity (cores, GB, MB where applicable). DuckDB provides SQL query capability directly against the Parquet files without loading them fully into memory — critical when the dataset spans 2,000 hosts × 4 resources × 730 days.</p>
+
+  <pre><code># Master Parquet schema
+date        DATE      -- daily timestamp
+node_name   VARCHAR   -- server UUID (e.g. server-a3f2b1c4)
+resource    VARCHAR   -- cpu | memory | disk | network
+p95_util    DOUBLE    -- P95 utilization 0–100 (percentage)
+capacity    DOUBLE    -- max_cores / memory_gb / storage_mb (null for network)
+
+# Scale: 2,000 hosts × 4 resources × ~730 days ≈ 5.8M rows</code></pre>
+
+  <table>
+    <tr><th>Resource</th><th>Capacity Field</th><th>Typical Range</th><th>Notes</th></tr>
+    <tr><td>CPU</td><td><code>max_cores</code></td><td>4–128 cores</td><td>Noise std ±3%; most time-structured signal</td></tr>
+    <tr><td>Memory</td><td><code>memory_gb</code></td><td>16–512 GB</td><td>Noise std ±4%; growth trends often software-driven</td></tr>
+    <tr><td>Disk</td><td><code>storage_capacity_mb</code></td><td>500GB–10TB</td><td>Noise std ±6%; monotonic growth common</td></tr>
+    <tr><td>Network</td><td>None (relative %)</td><td>0–100%</td><td>Noise std ±5%; burst-heavy patterns</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S3 -->
+  <h2 id="s3">Confidence Tiers: 3-Month vs 6-Month</h2>
+  <p>The forecast window is structured into two explicit confidence tiers rather than a single 180-day output. This design reflects the fundamental reality of time-series forecasting: uncertainty accumulates with horizon, and treating a 5-month forecast with the same confidence as a 5-week forecast leads to poor planning decisions.</p>
+
+  <table>
+    <tr><th>Tier</th><th>Window</th><th>Confidence</th><th>Use Case</th></tr>
+    <tr><td><strong>High-confidence</strong></td><td>Months 1–3</td><td>Tight prediction intervals — actionable thresholds</td><td>Procurement decisions, infrastructure change requests, immediate scaling actions</td></tr>
+    <tr><td><strong>Directional</strong></td><td>Months 4–6</td><td>Wider intervals — trajectory signal</td><td>Planning horizon conversations, budget requests, architecture review scheduling</td></tr>
+  </table>
+
+  <p>Prophet's Bayesian uncertainty quantification produces <code>yhat_lower</code> and <code>yhat_upper</code> columns representing the 80% prediction interval at each forecast point. The interval width naturally widens with distance from the training data — the three-month tier uses the tighter near-term intervals for breach detection, while the six-month tier uses the upper bound of the wider intervals to provide a conservative worst-case signal for planning.</p>
+
+  <div class="hi">Risk breach detection uses <code>yhat_upper ≥ 95%</code> as the threshold — if the upper confidence bound reaches 95% within the window, the system is flagged. This ensures teams are warned before the forecast's central estimate hits the ceiling, not after.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S4 -->
+  <h2 id="s4">Seasonality &amp; Business Cycles</h2>
+  <p>Infrastructure utilization carries layered periodicity. Ignoring any layer produces systematic forecast errors precisely on the high-load days that capacity planning cares most about. The forecasting layer captures all of the following:</p>
+
+  <table>
+    <tr><th>Cycle</th><th>Period</th><th>Source in the Data</th><th>Model Handling</th></tr>
+    <tr><td>Weekly</td><td>7 days</td><td>Weekday workloads vs. weekend; batch jobs run on specific days</td><td>SARIMA seasonal order (1,1,1,7); Prophet weekly seasonality</td></tr>
+    <tr><td>Monthly</td><td>~30 days</td><td>Month-end billing runs, reporting jobs, payroll cycles</td><td>Prophet monthly seasonality component; ETS additive seasonal</td></tr>
+    <tr><td>Quarterly</td><td>~90 days</td><td>Business planning cycles, quarterly reporting, compliance runs</td><td>Captured in Prophet's annual Fourier terms</td></tr>
+    <tr><td>Annual</td><td>365 days</td><td>Year-end processing, holiday traffic surges, annual batch jobs</td><td>Prophet yearly seasonality; logistic growth cap constrains peak behavior</td></tr>
+    <tr><td>Holiday effects</td><td>Irregular</td><td>Traffic surges or drops around public holidays</td><td>Prophet holiday regressor; explicit calendar features in XGBoost</td></tr>
+  </table>
+
+  <p>The fleet behavioral classification (see next section) ensures that seasonal models are applied to the series where they add value. Fitting a strong seasonal model to a LOW_IDLE server that barely moves wastes model capacity and produces noisier forecasts than a simpler trend-only model.</p>
+  <div class="warn">Models that ignore weekly seasonality will systematically underforecast on Mondays and Fridays — the peak business days for many financial and enterprise workloads. The SARIMA seasonal order of (1,1,1,7) was chosen specifically to capture the weekly business cycle across the fleet.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S5 -->
+  <h2 id="s5">Fleet Behavioral Classification</h2>
+  <p>Before modeling, every server-resource series is classified into one of five behavioral scenarios based on its historical pattern. This classification drives model selection hints, alert thresholds, and reporting priority. It also makes the fleet analytically tractable — instead of treating 8,000+ series as individually unique, the classification creates groups with shared characteristics that can be analyzed and validated as cohorts.</p>
+
+  <table>
+    <tr><th>Scenario</th><th>Fleet Share</th><th>Pattern</th><th>Planning Implication</th></tr>
+    <tr><td><code>STEADY_GROWTH</code></td><td>~35%</td><td>Gradual linear increase from 35–55% baseline</td><td>Predictable procurement timeline; forecast confidence is high</td></tr>
+    <tr><td><code>LOW_IDLE</code></td><td>~25%</td><td>Consistently low utilization, 10–12% baseline</td><td>Under-utilization candidates; downsizing or consolidation opportunity</td></tr>
+    <tr><td><code>SEASONAL</code></td><td>~20%</td><td>Periodic cycles ±20–30% amplitude around baseline</td><td>Seasonal peak must be the planning ceiling, not the average</td></tr>
+    <tr><td><code>BURST</code></td><td>~15%</td><td>Low baseline with irregular high-intensity spikes</td><td>Wide prediction intervals; P95 is the right metric; hard to model precisely</td></tr>
+    <tr><td><code>CAPACITY_BREACH</code></td><td>~5%</td><td>Rapid growth trajectory toward 95–100% ceiling</td><td>Immediate action required; flagged as highest priority in risk report</td></tr>
+  </table>
+
+  <pre><code># Scenario distribution in fleet initialization
+SCENARIO_DISTRIBUTION = {
+    Scenario.STEADY_GROWTH:    0.35,
+    Scenario.LOW_IDLE:         0.25,
+    Scenario.SEASONAL:         0.20,
+    Scenario.BURST:            0.15,
+    Scenario.CAPACITY_BREACH:  0.05,   # 5% at-risk — highest priority
+}
+
+# Each scenario has common and rare variants (80/20 split)
+VARIANT_WEIGHTS = {'common': 0.80, 'rare': 0.20}</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S6 -->
+  <h2 id="s6">Phase 1 — Apache Stack Architecture</h2>
+  <p><span class="phase-badge phase1">Phase 1</span> The first phase built and validated the entire forecasting pipeline on a local open-source stack. The principle was: prove the approach works before investing in cloud infrastructure. All core design decisions — model tournament, confidence tiers, risk detection thresholds, behavioral classification — were validated in Phase 1 before Phase 2 migrated them to AWS.</p>
+
+  <pre><code># Phase 1 pipeline stages
+00_init_db.py              # Initialize DuckDB schema — hosts, business_hierarchy, time_periods
+01_generate_master_parquet # Generate 2-year daily P95 telemetry → master_daily.parquet
+02_export_monthly_csvs     # CSV export for downstream compatibility
+03_data_pipeline.py        # Aggregate raw Parquet → DuckDB tables (daily_agg, processed_data)
+                           # Prophet-compatible format: ds (TIMESTAMP), y (DOUBLE)
+                           # Rolling features: rolling_mean_7, rolling_std_7
+04_eda_synthetic.py        # Exploratory analysis — distributions, correlations, volatility
+05_eda_processed.py        # EDA on processed Prophet-ready data
+06_baseline_prophet.py     # Facebook Prophet — 180-day forecast with logistic growth
+07_baseline_sarima_ets.py  # SARIMA(1,1,1)(1,1,1,7) + ETS — 180-day forecasts
+08_baseline_comparison.py  # Model tournament — MAPE comparison, champion selection
+09_advanced_tft.py         # Temporal Fusion Transformer (attention-based deep learning)
+10_advanced_hybrid.py      # Ensemble hybrid models
+11_anomaly_recs.py         # Anomaly detection (Isolation Forest) + recommendations
+12_dashboard.py            # Streamlit internal dashboard</code></pre>
+
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Role</th></tr>
+    <tr><td>Storage</td><td>Parquet (Snappy compression)</td><td>Columnar time-series data — efficient range scans and resource-type filters</td></tr>
+    <tr><td>Query engine</td><td>DuckDB</td><td>In-process SQL over Parquet — no server, sub-second aggregation on millions of rows</td></tr>
+    <tr><td>Dataframe ops</td><td>Polars</td><td>High-speed transformations and feature engineering — faster than Pandas at this scale</td></tr>
+    <tr><td>Forecasting</td><td>Prophet, SARIMA, ETS, XGBoost</td><td>Multi-model tournament — champion selected per series via 4-month backtest MAPE</td></tr>
+    <tr><td>Experiment tracking</td><td>MLflow</td><td>Model parameters, MAPE scores, and forecast artifacts logged per run</td></tr>
+    <tr><td>Dashboard</td><td>Streamlit</td><td>Interactive drill-down — fleet overview, per-host forecast viewer, risk rankings</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S7 -->
+  <h2 id="s7">Forecasting Models</h2>
+  <h3>Facebook Prophet</h3>
+  <p>Prophet is the primary model across the fleet. It decomposes the time series into trend, seasonality (daily, weekly, annual), and holiday components, fitting each independently via Stan's Bayesian inference. For this use case, <strong>logistic growth mode</strong> is critical — it constrains the forecast to be physically bounded between 0% and 100% utilization. A linear trend model will forecast 110% CPU, which is meaningless. Logistic growth recognizes that utilization growth must slow as it approaches the physical ceiling, producing more realistic long-horizon forecasts for high-utilization systems.</p>
+
+  <pre><code># Prophet configuration (Phase 1)
+from prophet import Prophet
+
+model = Prophet(
+    growth='logistic',          # Bounded — respects physical capacity ceiling
+    daily_seasonality=True,     # Within-day utilization patterns
+    weekly_seasonality=True,    # Business week vs. weekend
+    yearly_seasonality=True,    # Annual cycles, holiday effects
+    uncertainty_samples=1000,   # Bayesian CI sampling (reduced to 100 in Phase 2 for throughput)
+)
+
+# Logistic growth requires cap and floor
+df['cap']   = 100.0   # Physical maximum: 100% utilization
+df['floor'] = 0.0     # Physical minimum
+
+model.fit(df)
+future   = model.make_future_dataframe(periods=180)
+future['cap']   = 100.0
+future['floor'] = 0.0
+forecast = model.predict(future)
+# Outputs: ds, yhat, yhat_lower, yhat_upper</code></pre>
+
+  <h3>SARIMA</h3>
+  <p>SARIMA — Seasonal AutoRegressive Integrated Moving Average — is the classic statistical baseline. Configuration <code>order=(1,1,1)</code> with <code>seasonal_order=(1,1,1,7)</code> captures first-order trend differencing and a weekly seasonal period of 7 days. SARIMA wins the tournament on series with strong regular weekly patterns and relatively low noise, where the statistical structure is well-defined and doesn't require Prophet's flexibility.</p>
+
+  <h3>Exponential Smoothing (ETS)</h3>
+  <p>ETS models are selected automatically via AIC minimization — the framework tries additive and multiplicative error, trend, and seasonal variants and selects the best-fitting specification for each series. ETS is computationally fast, robust on shorter series, and performs well on LOW_IDLE and STEADY_GROWTH scenarios where behavior is smooth and trend-dominated.</p>
+
+  <h3>XGBoost Challenger</h3>
+  <p>XGBoost takes a supervised ML approach rather than time-series decomposition. Features are engineered from the time index: an ordinal trend variable capturing the overall growth direction, and month-of-year capturing annual seasonality. GPU acceleration via CUDA (<code>device='cuda'</code>) enables the 8,000+ series to process rapidly. XGBoost wins the tournament on series with strong trend and weak periodicity — particularly STEADY_GROWTH and CAPACITY_BREACH scenarios — where its gradient boosting approach on simple features outperforms Prophet's flexible seasonality components on series that don't actually have strong seasonal structure.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S8 -->
+  <h2 id="s8">Model Tournament — Champion Selection</h2>
+  <p>No single forecasting algorithm performs best across all behavioral scenarios at fleet scale. Prophet is excellent on seasonal series. SARIMA is precise on series with clean weekly cycles. XGBoost wins on trend-dominated series. The champion-challenger tournament selects the best model per series rather than committing the entire fleet to one algorithm.</p>
+
+  <pre><code># Tournament logic (per host-resource pair)
+TRAIN_MONTHS   = 32   # ~2.7 years of training data
+BACKTEST_MONTHS = 4   # Held-out window — no model sees this during training
+FUTURE_MONTHS  = 6    # Forecast horizon
+
+# For each host-resource series:
+train_df    = history[: -BACKTEST_MONTHS_ROWS]
+backtest_df = history[-BACKTEST_MONTHS_ROWS :]
+
+# Train all models on train_df
+prophet_forecast  = fit_prophet(train_df).predict(backtest_period)
+sarima_forecast   = fit_sarima(train_df).forecast(BACKTEST_MONTHS_ROWS)
+xgb_forecast      = fit_xgboost(train_df).predict(backtest_features)
+
+# Score each model on backtest
+def mape(actual, predicted):
+    return np.mean(np.abs((actual - predicted) / actual)) * 100
+
+scores = {
+    'prophet':  mape(backtest_df['y'], prophet_forecast['yhat']),
+    'sarima':   mape(backtest_df['y'], sarima_forecast),
+    'xgboost':  mape(backtest_df['y'], xgb_forecast),
+}
+
+champion = min(scores, key=scores.get)   # Lowest MAPE wins
+# Champion retrained on full history, generates 6-month future forecast</code></pre>
+
+  <div class="hi">The champion model is selected independently for every host-resource pair. In a fleet of 2,000 servers × 4 resources, the winning model distribution reflects the actual mix of behavioral patterns — Prophet dominates on seasonal series, XGBoost on trend-dominated ones, SARIMA on clean weekly-cycle series.</div>
+  <div class="warn">Using a single global model (e.g., "we use Prophet for everything") is a common shortcut that degrades forecast quality on the series where it doesn't fit. The tournament adds engineering complexity but produces meaningfully better accuracy across the fleet, which directly improves the reliability of the capacity risk report.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S9 -->
+  <h2 id="s9">Phase 2 — AWS Migration</h2>
+  <p><span class="phase-badge phase2">Phase 2</span> With the forecasting approach validated in Phase 1, Phase 2 migrated the platform to AWS for production-scale throughput. Running 8,000+ time-series models sequentially — even with local multiprocessing — hits a throughput ceiling. AWS Glue with 10 G.2X worker nodes running Spark 3.3 distributes the workload across the fleet in parallel, reducing the wall-clock time for a full fleet forecast run dramatically.</p>
+
+  <table>
+    <tr><th>AWS Service</th><th>Role</th><th>Configuration</th></tr>
+    <tr><td><strong>S3</strong></td><td>Data lake — all input and output data</td><td>Bucket: <code>horizonscale-datalake-v1</code> with structured prefixes</td></tr>
+    <tr><td><strong>AWS Glue</strong></td><td>Distributed PySpark forecasting engine</td><td>10 G.2X workers · Glue 4.0 (Spark 3.3) · Prophet + Polars dependencies packaged</td></tr>
+    <tr><td><strong>Amazon Athena</strong></td><td>Ad-hoc SQL over forecast Parquet outputs</td><td>Results prefix: <code>s3://horizonscale-datalake-v1/athena-results/</code></td></tr>
+    <tr><td><strong>IAM</strong></td><td>Service roles for Glue ↔ S3 access</td><td>Auto-provisioned Glue service role with S3 full access on data lake bucket</td></tr>
+  </table>
+
+  <h3>S3 Data Lake Structure</h3>
+  <pre><code>s3://horizonscale-datalake-v1/
+├── raw/telemetry/              # Master Parquet — input time-series
+│   └── master_daily.parquet
+├── scripts/                    # Glue job Python scripts
+│   └── glue_horizon_prophet.py
+├── forecasts/                  # Turbo Prophet output Parquet
+│   └── prophet_turbo_master.parquet
+└── athena-results/             # Athena query output CSVs</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S10 -->
+  <h2 id="s10">AWS Glue: Distributed PySpark Forecasting</h2>
+  <p>The key architectural pattern for running Python ML models at scale on Spark is the <strong>PySpark Grouped Map UDF</strong>. Prophet is single-threaded Python — it cannot natively parallelize across a Spark cluster. But if the data is structured so each group is one host-resource pair, Spark automatically distributes groups across worker nodes and each worker runs a complete, independent Prophet fitting inside the UDF function.</p>
+
+  <pre><code># glue_horizon_prophet.py — PySpark Grouped Map UDF pattern
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, DateType
+from prophet import Prophet
+import pandas as pd
+
+OUTPUT_SCHEMA = StructType([
+    StructField("node_name",  StringType()),
+    StructField("resource",   StringType()),
+    StructField("ds",         DateType()),
+    StructField("yhat",       DoubleType()),
+    StructField("yhat_lower", DoubleType()),
+    StructField("yhat_upper", DoubleType()),
+    StructField("data_type",  StringType()),   # 'history' or 'forecast'
+])
+
+@pandas_udf(OUTPUT_SCHEMA, PandasUDFType.GROUPED_MAP)
+def forecast_one_series(pdf: pd.DataFrame) -> pd.DataFrame:
+    """Fits Prophet on one host-resource partition and returns forecast."""
+    node   = pdf["node_name"].iloc[0]
+    res    = pdf["resource"].iloc[0]
+    df     = pdf[["ds", "y"]].copy()
+    df["cap"]   = 100.0
+    df["floor"] = 0.0
+
+    model = Prophet(
+        growth='logistic',
+        uncertainty_samples=100,   # Reduced from 1000 for throughput
+        daily_seasonality=True,
+        weekly_seasonality=True,
+    )
+    model.fit(df)
+
+    future         = model.make_future_dataframe(periods=180)
+    future["cap"]  = 100.0
+    future["floor"] = 0.0
+    forecast       = model.predict(future)
+
+    # Tag rows as history vs forecast
+    cutoff = df["ds"].max()
+    forecast["data_type"] = forecast["ds"].apply(
+        lambda d: "history" if d <= cutoff else "forecast"
+    )
+    forecast["node_name"] = node
+    forecast["resource"]  = res
+    return forecast[["node_name","resource","ds","yhat","yhat_lower","yhat_upper","data_type"]]
+
+# Apply UDF: Spark groups by (node_name, resource) — one partition per series
+result_df = (
+    spark_df
+    .groupBy("node_name", "resource")
+    .apply(forecast_one_series)
+)
+result_df.write.parquet("s3://horizonscale-datalake-v1/forecasts/prophet_turbo_master.parquet")</code></pre>
+
+  <div class="hi">The Grouped Map UDF pattern is the standard approach for scaling single-threaded Python ML models on Spark. Each worker independently fits a complete model with no cross-partition communication. Spark handles the parallelism; Prophet handles the modeling. The 10 G.2X workers process the 8,000+ series as 8,000+ partitions distributed across the cluster.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S11 -->
+  <h2 id="s11">Risk Detection &amp; Reporting</h2>
+  <p>The forecast output is only useful if it surfaces the right signals for the right teams. The risk detection layer scans the champion forecast for every host-resource pair and classifies each against two criteria:</p>
+
+  <table>
+    <tr><th>Flag</th><th>Condition</th><th>Meaning</th></tr>
+    <tr><td><strong>Capacity breach</strong></td><td><code>yhat_upper &ge; 95%</code> within 6-month window</td><td>Upper confidence bound projects the system at or above the operational ceiling — action required</td></tr>
+    <tr><td><strong>High priority ⭐</strong></td><td>Forecast StdDev &gt; 2 <em>or</em> projected peak &gt; 105%</td><td>High volatility or extreme projected overage — elevated urgency, most likely needs immediate consultation</td></tr>
+  </table>
+
+  <pre><code># Risk detection (09_risk_reporting.py — simplified)
+import duckdb
+
+risks = duckdb.sql("""
+    SELECT
+        node_name,
+        resource,
+        MAX(yhat_upper)                         AS projected_peak,
+        MIN(ds) FILTER (WHERE yhat_upper >= 95) AS earliest_breach_date,
+        STDDEV(yhat)                            AS forecast_volatility,
+        CASE
+            WHEN STDDEV(yhat) > 2 OR MAX(yhat_upper) > 105
+            THEN '⭐ HIGH PRIORITY'
+            ELSE 'MONITOR'
+        END                                     AS priority_flag
+    FROM champion_forecasts
+    WHERE data_type = 'forecast'
+    GROUP BY node_name, resource
+    HAVING MAX(yhat_upper) >= 95
+    ORDER BY projected_peak DESC
+""").df()
+
+risks.to_csv("capacity_risk_report.csv", index=False)</code></pre>
+
+  <p>The report is supplemented by a visual gallery of 400+ individual forecast plots — one PNG per host-resource pair showing two years of history, the champion model forecast line, and the 80% prediction interval shaded. Teams can drill from a row in the risk report directly to the visual evidence for that system.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S12 -->
+  <h2 id="s12">Streamlit Risk Dashboard</h2>
+  <p>The Streamlit dashboard is the primary interface for capacity teams reviewing the monthly forecast cycle. It reads directly from the DuckDB champion forecast database and the risk report CSV, providing an interactive layer over the outputs without requiring SQL knowledge.</p>
+
+  <table>
+    <tr><th>Dashboard View</th><th>Purpose</th></tr>
+    <tr><td>Executive metrics bar</td><td>Total capacity risks, high-priority count, fleet-wide average utilization across all 4 KPIs</td></tr>
+    <tr><td>Risk inventory table</td><td>All breach-flagged systems with earliest breach date, projected peak, priority — high-priority rows highlighted</td></tr>
+    <tr><td>Forecast viewer</td><td>Per-host, per-resource drill-down — history + champion model forecast + confidence bands</td></tr>
+    <tr><td>Fleet scenario summary</td><td>Distribution of behavioral classifications — how many systems in each scenario this month</td></tr>
+    <tr><td>Model tournament results</td><td>Champion model distribution across fleet — which model won on how many series</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S13 -->
+  <h2 id="s13">Engineering Practices</h2>
+  <table>
+    <tr><th>Practice</th><th>Implementation</th></tr>
+    <tr><td><strong>Idempotency</strong></td><td>DuckDB tables are dropped and recreated at each pipeline run. Parquet outputs are overwritten. Re-running on the same input always produces the same output — safe to rerun without manual cleanup</td></tr>
+    <tr><td><strong>Validation gates</strong></td><td>Entrance criteria checked before each stage: minimum row counts, required column presence, behavioral variety coverage. Exit criteria verified after: output row counts, schema conformance, breach detection sanity checks</td></tr>
+    <tr><td><strong>Structured logging</strong></td><td>Per-stage execution timer context manager logs start time, duration, row counts in/out, and PASS/FAIL status. Logs written to <code>/logs/</code> directory with timestamped filenames</td></tr>
+    <tr><td><strong>Failure isolation</strong></td><td>Each host-resource series is forecasted in a try/except block. A single series failure (e.g., insufficient data for SARIMA) logs the error and skips that series rather than aborting the entire fleet run</td></tr>
+    <tr><td><strong>MLflow experiment tracking</strong></td><td>Model parameters, MAPE scores, training data stats, and forecast artifact paths logged per run. Enables comparison across forecast cycles and detection of model drift over time</td></tr>
+    <tr><td><strong>Parallelization</strong></td><td>Phase 1: ProcessPoolExecutor (multiprocessing) to bypass Python GIL. Phase 2: Spark Grouped Map UDF distributes across 10 G.2X Glue workers</td></tr>
+    <tr><td><strong>Throughput optimization</strong></td><td>Prophet uncertainty_samples reduced from 1,000 to 100 in Phase 2 turbo mode — 10× throughput gain with negligible interval accuracy degradation at fleet scale</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S14 -->
+  <h2 id="s14">Lessons Learned</h2>
+  <p><strong>Validate locally before migrating to cloud.</strong> Phase 1 proved that the tournament framework worked, that logistic growth was the right Prophet configuration, that the 95% breach threshold was calibrated correctly, and that the behavioral classification was meaningful. By the time the AWS migration happened, every design decision had been tested. The cloud investment landed on a proven foundation rather than on an untested hypothesis.</p>
+  <p><strong>No single model wins across a heterogeneous fleet.</strong> The tournament framework adds engineering complexity, but it materially improves forecast quality across the fleet. A STEADY_GROWTH server and a BURST server should not be modeled identically. The effort of building champion selection pays back in a risk report that is more trustworthy — teams can act on it rather than discounting it because "the model doesn't fit our workloads."</p>
+  <p><strong>Logistic growth is not optional for utilization forecasting.</strong> Linear trend Prophet will forecast utilization above 100% on high-growth series. That number is nonsensical — you can't use 110% of CPU. Logistic growth with cap=100 forces the model to recognize the physical ceiling, producing forecasts that slow their growth rate as utilization approaches the limit. This is both more accurate and more interpretable for the infrastructure teams consuming the output.</p>
+  <p><strong>The Grouped Map UDF pattern is the right way to scale Python ML on Spark.</strong> Trying to run Prophet natively distributed inside Spark is the wrong abstraction. The pattern — one partition per series, one complete independent model fit per UDF call, Spark handles distribution — is clean, debuggable, and scales linearly with the number of workers.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Q&A -->
+  <h2 id="qa">Interview Q&amp;A</h2>
+
+  <div class="qa">
+    <div class="qa-q">Why did you choose a model tournament rather than a single forecasting algorithm?</div>
+    <div class="qa-a">A fleet of 2,000+ servers has behavioral heterogeneity that no single model fits well across all series. Prophet is excellent on seasonal systems with structured weekly and annual cycles. SARIMA is precise on series with clean weekly periodicity and low noise. XGBoost wins on trend-dominated series where the gradient boosting on simple time features outperforms Prophet's flexible seasonality components on series that don't actually have strong seasonal structure. Picking one model for everything means accepting poor forecast quality on the series where it doesn't fit — and those are often the BURST or CAPACITY_BREACH scenarios where forecast accuracy matters most. The tournament adds engineering complexity but produces a risk report that's meaningfully more trustworthy, which directly determines whether infrastructure teams act on it or discount it.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Why did you use logistic growth mode in Prophet rather than the default linear mode?</div>
+    <div class="qa-a">Utilization is bounded between 0% and 100%. A linear trend model doesn't know that — it will happily forecast 115% CPU on a high-growth system, which is a physically meaningless number. Logistic growth with cap=100 and floor=0 forces Prophet to recognize the physical ceiling. As utilization approaches the cap, the model's growth rate naturally slows to reflect that the system cannot grow past its physical maximum. This produces realistic long-horizon forecasts for high-utilization systems — the ones that matter most for capacity planning. It also makes the upper confidence interval more meaningful for breach detection: when yhat_upper approaches 95%, you can act on that number knowing it's bounded by physical reality.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How does the PySpark Grouped Map UDF pattern work for distributing Prophet across Glue workers?</div>
+    <div class="qa-a">Prophet is single-threaded Python — it can't natively parallelize across a Spark cluster. The Grouped Map UDF pattern works around this by treating each host-resource pair as an independent group. The data is structured so each partition contains one complete time series. Spark automatically distributes partitions across worker nodes. Each worker calls the UDF function with a Pandas DataFrame for one series, fits a complete independent Prophet model, generates the 180-day forecast, and returns the result. Spark collects all results into a distributed DataFrame that's then written to S3 as Parquet. There's no cross-partition communication, no shared state, no coordination overhead. With 10 G.2X workers, 8,000+ series are processed in parallel — the wall-clock time is a fraction of sequential execution.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How did you handle the seasonality and holiday effects in the forecast?</div>
+    <div class="qa-a">Infrastructure utilization has layered periodicity: weekly business cycles where weekday loads differ from weekends, monthly cycles driven by batch jobs and billing runs at month-end, quarterly patterns from business planning cycles, and annual effects from year-end processing and holiday traffic. Prophet handles all of these natively through its decomposable model structure — weekly and yearly Fourier seasonality terms, plus an explicit holiday regressor for known calendar events. SARIMA's seasonal_order=(1,1,1,7) captures the weekly period. XGBoost uses month-of-year as an explicit feature for annual seasonality. The behavioral classification layer ensures that heavy seasonal models are applied to series with actual seasonal structure — fitting a seasonal model to a LOW_IDLE server that barely moves adds noise rather than signal.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Why two confidence tiers — three months high-confidence and six months directional?</div>
+    <div class="qa-a">Forecast uncertainty accumulates with horizon. Treating a five-month forecast with the same confidence as a five-week forecast leads to either under-reaction or over-reaction, depending on which horizon you calibrate for. Prophet's Bayesian uncertainty quantification naturally produces wider prediction intervals as the horizon extends — the three-month near-term intervals are tight enough to make concrete procurement and scaling decisions. The four-to-six month window has wider intervals, but still carries a meaningful trajectory signal for planning conversations, budget requests, and architecture review scheduling. Separating these two tiers explicitly in the output ensures teams understand what they're looking at — they're not comparing a three-month number to a five-month number as if they had the same reliability.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">What was the key engineering lesson from the Phase 1 to Phase 2 migration?</div>
+    <div class="qa-a">Validate the approach locally before spending on infrastructure. Phase 1 proved that the tournament framework worked, that logistic growth was calibrated correctly, that the 95% breach threshold was producing the right risk classifications, and that behavioral scenario labeling was meaningful. By the time the AWS migration happened, every design decision had been tested on real data with real model fits. The migration was a well-defined engineering problem: move data to S3, wrap the proven Prophet logic in a Grouped Map UDF, deploy to Glue. We weren't figuring out whether the forecasting approach was right at the same time as figuring out the cloud architecture. Sequencing validation before scaling is a discipline that applies to any ML pipeline — the cloud doesn't fix a broken model, it just scales the broken output faster.</div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Cheat Sheet -->
+  <h2 id="cheat">Quick Reference</h2>
+  <div class="cheat">
+    <div class="cheat-row"><span class="ct">Scale</span><span class="cd">2,000+ servers · 4 KPIs · 8,000+ time series · 180-day forecast horizon</span></div>
+    <div class="cheat-row"><span class="ct">Input data</span><span class="cd">2 years daily P95 utilization — CPU, memory, disk, network — stored as Parquet</span></div>
+    <div class="cheat-row"><span class="ct">Phase 1 stack</span><span class="cd">DuckDB · Polars · Parquet · Prophet · SARIMA · ETS · XGBoost · MLflow · Streamlit</span></div>
+    <div class="cheat-row"><span class="ct">Phase 2 stack</span><span class="cd">AWS S3 · AWS Glue (Spark 3.3) · Amazon Athena · IAM · PySpark Grouped Map UDF</span></div>
+    <div class="cheat-row"><span class="ct">Prophet mode</span><span class="cd">Logistic growth — cap=100, floor=0 — physically bounded, no >100% forecast</span></div>
+    <div class="cheat-row"><span class="ct">SARIMA config</span><span class="cd">order=(1,1,1) · seasonal_order=(1,1,1,7) — weekly business cycle</span></div>
+    <div class="cheat-row"><span class="ct">XGBoost</span><span class="cd">Challenger model · CUDA GPU acceleration · features: ordinal trend + month-of-year</span></div>
+    <div class="cheat-row"><span class="ct">Tournament split</span><span class="cd">32-month train / 4-month backtest — MAPE comparison → champion selected per series</span></div>
+    <div class="cheat-row"><span class="ct">Confidence tiers</span><span class="cd">Months 1–3: high confidence (tight intervals) · Months 4–6: directional (wider intervals)</span></div>
+    <div class="cheat-row"><span class="ct">Breach threshold</span><span class="cd">yhat_upper ≥ 95% within 6-month window → capacity breach flag</span></div>
+    <div class="cheat-row"><span class="ct">High priority ⭐</span><span class="cd">Forecast StdDev > 2 OR projected peak > 105% → elevated urgency</span></div>
+    <div class="cheat-row"><span class="ct">Scenarios</span><span class="cd">STEADY_GROWTH 35% · LOW_IDLE 25% · SEASONAL 20% · BURST 15% · CAPACITY_BREACH 5%</span></div>
+    <div class="cheat-row"><span class="ct">Glue config</span><span class="cd">10 G.2X workers · Glue 4.0 (Spark 3.3) · Prophet + Polars packaged as dependencies</span></div>
+    <div class="cheat-row"><span class="ct">Grouped Map UDF</span><span class="cd">One partition per (node_name, resource) — complete independent Prophet fit per UDF call</span></div>
+    <div class="cheat-row"><span class="ct">S3 data lake</span><span class="cd">raw/telemetry/ · scripts/ · forecasts/ · athena-results/ — structured prefixes</span></div>
+    <div class="cheat-row"><span class="ct">Throughput trick</span><span class="cd">uncertainty_samples 1000→100 in Phase 2 turbo — 10× speed gain, negligible accuracy loss</span></div>
+    <div class="cheat-row"><span class="ct">MLflow</span><span class="cd">Experiment tracking — model params, MAPE scores, artifact paths logged per run</span></div>
+    <div class="cheat-row"><span class="ct">DuckDB</span><span class="cd">In-process SQL over Parquet — no server, sub-second aggregation at full dataset scale</span></div>
+    <div class="cheat-row"><span class="ct">Idempotency</span><span class="cd">DuckDB tables dropped-and-recreated; Parquet outputs overwritten — always re-runnable</span></div>
+    <div class="cheat-row"><span class="ct">Core lesson</span><span class="cd">Validate locally first — cloud scales the output, it doesn't fix a broken model</span></div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+</div>
+</body>
+</html>
