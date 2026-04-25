@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Modeling for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/data-modeling.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Data Modeling for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Data Modeling for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 9-11 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Data Modeling</span>
+  <span class="tag">Dimensional Modeling</span>
+  <span class="tag">Star Schema</span>
+  <span class="tag">SCD Type 2</span>
+  <span class="tag">Data Vault</span>
+  <span class="tag">Streaming Events</span>
+  <span class="tag">Analytics Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_data-modeling.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Why Data Modeling Matters</a></li>
+    <li><a href="#s2">Star Schema &mdash; facts, dimensions, grain</a></li>
+    <li><a href="#s3">Snowflake Schema &mdash; when normalization helps</a></li>
+    <li><a href="#s4">Fact Table Types &mdash; transaction, snapshot, accumulating</a></li>
+    <li><a href="#s5">Dimension Design &mdash; surrogate keys, conformed dimensions</a></li>
+    <li><a href="#s6">Slowly Changing Dimensions (Type 1, 2, 3)</a></li>
+    <li><a href="#s7">One Big Table vs Normalized</a></li>
+    <li><a href="#s8">Data Vault &mdash; hubs, links, satellites</a></li>
+    <li><a href="#s9">Streaming &amp; Event Modeling &mdash; events vs state</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Why Data Modeling Matters</h2>
+<p>Data modeling is not cosmetic naming work. It decides whether reports reconcile, joins stay predictable, facts have a clear meaning, and the warehouse can survive new questions without becoming a pile of exceptions. The wrong model makes every query slower and every metric easier to misread.</p>
+<p>For data engineers, modeling is the contract between ingestion, transformation, BI, ML, governance, and finance. A pipeline can run perfectly and still produce bad analytics if the grain is vague, dimensions are inconsistent, or historical changes overwrite business truth.</p>
+<div class="hi">Key insight: most analytical bugs are not syntax bugs; they are semantic bugs caused by unclear grain, duplicated facts, or dimensions that do not mean the same thing across subject areas.</div>
+<div class="warn">Gotcha: optimizing only for fast ingestion often creates expensive downstream cleanup. The warehouse bill simply moves from loading to every analyst query, dashboard, and reconciliation job.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Star Schema &mdash; facts, dimensions, grain</h2>
+<p>A star schema places measurable business events in fact tables and descriptive context in dimension tables. Facts hold metrics and foreign keys; dimensions hold attributes such as customer, product, date, region, channel, and status. This shape is denormalized on purpose because analytical queries usually slice, filter, aggregate, and compare.</p>
+<p>The most important design decision is grain: one row represents exactly what? One order line, one payment, one daily account balance, one shipment checkpoint, or one monthly customer snapshot are different grains. If grain is fuzzy, every downstream metric becomes negotiable.</p>
+<pre><code>-- Grain statement before table design:
+-- fact_order_line: one row per customer order line item
+
+fact_order_line
+  order_line_sk
+  order_id
+  product_sk
+  customer_sk
+  order_date_sk
+  quantity
+  gross_amount
+  discount_amount
+  net_amount</code></pre>
+<div class="hi">Key insight: write the grain as a sentence before writing DDL. If the sentence is unclear, the table design is not ready.</div>
+<div class="warn">Gotcha: mixing header-level and line-level facts in one table silently double-counts measures such as shipping, tax, and discount unless they are allocated carefully.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Snowflake Schema &mdash; when normalization helps</h2>
+<p>A snowflake schema normalizes dimensions into sub-dimensions. Instead of storing product category, department, and brand directly on <code>dim_product</code>, those values may live in separate lookup dimensions. The tradeoff is less redundancy and cleaner maintenance in exchange for more joins and a less friendly query surface.</p>
+<p>Snowflaking helps when dimension attributes are large, shared, governed independently, or change at different cadences. It hurts when it forces every dashboard query to traverse several tables for common filters. In BI-heavy marts, denormalized dimensions usually win unless governance or scale makes normalization worth the friction.</p>
+<table>
+  <tr><th>Design</th><th>Best Fit</th><th>Tradeoff</th></tr>
+  <tr><td>Star</td><td>Fast BI, simple joins, semantic clarity</td><td>More repeated dimension text</td></tr>
+  <tr><td>Snowflake</td><td>Large governed dimensions, shared hierarchies</td><td>More joins and harder ad hoc SQL</td></tr>
+  <tr><td>Hybrid</td><td>Common attributes flattened, rare hierarchies normalized</td><td>Requires clear modeling standards</td></tr>
+</table>
+<div class="warn">Gotcha: snowflaking to save storage is rarely the winning argument in modern warehouses. Query simplicity and correctness usually matter more than repeated low-cardinality text.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Fact Table Types &mdash; transaction, snapshot, accumulating</h2>
+<p>Transaction fact tables store one row per event: sale, click, payment, shipment scan, or support ticket update. They are append-friendly, detailed, and excellent for auditability. Their weakness is that lifecycle questions often require many joins or window functions.</p>
+<p>Periodic snapshots store state at regular intervals, such as daily inventory, month-end account balance, or weekly subscription count. Accumulating snapshots store one row per business process and update milestone columns as the process advances, such as order placed, packed, shipped, delivered, and returned.</p>
+<table>
+  <tr><th>Fact Type</th><th>Grain</th><th>Use Case</th></tr>
+  <tr><td>Transaction</td><td>One row per event</td><td>Orders, payments, clicks, ledger entries</td></tr>
+  <tr><td>Periodic snapshot</td><td>One row per entity per period</td><td>Balances, inventory, subscriptions</td></tr>
+  <tr><td>Accumulating snapshot</td><td>One row per lifecycle instance</td><td>Fulfillment, claims, onboarding funnels</td></tr>
+</table>
+<div class="hi">Key insight: facts model business measurement, not just source tables. A single source stream can feed transaction facts, current-state tables, and snapshots with different grains.</div>
+<div class="warn">Gotcha: accumulating snapshots require updates. That means idempotent merge logic, late-arriving milestone handling, and clear rules for reopening a closed process.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Dimension Design &mdash; surrogate keys, conformed dimensions</h2>
+<p>Dimensions give facts business meaning. A strong dimension design separates source identifiers from warehouse surrogate keys, tracks descriptive attributes, and defines shared dimensions consistently across fact tables. <code>customer_id</code> from a CRM is not the same thing as a warehouse <code>customer_sk</code>.</p>
+<p>Surrogate keys are especially important for slowly changing dimensions because the same natural key can have multiple historical rows. Conformed dimensions are reused across marts so revenue, tickets, shipments, and marketing facts can agree on customer, product, date, and region definitions.</p>
+<pre><code>dim_customer
+  customer_sk        -- warehouse surrogate key
+  customer_id        -- source natural key
+  customer_name
+  segment
+  region
+  valid_from
+  valid_to
+  is_current</code></pre>
+<div class="hi">Key insight: conformed dimensions are where enterprise analytics gets leverage. Without them, each team invents its own customer, product, and geography universe.</div>
+<div class="warn">Gotcha: using natural keys directly in facts makes source-system migrations painful and breaks historical joins when business identifiers are reused, merged, or corrected.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Slowly Changing Dimensions (Type 1, 2, 3)</h2>
+<p>Slowly Changing Dimensions handle attribute changes over time. Type 1 overwrites the value and keeps no history. Type 2 inserts a new dimension row for each change and preserves a valid time range. Type 3 keeps limited previous-state columns, usually only for one or two attributes.</p>
+<p>Type 2 is the workhorse for audit-sensitive analytics because facts can join to the correct dimension version. It costs more storage and ETL complexity, but it protects historical reports from changing every time a customer moves region or a product changes category.</p>
+<pre><code>-- Typical Type 2 lookup for a fact event
+select d.customer_sk
+from dim_customer d
+where d.customer_id = :customer_id
+  and :event_ts &gt;= d.valid_from
+  and :event_ts &lt;  coalesce(d.valid_to, timestamp '9999-12-31');</code></pre>
+<div class="hi">Key insight: Type 1 answers &quot;what is true now?&quot; Type 2 answers &quot;what was true when the event happened?&quot;</div>
+<div class="warn">Gotcha: Type 2 dimensions need deterministic change detection. Hash only the business attributes that define a new version, not audit columns like load timestamp.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">One Big Table vs Normalized</h2>
+<p>One Big Table designs flatten facts and dimensions into a wide analytical table. They can be fast and friendly for a specific dashboard, ML feature set, or consumption layer. They are dangerous when treated as the enterprise source of truth because repeated attributes, mixed grains, and metric drift creep in quickly.</p>
+<p>Normalized and dimensional models preserve structure, reuse, and governance. A practical architecture often uses modeled core tables underneath and wide serving tables on top for high-value access patterns. That gives BI teams speed without sacrificing lineage and reconciliation.</p>
+<table>
+  <tr><th>Pattern</th><th>Strength</th><th>Risk</th></tr>
+  <tr><td>One Big Table</td><td>Simple reads, fast dashboard delivery</td><td>Duplication, drift, hard change management</td></tr>
+  <tr><td>Dimensional</td><td>BI-friendly, reusable, governed metrics</td><td>Requires modeling discipline</td></tr>
+  <tr><td>Normalized</td><td>Integrity, low redundancy</td><td>Heavy joins for analytics</td></tr>
+</table>
+<div class="warn">Gotcha: a wide table is not automatically wrong. It becomes wrong when nobody can explain its grain, refresh rules, or relationship to the canonical model.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Data Vault &mdash; hubs, links, satellites</h2>
+<p>Data Vault separates business keys, relationships, and descriptive history. Hubs store core business keys such as customer, account, or product. Links store relationships between hubs. Satellites store descriptive attributes and history, usually with load timestamps and record sources.</p>
+<p>The pattern is strong for enterprise ingestion, auditability, source-system integration, and changing relationships. It is not usually the best direct BI layer. Most teams build dimensional marts from a Data Vault core so analysts query stars while engineers retain lineage and historical traceability.</p>
+<table>
+  <tr><th>Object</th><th>Purpose</th><th>Example</th></tr>
+  <tr><td>Hub</td><td>Unique business key</td><td>Customer, Product, Account</td></tr>
+  <tr><td>Link</td><td>Relationship between keys</td><td>Customer owns Account</td></tr>
+  <tr><td>Satellite</td><td>Descriptive history</td><td>Customer segment over time</td></tr>
+</table>
+<div class="hi">Key insight: Data Vault is a resilience and lineage pattern for integration; dimensional modeling is usually the consumption pattern for analytics.</div>
+<div class="warn">Gotcha: exposing raw Data Vault tables directly to BI users often creates join complexity and inconsistent metrics. Publish curated marts on top.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Streaming &amp; Event Modeling &mdash; events vs state</h2>
+<p>Streaming models should distinguish immutable events from derived state. An event says something happened: order placed, payment authorized, device heartbeat received, account status changed. A state table says what is currently true after applying one or more events.</p>
+<p>Event modeling works best when events are named in past tense, carry enough context to be independently useful, and have stable identifiers for idempotency. Current-state tables, snapshots, and facts can all be derived from the event log, but they should not be confused with the raw event history.</p>
+<pre><code>{
+  "event_id": "evt_92817",
+  "event_type": "order_placed",
+  "event_time": "2026-04-25T14:20:00Z",
+  "order_id": "O-10091",
+  "customer_id": "C-204",
+  "amount": 149.95,
+  "source": "checkout"
+}</code></pre>
+<div class="hi">Key insight: immutable events are excellent audit records; state tables are optimized answers. In production, you usually need both.</div>
+<div class="warn">Gotcha: late, duplicated, and out-of-order events are normal. Model event time, processing time, idempotency keys, and replay behavior explicitly.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: How do you decide the grain of a fact table?</div>
+  <div class="qa-a">A: I start by writing the grain as a business sentence: one row per what. Then I validate that all measures belong at that same level and that joins to dimensions do not multiply rows. If header-level and line-level measures are both needed, I usually separate them or explicitly allocate the header measures.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose Type 2 instead of Type 1?</div>
+  <div class="qa-a">A: I choose Type 2 when historical reporting must reflect what was true at the time of the event. Customer region, product category, account owner, and contract tier often need Type 2 behavior. Type 1 is fine for corrections or attributes where only the current value matters.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the biggest risk of One Big Table?</div>
+  <div class="qa-a">A: The biggest risk is semantic drift. It starts as a fast serving layer, then becomes the source of truth without clear grain, lineage, or update rules. At scale, teams copy it, tweak definitions, and end up with competing versions of revenue or customer count.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why use surrogate keys in dimensions?</div>
+  <div class="qa-a">A: Surrogate keys decouple warehouse identity from source-system identifiers. They support Type 2 history because one natural key can map to many historical dimension rows. They also protect facts from source migrations, reused IDs, merged customers, and corrected business keys.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Where does Data Vault fit compared with star schema?</div>
+  <div class="qa-a">A: Data Vault is often the integration and history layer, while star schema is the analytics consumption layer. Vault structures preserve business keys, relationships, record sources, and change history. Stars flatten that curated truth into facts and dimensions that BI tools and analysts can use efficiently.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you model streaming data differently from batch tables?</div>
+  <div class="qa-a">A: I separate immutable event history from derived state. Events need stable event IDs, event time, source, schema version, and replay-safe semantics. State tables and snapshots are built from those events using deterministic merge, ordering, and deduplication rules.</div>
+</div>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Grain</div>
+    <div class="cd">The exact meaning of one row; the first decision in any fact table.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Fact table</div>
+    <div class="cd">Stores measurable business events or states, usually with foreign keys to dimensions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Dimension</div>
+    <div class="cd">Stores descriptive context used to filter, group, and label facts.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Star schema</div>
+    <div class="cd">Fact table surrounded by denormalized dimensions; optimized for analytics and BI.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Snowflake</div>
+    <div class="cd">Normalized dimensions; useful for governed hierarchies but adds joins.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Transaction fact</div>
+    <div class="cd">One row per event such as order line, click, payment, or ledger movement.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Snapshot fact</div>
+    <div class="cd">One row per entity per period; useful for balances, inventory, and status counts.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Accumulating fact</div>
+    <div class="cd">One row per lifecycle instance with milestone dates updated over time.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Surrogate key</div>
+    <div class="cd">Warehouse-generated key that decouples facts from source natural keys.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Conformed dim</div>
+    <div class="cd">Shared dimension reused across marts so metrics align across subject areas.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SCD Type 1</div>
+    <div class="cd">Overwrite old values; no history retained.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SCD Type 2</div>
+    <div class="cd">Insert new row per change with validity range and current-row marker.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Data Vault</div>
+    <div class="cd">Hub, link, satellite model for integration, auditability, and historical lineage.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Event vs state</div>
+    <div class="cd">Events record what happened; state tables record the latest or derived condition.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
