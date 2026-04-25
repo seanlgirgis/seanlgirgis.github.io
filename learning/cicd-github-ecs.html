@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI/CD with GitHub Actions, Docker, and ECS - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/cicd-github-ecs.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / CI/CD with GitHub Actions, Docker, and ECS - Master Engineering Reference
+</div>
+<h1>CI/CD with GitHub Actions, Docker, and ECS</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 55-70 min read</p>
+<div class="tag-row">
+  <span class="tag">GitHub Actions</span><span class="tag">Docker</span><span class="tag">Amazon ECS</span><span class="tag">ECR</span><span class="tag">OIDC</span><span class="tag">Terraform</span><span class="tag">Blue/Green</span><span class="tag">Data Engineering</span>
+</div>
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_cicd-github-ecs.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+<div class="toc"><h2>Contents</h2><ol>
+<li><a href="#s1">What CI/CD Means in Production</a></li><li><a href="#s2">Reference Architecture</a></li><li><a href="#s3">GitHub Actions Workflow Structure</a></li><li><a href="#s4">Docker Multi-Stage Builds</a></li><li><a href="#s5">Amazon ECR Registry Strategy</a></li><li><a href="#s6">OIDC Authentication to AWS</a></li><li><a href="#s7">Pipeline Tests</a></li><li><a href="#s8">ECS Deployment Strategies</a></li><li><a href="#s9">Environment Promotion</a></li><li><a href="#s10">Secrets Management</a></li><li><a href="#s11">Infrastructure as Code</a></li><li><a href="#s12">Data Engineering CI/CD</a></li><li><a href="#s13">Rollback and Observability</a></li><li><a href="#s14">Silent Deployment Failures</a></li><li><a href="#qa">Interview Q&amp;A</a></li><li><a href="#cheat">Quick Reference</a></li>
+</ol></div>
+<h2 id="s1">What CI/CD Means in Production</h2>
+<p>CI/CD is the release control system for code, images, infrastructure, data jobs, task definitions, and configuration. For senior data engineering, the goal is not only faster deployment. The goal is repeatable delivery with proof, auditability, rollback, and low operational surprise.</p>
+<div class="hi">Build once, test once, promote the same artifact. Rebuilding separately for production weakens the value of staging.</div>
+<div class="warn">Automation without tests, immutable tags, approvals, and rollback is just a faster way to ship mistakes.</div>
+<table><tr><th>Layer</th><th>Pipeline responsibility</th><th>Risk</th></tr><tr><td>Code</td><td>Lint, test, package</td><td>Broken logic shipped</td></tr><tr><td>Image</td><td>Build reproducible container</td><td>Large or vulnerable runtime</td></tr><tr><td>ECR</td><td>Store immutable image</td><td>Mutable tags hide change</td></tr><tr><td>ECS</td><td>Deploy task definition revision</td><td>Task runs but app is unhealthy</td></tr><tr><td>Data</td><td>Validate schema and quality</td><td>Green deploy, wrong output</td></tr></table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s2">Reference Architecture</h2>
+<p>A strong setup uses GitHub as source control, GitHub Actions as the workflow engine, OIDC for AWS credentials, Docker for packaging, ECR for image storage, ECS Fargate for runtime, CloudWatch for logs, and Terraform or CloudFormation for infrastructure.</p>
+<pre><code>Pull request
+  -> lint, unit tests, integration tests
+Merge to main
+  -> build Docker image
+  -> tag with Git SHA
+  -> assume AWS role through OIDC
+  -> push image to ECR
+  -> render ECS task definition
+  -> deploy ECS service
+  -> run smoke tests
+  -> promote or rollback</code></pre>
+<div class="hi">In ECS, the key release object is usually the task definition revision pointing to a specific image tag or digest.</div>
+<div class="warn">Do not mix risky infrastructure mutation and routine app deployment in one unreviewed step.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s3">GitHub Actions Workflow Structure</h2>
+<p>Workflows are made from triggers, jobs, steps, runners, permissions, and environments. Pull requests should validate. Protected branch pushes should deploy through controlled gates.</p>
+<pre><code>name: ci-cd-ecs
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pytest -q
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-actions-ecs-deploy
+          aws-region: us-east-1</code></pre>
+<div class="hi">Use <code>needs</code> for dependency order and <code>environment</code> for approvals, protected secrets, and deployment history.</div>
+<div class="warn">Set explicit workflow permissions. Broad defaults create a quiet security hole.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s4">Docker Multi-Stage Builds</h2>
+<p>Multi-stage builds separate build-time dependencies from runtime dependencies. This reduces ECS image pull time, attack surface, and cold deployment friction.</p>
+<pre><code>FROM python:3.11-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim AS runtime
+WORKDIR /app
+COPY --from=builder /root/.local /root/.local
+COPY src/ ./src/
+ENV PATH=/root/.local/bin:$PATH
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]</code></pre>
+<div class="hi">Small images deploy faster and reduce the time ECS spends pulling layers before a task can become healthy.</div>
+<div class="warn">Never bake secrets or environment-specific values into the image. Runtime config belongs in ECS, Secrets Manager, or Parameter Store.</div>
+<table><tr><th>Base</th><th>Benefit</th><th>Tradeoff</th></tr><tr><td>slim</td><td>Good compatibility</td><td>Not the smallest</td></tr><tr><td>alpine</td><td>Very small</td><td>Native dependency pain</td></tr><tr><td>distroless</td><td>Low attack surface</td><td>Hard to debug interactively</td></tr></table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s5">Amazon ECR Registry Strategy</h2>
+<p>ECR stores the image artifacts ECS deploys. Use SHA-based immutable tags, lifecycle policies, scanning, and clear retention. Human tags are acceptable, but the pipeline should deploy a known digest or Git SHA tag.</p>
+<pre><code>aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com
+docker build -t data-api:${GITHUB_SHA} .
+docker tag data-api:${GITHUB_SHA} 123456789012.dkr.ecr.us-east-1.amazonaws.com/data-api:${GITHUB_SHA}
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/data-api:${GITHUB_SHA}</code></pre>
+<div class="hi">Immutable tags make rollback believable. You can redeploy the exact prior artifact instead of guessing what <code>latest</code> used to mean.</div>
+<div class="warn"><code>latest</code> is convenient for demos and dangerous for production. It hides the artifact identity.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s6">OIDC Authentication to AWS</h2>
+<p>OIDC lets GitHub Actions assume an IAM role with short-lived credentials. This removes long-term AWS keys from GitHub Secrets and shifts control into IAM trust policy conditions.</p>
+<pre><code>{
+  "Effect": "Allow",
+  "Principal": { "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com" },
+  "Action": "sts:AssumeRoleWithWebIdentity",
+  "Condition": {
+    "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
+    "StringLike": { "token.actions.githubusercontent.com:sub": "repo:seanlgirgis/data-platform:ref:refs/heads/main" }
+  }
+}</code></pre>
+<div class="hi">OIDC is safer because credentials are temporary and scoped by IAM role plus trust policy.</div>
+<div class="warn">A loose trust policy can let unexpected branches or workflows deploy to production.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s7">Pipeline Tests</h2>
+<p>Testing should be layered: linting, unit tests, integration tests, contract tests, and smoke tests. Data pipelines also need schema, idempotency, replay, and data quality checks.</p>
+<table><tr><th>Test</th><th>Runs</th><th>Proves</th></tr><tr><td>Unit</td><td>Pull request</td><td>Logic works in isolation</td></tr><tr><td>Integration</td><td>PR or staging</td><td>Dependencies work</td></tr><tr><td>Contract</td><td>Before deploy</td><td>Consumers are not broken</td></tr><tr><td>Smoke</td><td>After deploy</td><td>Live service responds</td></tr><tr><td>Data quality</td><td>After job run</td><td>Output is trustworthy</td></tr></table>
+<div class="hi">For data workloads, correctness means the data is right, not merely that the process exited successfully.</div>
+<div class="warn">A green HTTP health check does not prove the app can reach the database, queue, cache, or secret store.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s8">ECS Deployment Strategies</h2>
+<p>ECS rolling updates are simple and good for many stateless services. Blue/green deployments with CodeDeploy are stronger when you need controlled traffic shifting, safer rollback, or isolation between old and new task sets.</p>
+<table><tr><th>Strategy</th><th>Best for</th><th>Cost</th></tr><tr><td>Rolling</td><td>Routine stateless releases</td><td>Simpler but old/new overlap</td></tr><tr><td>Blue/green</td><td>Critical APIs</td><td>More moving parts</td></tr><tr><td>Canary</td><td>Risky changes</td><td>Requires strong metrics</td></tr><tr><td>One-off task</td><td>Batch/backfill jobs</td><td>Retry visibility is manual</td></tr></table>
+<pre><code>aws ecs update-service --cluster prod-data-platform --service data-api-service --task-definition data-api:42 --force-new-deployment</code></pre>
+<div class="hi">Rolling safety depends on desired count, minimum healthy percent, maximum percent, target group health, and good readiness checks.</div>
+<div class="warn">Bad health checks can make ECS declare victory while users see failures.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s9">Environment Promotion</h2>
+<p>Promotion should move one tested artifact from dev to staging to production. GitHub Environments can require approvals, protect secrets, and keep a deployment history per environment.</p>
+<pre><code>deploy-staging:
+  environment: staging
+  steps:
+    - run: ./deploy.sh staging $GITHUB_SHA
+
+deploy-prod:
+  needs: deploy-staging
+  environment: production
+  steps:
+    - run: ./deploy.sh production $GITHUB_SHA</code></pre>
+<div class="hi">The same image should move forward. Only environment configuration should change.</div>
+<div class="warn">If production rebuilds the image, staging did not truly validate the production artifact.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s10">Secrets Management</h2>
+<p>Separate deployment credentials from runtime secrets. Use OIDC and IAM for deployment. Use AWS Secrets Manager or SSM Parameter Store for application secrets referenced by ECS task definitions.</p>
+<table><tr><th>Store</th><th>Use</th><th>Concern</th></tr><tr><td>GitHub Secrets</td><td>CI-only external tokens</td><td>Easy to overuse</td></tr><tr><td>Secrets Manager</td><td>Rotating secrets</td><td>Higher cost</td></tr><tr><td>Parameter Store</td><td>Config and secure strings</td><td>Rotation is manual</td></tr><tr><td>ECS task definition</td><td>Runtime reference</td><td>Plain env vars can leak</td></tr></table>
+<pre><code>"secrets": [
+  {
+    "name": "DATABASE_PASSWORD",
+    "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/db/password"
+  }
+]</code></pre>
+<div class="hi">Good pipelines avoid exposing secrets in source, Docker layers, logs, Terraform outputs, and command echoes.</div>
+<div class="warn">Terraform state may contain sensitive values. Protect the backend like production data.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s11">Infrastructure as Code</h2>
+<p>Terraform or CloudFormation should define ECR, ECS services, IAM roles, target groups, log groups, networking, alarms, and deployment roles. Run plan on pull requests and apply only through protected paths.</p>
+<pre><code>terraform {
+  backend "s3" {
+    bucket         = "company-terraform-state"
+    key            = "prod/ecs/data-api.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+}</code></pre>
+<div class="hi">A Terraform plan in a pull request turns infrastructure into a reviewable contract.</div>
+<div class="warn">Never run applies against shared state without locking and least-privilege IAM.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s12">Data Engineering CI/CD</h2>
+<p>Data engineering releases include Glue jobs, Lambda functions, Airflow DAGs, ECS workers, dbt models, schema migrations, Step Functions, and data quality rules. A deployment may be technically healthy but analytically wrong.</p>
+<table><tr><th>Artifact</th><th>Deploy</th><th>Validate</th></tr><tr><td>Glue job</td><td>Update script/job definition</td><td>Run sample dataset</td></tr><tr><td>Lambda</td><td>Zip or image</td><td>Invoke test event</td></tr><tr><td>Airflow DAG</td><td>Sync DAG</td><td>Parse and dry run</td></tr><tr><td>ECS worker</td><td>Task definition</td><td>Retry and idempotency</td></tr><tr><td>dbt</td><td>Model run</td><td>Schema and freshness tests</td></tr></table>
+<div class="hi">Data release contracts include schema, partitioning, ordering, idempotency keys, late data, and replay behavior.</div>
+<div class="warn">A nightly batch can hide a bad deployment for hours. Build early warning checks into the pipeline.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s13">Rollback and Observability</h2>
+<p>Rollback usually means redeploying a previous ECS task definition or letting CodeDeploy shift traffic back. It only works cleanly if images are immutable and schema changes are backward-compatible.</p>
+<pre><code>aws ecs describe-services --cluster prod-data-platform --services data-api-service --query 'services[0].taskDefinition'
+aws ecs update-service --cluster prod-data-platform --service data-api-service --task-definition data-api:41</code></pre>
+<div class="hi">Practice rollback before an outage. Keep prior task definitions and image tags available.</div>
+<div class="warn">Database migrations can make rollback impossible. Use expand-and-contract changes for risky schema work.</div>
+<table><tr><th>Signal</th><th>Tool</th><th>Purpose</th></tr><tr><td>ECS events</td><td>ECS console/API</td><td>Task placement and start failures</td></tr><tr><td>Logs</td><td>CloudWatch Logs</td><td>Application exceptions</td></tr><tr><td>Target health</td><td>ALB</td><td>Load balancer reachability</td></tr><tr><td>Metrics</td><td>CloudWatch</td><td>Latency, errors, saturation</td></tr></table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="s14">Silent Deployment Failures</h2>
+<p>Silent failures happen when the pipeline is green but production behavior is wrong. These are common with ECS because the platform can stabilize tasks even when the business function is broken.</p>
+<table><tr><th>Failure</th><th>Why hidden</th><th>Prevention</th></tr><tr><td>Wrong image</td><td>Mutable tag changed</td><td>Use SHA or digest</td></tr><tr><td>Bad health check</td><td>Shallow endpoint</td><td>Readiness checks</td></tr><tr><td>Missing env var</td><td>Unsafe fallback</td><td>Fail-fast startup</td></tr><tr><td>IAM gap</td><td>Only fails on edge path</td><td>Integration tests</td></tr><tr><td>Schema drift</td><td>App starts fine</td><td>Contract checks</td></tr></table>
+<div class="hi">Test the actual user or consumer path: endpoint, queue message, job trigger, database write, or output file.</div>
+<div class="warn">The scariest pipeline is not red. It is green and wrong.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa"><div class="qa-q">Q: Why use OIDC instead of AWS keys in GitHub Secrets?</div><div class="qa-a">A: OIDC uses short-lived credentials through IAM role assumption. There is no long-term key to leak, and access can be scoped by repo, branch, workflow, and environment.</div></div>
+<div class="qa"><div class="qa-q">Q: How should Docker images be tagged for ECS?</div><div class="qa-a">A: Use immutable Git SHA tags or image digests. Optional release tags are fine, but production deployment should know the exact artifact identity.</div></div>
+<div class="qa"><div class="qa-q">Q: Rolling update or blue/green?</div><div class="qa-a">A: Rolling is simpler for normal stateless services. Blue/green is safer for critical workloads that need controlled traffic shift, validation, and fast rollback.</div></div>
+<div class="qa"><div class="qa-q">Q: What tests matter for data engineering CI/CD?</div><div class="qa-a">A: Unit, integration, contract, smoke, schema, freshness, uniqueness, idempotency, and replay tests. The output data must be trusted, not merely produced.</div></div>
+<div class="qa"><div class="qa-q">Q: How do you safely run Terraform in CI/CD?</div><div class="qa-a">A: Plan on pull requests, apply only from protected branches or environments, use remote state with locking, limit IAM permissions, and separate risky infra changes from routine app deploys.</div></div>
+<div class="qa"><div class="qa-q">Q: Why can an ECS deployment look successful while the app is broken?</div><div class="qa-a">A: ECS may only know that tasks are running. Bad environment variables, shallow health checks, missing IAM, dependency failures, or schema drift can still break the real workload.</div></div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+<div class="cheat-row"><div class="ct">workflow</div><div class="cd">GitHub Actions automation file under <code>.github/workflows/</code>.</div></div>
+<div class="cheat-row"><div class="ct">on</div><div class="cd">Trigger block for push, pull request, schedule, or manual dispatch.</div></div>
+<div class="cheat-row"><div class="ct">jobs</div><div class="cd">Units of workflow execution.</div></div>
+<div class="cheat-row"><div class="ct">steps</div><div class="cd">Commands or reusable actions inside a job.</div></div>
+<div class="cheat-row"><div class="ct">runner</div><div class="cd">Machine where the job executes, such as <code>ubuntu-latest</code>.</div></div>
+<div class="cheat-row"><div class="ct">OIDC</div><div class="cd">Short-lived identity federation from GitHub Actions to AWS IAM.</div></div>
+<div class="cheat-row"><div class="ct">ECR</div><div class="cd">AWS container registry for Docker images used by ECS.</div></div>
+<div class="cheat-row"><div class="ct">task definition</div><div class="cd">Versioned ECS runtime contract for image, CPU, memory, ports, env, and secrets.</div></div>
+<div class="cheat-row"><div class="ct">ECS service</div><div class="cd">Maintains desired task count and manages deployments.</div></div>
+<div class="cheat-row"><div class="ct">CodeDeploy</div><div class="cd">AWS service used for ECS blue/green deployments.</div></div>
+<div class="cheat-row"><div class="ct">image digest</div><div class="cd">Immutable content address for a container image.</div></div>
+<div class="cheat-row"><div class="ct">smoke test</div><div class="cd">Post-deployment check that the live service performs a basic real action.</div></div>
+<div class="cheat-row"><div class="ct">approval gate</div><div class="cd">Protected environment step before production deployment.</div></div>
+<div class="cheat-row"><div class="ct">rollback</div><div class="cd">Redeploy prior task definition, image, or target group.</div></div>
+<div class="cheat-row"><div class="ct">lifecycle policy</div><div class="cd">ECR cleanup rule for old images.</div></div>
+<div class="cheat-row"><div class="ct">build cache</div><div class="cd">Reusable dependency or Docker layers to speed up builds.</div></div>
+</div>
+</div>
+</body>
+</html>
