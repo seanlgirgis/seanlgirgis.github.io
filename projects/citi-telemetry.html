@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Citi High-Scale Telemetry Pipeline | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/projects/citi-telemetry.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; vertical-align:top; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+  <div class="topnav">
+    <a href="https://seanlgirgis.github.io/projects.html">&#128196; Projects Showcase</a> / Citi High-Scale Telemetry Pipeline
+  </div>
+
+  <h1>Citi High-Scale Telemetry Pipeline</h1>
+  <p class="subtitle">Project deep-dive &middot; Data Engineering &middot; Citigroup Capacity &amp; Planning &middot; Last updated 2026-04-25</p>
+
+  <div class="tag-row">
+    <span class="tag">Data Engineering</span>
+    <span class="tag">Python</span>
+    <span class="tag">Pandas</span>
+    <span class="tag">NumPy</span>
+    <span class="tag">SQLite</span>
+    <span class="tag">BMC TrueSight</span>
+    <span class="tag">Capacity Planning</span>
+    <span class="tag">Streamlit</span>
+    <span class="tag">Financial Services</span>
+    <span class="tag">65K+ Endpoints</span>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">&#127911; Project Walkthrough — Audio</div>
+    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_citi-telemetry.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">Team Context &amp; Problem</a></li>
+      <li><a href="#s2">The Manual Process</a></li>
+      <li><a href="#s3">Data Sources</a></li>
+      <li><a href="#s4">The Four KPIs &amp; System Types</a></li>
+      <li><a href="#s5">Safety &amp; Ceiling Factors</a></li>
+      <li><a href="#s6">Pipeline Architecture</a></li>
+      <li><a href="#s7">Data Transformation &amp; Enrichment</a></li>
+      <li><a href="#s8">SQLite Data Model</a></li>
+      <li><a href="#s9">Two Output Directions</a></li>
+      <li><a href="#s10">Streamlit Internal Dashboard</a></li>
+      <li><a href="#s11">Impact: 5–10 Days → 1–2 Hours</a></li>
+      <li><a href="#s12">Engineering Challenges</a></li>
+      <li><a href="#s13">Lessons Learned</a></li>
+      <li><a href="#qa">Interview Q&amp;A</a></li>
+      <li><a href="#cheat">Quick Reference</a></li>
+    </ol>
+  </div>
+
+  <!-- S1 -->
+  <h2 id="s1">Team Context &amp; Problem</h2>
+  <p>The Capacity and Planning team at Citigroup sat at the center of a global infrastructure operation. The team's mandate was to help technology and business teams across the enterprise understand their infrastructure position — where they had headroom, where they were approaching limits, and what actions they needed to take. The scope was significant: between 65,000 and 70,000 monitored endpoints worldwide, spanning four global regions and dozens of departments, across every system type the bank ran: physical servers, virtual machines, databases, and containers.</p>
+  <p>Capacity planning in financial services is not optional or aspirational — it is a compliance and operational continuity function. A trading system, a payments platform, or a risk calculation engine that runs out of capacity during peak hours creates regulatory exposure, customer impact, and potential financial loss. The team's analysis had to be timely, accurate, and actionable enough for enterprise teams to plan months ahead.</p>
+  <div class="hi">65,000–70,000 monitored endpoints &middot; 4 global regions &middot; Dozens of departments &middot; Monthly reporting cadence &middot; Physical / Virtual / Database / Container systems</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S2 -->
+  <h2 id="s2">The Manual Process</h2>
+  <p>When the pipeline was designed, the entire monthly analysis was done manually in Excel. The workflow had every characteristic of a process that had grown organically to fill a need without ever being engineered: each step depended on the previous one, work was distributed across team members by hand, and any error in an intermediate step could invalidate downstream work without being immediately visible.</p>
+
+  <table>
+    <tr><th>Step</th><th>What Happened</th><th>Tool</th></tr>
+    <tr><td>1. Extract</td><td>Pull P95 telemetry from BMC TrueSight for all monitored endpoints</td><td>BMC TrueSight export</td></tr>
+    <tr><td>2. Divide</td><td>Manually split data into spreadsheets by region and system type</td><td>Excel</td></tr>
+    <tr><td>3. Enrich</td><td>Pull ownership, location, department data from CMDB and AppDynamics; manually join</td><td>SQL Server + Excel</td></tr>
+    <tr><td>4. Clean</td><td>Handle missing values, fix naming inconsistencies, remove invalid records</td><td>Excel (manual)</td></tr>
+    <tr><td>5. Calculate</td><td>Apply safety and ceiling factors; compute adjusted utilization for each KPI</td><td>Excel formulas</td></tr>
+    <tr><td>6. Sort &amp; rank</td><td>Order systems by utilization; surface top under-utilized and near-capacity</td><td>Excel</td></tr>
+    <tr><td>7. Publish</td><td>Distribute reports to enterprise teams; brief stakeholders</td><td>Email / meetings</td></tr>
+  </table>
+
+  <p>End to end, this process took <strong>5 to 10 days every month</strong>. For a team whose value was in the analysis and consultation work — advising teams on how to scale, identifying cost savings, catching capacity problems before they became outages — spending the majority of the month producing the input data was a structural inefficiency that limited what the team could actually deliver.</p>
+  <div class="warn">Manual processes across five to ten days introduce drift: factors applied inconsistently, enrichment data missed for some regions, judgment calls made differently by different team members. The reports were produced, but their consistency and reliability were bounded by the manual process that produced them.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S3 -->
+  <h2 id="s3">Data Sources</h2>
+  <p>The pipeline integrated three data sources: one primary telemetry source and two enrichment sources. Each served a distinct role and no single source was sufficient on its own.</p>
+
+  <table>
+    <tr><th>Source</th><th>Type</th><th>What It Provided</th></tr>
+    <tr><td><strong>BMC TrueSight</strong></td><td>Performance monitoring platform</td><td>P95 time-series for CPU, Memory, Disk, and Network across all 65–70K monitored endpoints</td></tr>
+    <tr><td><strong>CMDB</strong> (SQL Server)</td><td>Change Management Database</td><td>Asset inventory: system name, owner, region, department, tier, classification, environment</td></tr>
+    <tr><td><strong>AppDynamics</strong></td><td>Application performance monitoring</td><td>Supplementary server metadata: ownership, location, departmental assignment, application context not always present in CMDB</td></tr>
+  </table>
+
+  <p>BMC TrueSight answered <em>what is happening</em>: real utilization numbers for every endpoint. The CMDB and AppDynamics together answered <em>who owns it, where it is, and who to contact</em>. Raw telemetry without the enrichment context produces an unaddressed list of numbers. With enrichment, every row in the report is associated with a responsible team and a geography, making it immediately actionable.</p>
+  <div class="hi">The CMDB was the authoritative asset registry, but AppDynamics often had more current ownership and application context — especially for systems that had been reassigned or were running application workloads not yet reflected in CMDB records. Both were needed to maximize join coverage across 65K+ endpoints.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S4 -->
+  <h2 id="s4">The Four KPIs &amp; System Types</h2>
+  <p>Every monitored endpoint was analyzed across four key performance indicators. These four metrics together give a complete picture of infrastructure health — a system can be under-utilized on CPU but saturated on disk, or healthy across all KPIs but trending toward memory exhaustion over the next quarter.</p>
+
+  <table>
+    <tr><th>KPI</th><th>What It Measures</th><th>Capacity Risk Pattern</th></tr>
+    <tr><td><strong>CPU</strong></td><td>Processing utilization — P95 across the measurement period</td><td>Consistent high P95 signals compute saturation; spikes suggest batch or peak-load problems</td></tr>
+    <tr><td><strong>Memory</strong></td><td>RAM utilization — P95 across the measurement period</td><td>Memory pressure causes swapping and performance degradation before hard failures; often a software root cause</td></tr>
+    <tr><td><strong>Disk</strong></td><td>Storage I/O and capacity utilization</td><td>Disk fills silently — applications fail when storage is exhausted, often without warning to the owning team</td></tr>
+    <tr><td><strong>Network</strong></td><td>Network throughput and bandwidth utilization</td><td>Network saturation can be invisible in CPU/memory metrics while causing severe latency for connected systems</td></tr>
+  </table>
+
+  <p>The four KPIs were measured across four system categories, each with different baseline characteristics and different thresholds for what "normal" utilization looks like:</p>
+
+  <table>
+    <tr><th>System Type</th><th>Characteristics</th></tr>
+    <tr><td><strong>Physical</strong></td><td>Bare-metal servers — fixed capacity, no elasticity, highest cost to right-size up or down</td></tr>
+    <tr><td><strong>Virtual</strong></td><td>VMs on shared hypervisor pools — more flexible, but still capacity-bounded at the pool level</td></tr>
+    <tr><td><strong>Databases</strong></td><td>Database servers — disk and memory utilization patterns differ significantly from compute workloads</td></tr>
+    <tr><td><strong>Containers</strong></td><td>Containerized workloads — typically more dynamic, but resource limits still require planning</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S5 -->
+  <h2 id="s5">Safety &amp; Ceiling Factors</h2>
+  <p>Raw P95 telemetry tells you the 95th percentile utilization for the measurement period. That number alone is not sufficient for capacity planning decisions, for two reasons: it doesn't account for measurement uncertainty, and it doesn't define what "too high" means in operational terms. The safety and ceiling factors address both.</p>
+
+  <h3>Ceiling Factor — The Operational Maximum</h3>
+  <p>The ceiling is the threshold a resource should not consistently reach under normal operations. For CPU, the ceiling was set at <strong>90%</strong>. A system running at 90% P95 CPU is at capacity — there is no meaningful headroom for load spikes, batch jobs, or unexpected demand. The ceiling defines the boundary between "operating normally" and "needs action."</p>
+
+  <h3>Safety Factor — Accounting for Measurement Confidence</h3>
+  <p>A single month's P95 doesn't capture every possible spike, and there is inherent uncertainty in any sampled measurement. The safety multiplier of <strong>1.15</strong> was applied to the raw P95 value to produce a conservative adjusted utilization — effectively saying: assume your real peak exposure is 15% higher than what was measured, to account for variance and measurement confidence at approximately 85%.</p>
+
+  <pre><code># Utilization calculation (per KPI, per endpoint)
+RAW_P95        = telemetry value from BMC TrueSight
+SAFETY_FACTOR  = 1.15    # conservative buffer for measurement uncertainty
+CEILING_PCT    = 0.90    # operational maximum threshold (90%)
+
+adjusted_util  = RAW_P95 * SAFETY_FACTOR
+
+# Flags
+near_capacity  = adjusted_util >= CEILING_PCT        # approaching or at ceiling
+under_utilized = adjusted_util < UNDER_UTIL_THRESHOLD  # significantly below floor
+
+# Headroom: how far below ceiling is the adjusted utilization?
+headroom_pct   = (CEILING_PCT - adjusted_util) / CEILING_PCT</code></pre>
+
+  <div class="hi">Applying the safety factor before comparing to the ceiling means the pipeline is conservative by design — it flags systems as near-capacity before they actually hit the limit, giving teams lead time to act. A system flagged at 85% adjusted utilization against a 90% ceiling has roughly a month or two before it becomes critical.</div>
+  <div class="warn">Without the safety factor, the pipeline would only flag systems already at the ceiling — leaving no response time. In financial services infrastructure, "no response time" is not an acceptable operational state. The 1.15 multiplier is the built-in buffer that keeps capacity planning ahead of the curve.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S6 -->
+  <h2 id="s6">Pipeline Architecture</h2>
+  <p>The pipeline was built entirely in Python, with Pandas handling the transformation and join work, NumPy providing the vectorized calculations for safety and ceiling factors across 65K+ rows, and SQLite as the persistence layer. The pipeline ran monthly, triggered when the BMC TrueSight export for the period was ready.</p>
+
+  <pre><code># Pipeline flow (high level)
+1. INGEST
+   ├── Load BMC TrueSight P95 export (CSV/structured format)
+   ├── Query CMDB via SQL Server for asset reference data
+   └── Load AppDynamics server metadata export
+
+2. NORMALIZE
+   ├── Standardize endpoint identifiers across all three sources
+   ├── Resolve hostname aliases and naming convention differences
+   └── Handle missing values and invalid records
+
+3. JOIN &amp; ENRICH
+   ├── Left join TrueSight data → CMDB on normalized hostname
+   ├── Fill gaps with AppDynamics metadata where CMDB join fails
+   └── Flag records with no enrichment match for manual review
+
+4. CALCULATE
+   ├── Apply safety factor (×1.15) to raw P95 for each KPI
+   ├── Compute adjusted utilization vs ceiling threshold (90%)
+   ├── Derive headroom percentage and capacity flag per KPI
+   └── Classify each endpoint: near_capacity / healthy / under_utilized
+
+5. LOAD → SQLite
+   ├── Monthly database: full dataset for this reporting period
+   └── Master database: upsert endpoint record for trend tracking
+
+6. PUBLISH
+   ├── Generate Excel reports (by region, by system type, by department)
+   └── Streamlit dashboard refresh with new monthly data</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S7 -->
+  <h2 id="s7">Data Transformation &amp; Enrichment</h2>
+  <p>The transformation stage was the most labor-intensive part of the initial build — and it was the stage that, in the manual process, consumed the most time and introduced the most inconsistency. Three enterprise systems with independent naming conventions, inconsistent update cadences, and different levels of data completeness had to be joined into a single clean, enriched record per endpoint.</p>
+
+  <h3>Identifier Normalization</h3>
+  <p>Server names in BMC TrueSight, hostnames in the CMDB, and identifiers in AppDynamics followed different conventions. A single server might appear as <code>NYDB-PROD-042</code> in TrueSight, <code>nydb-prod-042.citi.com</code> in the CMDB, and <code>NY_DB_PROD_042</code> in AppDynamics. Normalizing these to a canonical key — lowercase, stripped of domain suffixes, with separator characters standardized — was a prerequisite for any reliable join.</p>
+
+  <h3>Enrichment Fallback Strategy</h3>
+  <p>Not every endpoint had a complete CMDB record, and not every gap could be filled from AppDynamics. The join strategy used a priority order: CMDB as the primary reference source, AppDynamics as a fallback for endpoints where the CMDB join failed or returned incomplete data, and a "no enrichment" flag for endpoints that couldn't be matched to either. Unmatched endpoints were reported separately for the team to investigate rather than silently dropped.</p>
+
+  <pre><code># Enrichment join with fallback (Pandas)
+df = (
+    trusight_df
+    .merge(cmdb_df, on="hostname_normalized", how="left", suffixes=("", "_cmdb"))
+    .merge(appdyn_df, on="hostname_normalized", how="left", suffixes=("", "_appdyn"))
+)
+
+# Fill CMDB gaps with AppDynamics data
+for col in ["owner", "department", "region", "tier"]:
+    df[col] = df[col].fillna(df[f"{col}_appdyn"])
+
+# Flag records with no enrichment coverage
+df["enrichment_status"] = df["owner"].apply(
+    lambda x: "enriched" if pd.notna(x) else "no_match"
+)</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S8 -->
+  <h2 id="s8">SQLite Data Model</h2>
+  <p>The persistence layer used two SQLite databases. This design choice — separate monthly databases plus a master progression database — was driven by the specific reporting requirements: fast queries against a single month's data, and longitudinal trend analysis across months without querying every monthly database separately.</p>
+
+  <h3>Monthly Database</h3>
+  <p>One SQLite file per reporting period, containing the full enriched and calculated dataset for that month. Analysts and the Streamlit dashboard could query any month in isolation for detailed drill-down, export, or comparison against another specific month.</p>
+
+  <h3>Master Progression Database</h3>
+  <p>The master database held one record per endpoint per month — a longitudinal table that enabled trend queries across the full history. This is where "system X has been trending from 60% to 75% to 88% CPU over three months" became a queryable fact rather than a manually compiled observation.</p>
+
+  <pre><code>-- Master progression table (simplified)
+CREATE TABLE endpoint_progression (
+    endpoint_id      TEXT    NOT NULL,
+    hostname         TEXT    NOT NULL,
+    report_month     TEXT    NOT NULL,   -- YYYY-MM
+    system_type      TEXT,               -- physical / virtual / database / container
+    region           TEXT,
+    department       TEXT,
+    owner            TEXT,
+    tier             TEXT,
+    -- Raw P95 values
+    cpu_p95          REAL,
+    mem_p95          REAL,
+    disk_p95         REAL,
+    net_p95          REAL,
+    -- Adjusted utilization (P95 × 1.15)
+    cpu_adjusted     REAL,
+    mem_adjusted     REAL,
+    disk_adjusted    REAL,
+    net_adjusted     REAL,
+    -- Capacity flags
+    cpu_flag         TEXT,   -- near_capacity / healthy / under_utilized
+    mem_flag         TEXT,
+    disk_flag        TEXT,
+    net_flag         TEXT,
+    enrichment_status TEXT,
+    PRIMARY KEY (endpoint_id, report_month)
+);
+
+-- Query: systems trending toward capacity over last 3 months
+SELECT hostname, department, region,
+       cpu_adjusted,
+       LAG(cpu_adjusted, 1) OVER w AS prev_month,
+       LAG(cpu_adjusted, 2) OVER w AS two_months_ago
+FROM endpoint_progression
+WHERE cpu_flag = 'near_capacity'
+WINDOW w AS (PARTITION BY endpoint_id ORDER BY report_month)
+ORDER BY cpu_adjusted DESC;</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S9 -->
+  <h2 id="s9">Two Output Directions</h2>
+  <p>Every endpoint in the monthly analysis resolved into one of two actionable directions based on its adjusted utilization relative to the ceiling threshold. The reports were structured around these two directions because they represented fundamentally different business conversations.</p>
+
+  <h3>Under-Utilized — The Savings Opportunity</h3>
+  <p>Systems with consistently low adjusted utilization across one or more KPIs represented a resource allocation that was not earning its cost. In a global bank running tens of thousands of physical and virtual servers, over-provisioned infrastructure adds up to significant recurring spend. The pipeline surfaced the top under-utilized systems ranked by severity, with enrichment data identifying the owning department and team. The recommendations ranged from downsizing the resource allocation (reducing CPU or memory allocation on a VM), to consolidating workloads onto fewer physical hosts, to promoting from physical to virtual or from on-premises to cloud where the workload profile supported it.</p>
+
+  <h3>Near-Capacity — The Proactive Warning</h3>
+  <p>Systems trending toward or already at the 90% ceiling on any KPI were surfaced for proactive outreach to the owning team. The critical design principle here was <strong>lead time</strong>. Infrastructure procurement, change management, and architecture decisions at a bank like Citi operate on timelines of weeks to months. A capacity warning delivered with enough lead time allows the team to engage the capacity planning consultation service and develop a real response. A warning delivered after the system is already at capacity means the response is reactive and the options are limited.</p>
+  <p>Critically, the recommended action was not always "add hardware." Some capacity problems had software root causes: memory leaks, inefficient query patterns consuming disk I/O, batch jobs not sized correctly. The early warning created the time and the context to investigate the root cause rather than defaulting to hardware remediation.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Trigger</th><th>Primary Actions</th></tr>
+    <tr><td>Under-utilized</td><td>Adjusted utilization well below operational floor across KPIs</td><td>Downsize allocation, consolidate workloads, promote to virtual/cloud</td></tr>
+    <tr><td>Near-capacity</td><td>Adjusted utilization approaching or above 90% ceiling on any KPI</td><td>Scale up hardware, optimize software, architecture consultation, bug investigation</td></tr>
+    <tr><td>Healthy + trending up</td><td>Currently healthy but month-over-month utilization increasing</td><td>Monitor closely, begin planning cycle before threshold is reached</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S10 -->
+  <h2 id="s10">Streamlit Internal Dashboard</h2>
+  <p>The Excel reports remained the external deliverable — enterprise teams across Citi consumed the output in that format, and changing the consumption interface was out of scope. But internally, the capacity planning team needed something more dynamic: the ability to browse the full dataset, filter by region or department, drill into individual systems, and compare month-over-month progression without opening multiple Excel files and doing manual comparisons.</p>
+  <p>The Streamlit dashboard provided that internal interface. Built on top of the SQLite master database, it gave the team real-time query capability against the full history: view all near-capacity systems in a specific region, see how a particular department's infrastructure profile changed over the past six months, filter by system type to focus a planning session on physical servers only. The dashboard reduced the time the team spent navigating data to find the right systems to discuss in planning conversations.</p>
+
+  <table>
+    <tr><th>Dashboard View</th><th>Purpose</th></tr>
+    <tr><td>Monthly Summary</td><td>Top-level counts: near-capacity, under-utilized, healthy per region and system type</td></tr>
+    <tr><td>Near-Capacity List</td><td>Filtered, sortable list of systems at or approaching ceiling — by KPI, region, department</td></tr>
+    <tr><td>Under-Utilization Ranking</td><td>Ranked savings opportunities with estimated reallocation potential</td></tr>
+    <tr><td>System Progression View</td><td>Month-over-month utilization trend for a specific endpoint or department</td></tr>
+    <tr><td>Department Health Summary</td><td>Aggregate capacity health score per department — useful for executive-level reporting</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S11 -->
+  <h2 id="s11">Impact: 5–10 Days &rarr; 1–2 Hours</h2>
+  <p>The headline impact of the pipeline was the time reduction: the monthly analysis that previously required five to ten days of manual work was produced in the first or second hour after the BMC TrueSight export was ready. The same deliverables — Excel reports by region and system type, enriched with ownership and department data, with utilization calculations and capacity flags applied — were generated automatically, consistently, and without manual intervention.</p>
+  <p>The secondary impact was quality consistency. Manual processes over five to ten days introduce variation: factors applied differently by different team members, enrichment data missed for endpoints that weren't in the standard export, judgment calls made under time pressure. The pipeline applied identical logic to every one of the 65,000+ endpoints, every month. The reports became more trustworthy, which made the enterprise teams more willing to act on the near-capacity warnings and more confident in the savings recommendations.</p>
+  <p>The tertiary impact was team capacity. The five to ten days previously spent producing data became available for the analysis and consultation work that was the actual value the team delivered. Planning conversations started from a position of current, complete data rather than from data that was already several days old when it was published.</p>
+
+  <table>
+    <tr><th>Metric</th><th>Before Pipeline</th><th>After Pipeline</th></tr>
+    <tr><td>Monthly report production time</td><td>5–10 business days</td><td>1–2 hours</td></tr>
+    <tr><td>Data consistency</td><td>Variable — manual calculation, human judgment</td><td>Deterministic — same logic applied to every endpoint</td></tr>
+    <tr><td>Enrichment coverage</td><td>Dependent on analyst diligence per region</td><td>Automated join across CMDB + AppDynamics with flagging</td></tr>
+    <tr><td>Month-over-month trend visibility</td><td>Manual comparison across previous Excel files</td><td>Queryable master SQLite database; Streamlit dashboard</td></tr>
+    <tr><td>Team capacity for planning work</td><td>Limited — majority of month on data production</td><td>Significant — pipeline frees team for analysis and consultation</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S12 -->
+  <h2 id="s12">Engineering Challenges</h2>
+  <h3>Cross-System Identifier Normalization</h3>
+  <p>The hardest technical problem was making the join keys work reliably across three enterprise systems — BMC TrueSight, the CMDB, and AppDynamics — that each used independent naming conventions for the same physical or virtual endpoint. A server might appear with a short hostname in TrueSight, a fully qualified domain name in the CMDB, and a different separator convention in AppDynamics. Normalizing these to a reliable join key required extensive data investigation: cataloging the naming patterns in each source, building transformation rules, and testing join coverage across the full 65K endpoint set. Poor join coverage meant enrichment gaps; enrichment gaps meant reports delivered to teams without owner information — defeating a significant part of the pipeline's value.</p>
+
+  <h3>Scale with Pandas</h3>
+  <p>Operating on 65,000+ endpoints across four KPIs per month — and maintaining a multi-month master database — required attention to Pandas memory management. Vectorized operations via NumPy rather than row-by-row Python loops were essential for the calculation stage. Pre-filtering DataFrames before joins (removing records already known to be invalid before the merge step) significantly reduced peak memory usage during the enrichment phase.</p>
+
+  <h3>SQLite Concurrency &amp; File Management</h3>
+  <p>The dual-database design — monthly files plus a master database — required careful file path management as the number of monthly archives grew. A lightweight catalog file tracked the available monthly databases and their date ranges, so the Streamlit dashboard could dynamically discover available history without hardcoded paths.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S13 -->
+  <h2 id="s13">Lessons Learned</h2>
+  <p><strong>The most valuable part of a data pipeline is often the enrichment join.</strong> Raw telemetry has no action value without context. An endpoint at 88% CPU is a number. An endpoint at 88% CPU owned by the Fixed Income trading platform in the EMEA region, managed by a specific infrastructure team, is an actionable alert. The work of connecting telemetry to ownership and context — through CMDB joins, reference data enrichment, identifier normalization — is unglamorous engineering, but it's what makes the output usable.</p>
+  <p><strong>Conservative calculations earn trust.</strong> The safety factor of 1.15 was occasionally questioned by teams who received a near-capacity warning and felt their system was "fine." The consistent response was: the pipeline is designed to give you lead time, not to tell you your system is on fire right now. Systems flagged early with headroom to act are the goal. The alternative — flagging systems only when they're already at 90% — eliminates the response window. Conservative thresholds, consistently applied and clearly explained, build more trust than aggressive thresholds that produce false urgency.</p>
+  <p><strong>Determinism is a quality argument, not just an efficiency argument.</strong> Reducing the report production time from ten days to two hours was visible and immediately valued. The less visible but equally important improvement was that the pipeline applied identical logic to every endpoint every month. In the manual process, the 80,000th row of a spreadsheet was handled by a tired analyst on day nine. In the pipeline, the 80,000th row gets the same calculation as the first. That consistency is what makes the reports trustworthy at scale.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Q&A -->
+  <h2 id="qa">Interview Q&amp;A</h2>
+
+  <div class="qa">
+    <div class="qa-q">Walk me through the architecture of this pipeline at a high level.</div>
+    <div class="qa-a">The pipeline ingests P95 telemetry exports from BMC TrueSight covering 65,000 to 70,000 monitored endpoints across four KPIs: CPU, memory, disk, and network. It normalizes the endpoint identifiers across three source systems — TrueSight, the CMDB on SQL Server, and AppDynamics — and joins the telemetry to enrichment data from both reference sources to attach ownership, region, department, and tier to every row. The enriched dataset is then transformed: a safety factor of 1.15 is applied to the raw P95 values to produce a conservative adjusted utilization, which is compared to the 90% ceiling threshold to classify every endpoint as near-capacity, healthy, or under-utilized. The results load into SQLite — one monthly database per reporting period and a master database for multi-month progression tracking. The pipeline then generates the Excel reports by region and system type that the enterprise teams consume, and refreshes the internal Streamlit dashboard. What used to take five to ten days of manual work runs in one to two hours.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Why did you choose SQLite for a dataset of this scale?</div>
+    <div class="qa-a">The scale fit SQLite comfortably. 65,000 endpoints, four KPIs, monthly cadence, a couple of years of history — that's a large dataset for Excel, but it's not a distributed system problem. SQLite handles tens of millions of rows on a single file with fast indexed queries, and it has zero operational overhead: no server to manage, no connection pooling, no licensing. The specific design — separate monthly files plus a master progression database — mapped naturally to SQLite's file-per-database model. Each monthly database is an isolated, portable artifact. The master database provides longitudinal queryability without requiring joins across multiple files at query time. A proper database server like PostgreSQL would have worked too, but would have added infrastructure complexity for no additional analytical capability at this scale. SQLite was the right tool for what was needed.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How did the safety and ceiling factors work, and why were those specific values chosen?</div>
+    <div class="qa-a">The ceiling of 90% defines the operational maximum for CPU and the other KPIs — a system consistently hitting 90% utilization is at capacity, with no headroom for demand spikes or unexpected load. The 1.15 safety multiplier accounts for measurement uncertainty: a single month's P95 doesn't capture every possible spike, and the confidence in any sampled metric isn't 100%. Multiplying by 1.15 — assuming the real peak exposure is 15% higher than measured — builds a conservative buffer that reflects roughly 85% measurement confidence. Together, these mean a system is flagged as near-capacity when its conservative estimate approaches the operational ceiling, giving teams lead time before they actually hit it. The alternative — flagging only when systems are already at 90% — eliminates the response window. In financial services infrastructure, you want weeks of lead time, not a same-day alert.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">What was the hardest technical problem to solve?</div>
+    <div class="qa-a">Cross-system identifier normalization. Three enterprise systems — BMC TrueSight, the CMDB, and AppDynamics — each used independent naming conventions for the same endpoints. A server might have a short hostname in TrueSight, a fully qualified domain name in the CMDB, and a different separator character in AppDynamics. Getting reliable join coverage across 65,000 endpoints required extensive data investigation: cataloging the naming patterns in each source, building normalization rules to produce a canonical key, and iterating until join coverage was high enough that the enrichment gaps weren't distorting the reports. Poor join coverage meant some endpoints in the final reports had no owner or department assigned — which defeats the purpose of the enrichment step, because an unaddressed near-capacity warning helps no one.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">What was the business impact beyond the time reduction?</div>
+    <div class="qa-a">The time reduction from ten days to two hours was the visible impact. The less visible but equally important impacts were quality consistency and team capacity. On quality: the manual process applied factors inconsistently, missed enrichment data for some regions on some months, and depended on analyst judgment calls made under time pressure on day nine. The pipeline applied identical logic to every one of the 65,000 endpoints, every month — deterministically. That consistency made the reports more trustworthy, which made the enterprise teams more willing to act on near-capacity warnings rather than treating them as advisory. On team capacity: the days previously spent producing data became available for the analysis and consultation work that was the actual value the team delivered. The pipeline didn't replace the capacity planning expertise — it removed the manual data work that was blocking the expertise from being applied.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">You mentioned near-capacity warnings sometimes led to bug fixes rather than hardware. Can you explain that?</div>
+    <div class="qa-a">Capacity problems often have software root causes that look like infrastructure problems in the telemetry. A memory utilization trending steadily upward month over month might be a memory leak in the application — not a workload that genuinely requires more RAM, but a bug that's slowly consuming available memory until the system fails. A disk utilization climbing toward the ceiling might be unrotated logs, uncleaned temporary files, or a batch process writing data it never cleans up. If the near-capacity warning arrives when the system is already at 88% and the team orders more disk, they've fixed the symptom for a few months. If the warning arrives at 70%, there's time to investigate whether the root cause is a software issue that can be fixed permanently. The lead time the pipeline created — by flagging systems conservatively, before they hit the ceiling — was what made the difference between reactive hardware remediation and proactive root cause resolution.</div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Cheat Sheet -->
+  <h2 id="cheat">Quick Reference</h2>
+  <div class="cheat">
+    <div class="cheat-row"><span class="ct">Company</span><span class="cd">Citigroup — Capacity and Planning team</span></div>
+    <div class="cheat-row"><span class="ct">Scale</span><span class="cd">65,000–70,000 endpoints worldwide · 4 global regions · Dozens of departments</span></div>
+    <div class="cheat-row"><span class="ct">System types</span><span class="cd">Physical · Virtual · Databases · Containers</span></div>
+    <div class="cheat-row"><span class="ct">4 KPIs</span><span class="cd">CPU · Memory · Disk · Network (all measured at P95)</span></div>
+    <div class="cheat-row"><span class="ct">Primary source</span><span class="cd">BMC TrueSight — P95 time-series telemetry for all monitored endpoints</span></div>
+    <div class="cheat-row"><span class="ct">CMDB</span><span class="cd">Change Management Database (SQL Server) — asset inventory, owner, region, department, tier</span></div>
+    <div class="cheat-row"><span class="ct">AppDynamics</span><span class="cd">Supplementary server metadata — ownership, location, application context</span></div>
+    <div class="cheat-row"><span class="ct">Safety factor</span><span class="cd">×1.15 applied to raw P95 — accounts for ~85% measurement confidence</span></div>
+    <div class="cheat-row"><span class="ct">Ceiling threshold</span><span class="cd">90% — operational maximum; adjusted utilization above = near capacity</span></div>
+    <div class="cheat-row"><span class="ct">Output: savings</span><span class="cd">Under-utilized endpoints → downsize, consolidate, promote to virtual/cloud</span></div>
+    <div class="cheat-row"><span class="ct">Output: risk</span><span class="cd">Near-capacity endpoints → proactive notification to owning teams with lead time</span></div>
+    <div class="cheat-row"><span class="ct">Tech stack</span><span class="cd">Python · Pandas · NumPy · SQLite · Streamlit · SQL Server (CMDB reads)</span></div>
+    <div class="cheat-row"><span class="ct">SQLite design</span><span class="cd">Monthly databases (per-period detail) + master database (multi-month progression)</span></div>
+    <div class="cheat-row"><span class="ct">Streamlit</span><span class="cd">Internal team dashboard — browse, filter, drill down, month-over-month trends</span></div>
+    <div class="cheat-row"><span class="ct">Manual process</span><span class="cd">5–10 business days every month — Excel, manual enrichment joins, human calculation</span></div>
+    <div class="cheat-row"><span class="ct">Pipeline result</span><span class="cd">1–2 hours — same deliverables, deterministic logic, applied to all 65K+ endpoints</span></div>
+    <div class="cheat-row"><span class="ct">Key challenge</span><span class="cd">Cross-system identifier normalization — 3 sources, independent naming conventions</span></div>
+    <div class="cheat-row"><span class="ct">Core lesson</span><span class="cd">Enrichment joins are what turn telemetry into actionable reports — the unglamorous work that matters most</span></div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+</div>
+</body>
+</html>
