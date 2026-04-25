@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Master — Sean Girgis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+    --green:   #27ae60;
+    --green-bg:#eafaf1;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.75; font-size: 16px; }
+.doc { max-width: 860px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 18px 60px; } }
+h1 { color: var(--primary); font-size: 2em; margin: 0 0 8px; line-height: 1.2; }
+.subtitle { color: var(--muted); font-size: 0.88em; margin: 0 0 32px; }
+.toc { background: #f7f9fc; border: 1px solid var(--line); border-radius: 6px; padding: 22px 28px; margin-bottom: 44px; }
+.toc h2 { margin: 0 0 12px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 28px; }
+.toc li { margin-bottom: 5px; break-inside: avoid; }
+.toc a { color: var(--primary); text-decoration: none; font-size: 0.9em; }
+.doc h2 { color: var(--primary); font-size: 1.2em; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+.doc h3 { color: #333; font-size: 1em; margin: 30px 0 10px; font-weight: 700; }
+.back-top { display: block; text-align: right; font-size: 0.8em; color: var(--muted); text-decoration: none; margin-top: 28px; padding-top: 10px; border-top: 1px solid var(--line); }
+.hi  { background: var(--hi-bg);   border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 5px 5px 0; margin: 14px 0; font-size: 0.94em; }
+.win { background: var(--green-bg); border-left: 4px solid var(--green);   padding: 12px 16px; border-radius: 0 5px 5px 0; margin: 14px 0; font-size: 0.94em; }
+.warn { background: var(--warn-bg); border-left: 4px solid var(--accent);  padding: 12px 16px; border-radius: 0 5px 5px 0; margin: 14px 0; font-size: 0.94em; }
+
+/* Q&A block */
+.qa { margin-bottom: 28px; border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+.qa:last-of-type { border-bottom: none; }
+.qa-q { font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.97em; padding: 10px 14px; background: var(--hi-bg); border-radius: 5px; }
+.qa-a { padding: 4px 0 0 4px; color: #333; line-height: 1.8; }
+
+/* STAR labels */
+.star { display: inline-block; font-size: 0.72em; font-weight: 700; padding: 1px 7px; border-radius: 10px; margin-right: 6px; vertical-align: middle; letter-spacing: 0.04em; }
+.st-s { background: #eee;         color: #555; }
+.st-t { background: #e8f4fd;      color: var(--primary); }
+.st-a { background: #e8f4fd;      color: var(--primary); }
+.st-r { background: #fff3e8;      color: var(--accent); }
+
+/* Pitch box */
+.pitch-box { border: 2px solid var(--primary); border-radius: 8px; padding: 20px 24px; margin: 18px 0; background: #f7fbff; }
+.pitch-label { font-size: 0.75em; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.pitch-text { font-size: 0.97em; line-height: 1.85; color: #222; }
+
+/* Skills grid for quick ref */
+.skill-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+@media(max-width:600px){ .skill-grid { grid-template-columns: 1fr 1fr; } }
+.skill-pill { background: var(--hi-bg); color: var(--primary); padding: 5px 10px; border-radius: 20px; font-size: 0.82em; font-weight: 600; text-align: center; }
+
+/* Questions to ask */
+.ask-q { padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 0.95em; }
+.ask-q:last-child { border-bottom: none; }
+.ask-num { font-weight: 700; color: var(--accent); margin-right: 8px; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<h1>&#128274; Interview Master — Sean Girgis</h1>
+<p class="subtitle">Private prep page &middot; Not linked from navigation &middot; Direct URL only &middot; Updated 2026-04-25</p>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#pitch">The Elevator Pitch</a></li>
+    <li><a href="#story">Full Career Story</a></li>
+    <li><a href="#why">Why Now &amp; What I'm Looking For</a></li>
+    <li><a href="#b-impact">Behavioral: Impact &amp; Automation</a></li>
+    <li><a href="#b-lead">Behavioral: Leadership &amp; Influence</a></li>
+    <li><a href="#b-growth">Behavioral: Challenge &amp; Growth</a></li>
+    <li><a href="#t-pipeline">Technical: Pipeline Design</a></li>
+    <li><a href="#t-aws">Technical: AWS Architecture</a></li>
+    <li><a href="#t-spark">Technical: PySpark &amp; Scale</a></li>
+    <li><a href="#t-ml">Technical: ML &amp; Forecasting</a></li>
+    <li><a href="#t-ai">Technical: AI / LLM / Agentic</a></li>
+    <li><a href="#projects">Project Deep-Dives (all 4)</a></li>
+    <li><a href="#career">Career &amp; Motivation</a></li>
+    <li><a href="#self">Strengths &amp; Self-Awareness</a></li>
+    <li><a href="#ask">Questions I Ask Back</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="pitch">&#127908; The Elevator Pitch</h2>
+
+<div class="pitch-box">
+  <div class="pitch-label">30 Seconds — Opening / Phone Screen</div>
+  <div class="pitch-text">
+    I'm Sean Girgis — a Senior Data Engineer with 20-plus years of enterprise experience. Most recently I spent eight years at Citigroup building production-grade data pipelines: ETL at scale, ML-driven capacity forecasting, and a hybrid AWS and Oracle data platform. I'm based in the Dallas–Fort Worth area, I'm a U.S. citizen with no sponsorship requirement, and I'm looking for a senior data engineering or cloud data platform role where I can bring the full stack — Python, PySpark, AWS, and the AI/ML capabilities I've been building alongside my core engineering work.
+  </div>
+</div>
+
+<div class="pitch-box">
+  <div class="pitch-label">2 Minutes — First Round / Hiring Manager</div>
+  <div class="pitch-text">
+    I started in software development in 1999 — C++, multithreaded systems, Oracle databases — and my career evolved from low-level systems work toward data engineering and infrastructure intelligence. The anchor of my recent experience is eight years at Citigroup, where I held a senior capacity and data engineering role. I built Python and PySpark ETL pipelines ingesting P95 telemetry from thousands of endpoints through BMC TrueSight. I designed an ML forecasting layer — Prophet and scikit-learn — that predicted capacity bottlenecks six months ahead. And I built a hybrid AWS and Oracle data platform: S3 as the raw data landing zone, Glue for ETL, Redshift for ML workloads, and ECS for containerized pipeline jobs. I also built the analytics layer on top — Streamlit and Plotly dashboards used by senior stakeholders for infrastructure decisions.
+    <br><br>
+    In parallel, I've been building what I think of as my own practice projects — a time-series ML forecasting engine I call HorizonScale that runs 8,000-plus series through a model tournament on Spark, and more recently an AI-powered job search pipeline that uses Grok, RAG, and FAISS to automate the entire application workflow. Both are public on GitHub.
+    <br><br>
+    What I'm looking for now is a role where data engineering is the primary function — not a support function inside an infrastructure team — where I can work on modern lakehouse or cloud-native architecture and where there's room to bring in AI and ML capabilities, not as a separate team but as part of the data engineering craft. I'm actively studying Databricks and dbt to close the remaining gaps, and I'm ready to contribute from day one on Python, PySpark, and AWS.
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="story">&#128218; Full Career Story</h2>
+
+<div class="qa">
+  <div class="qa-q">Tell me about yourself — walk me through your background.</div>
+  <div class="qa-a">
+    <p>I'll take you through the arc rather than just the job titles, because the thread running through all of it is the same: making complex systems visible, measurable, and improvable through data.</p>
+    <p>I started in software development — C++, Oracle, multithreaded systems. Six years at Corpus Inc. supporting Sprint's billing infrastructure. That's where I learned to care about performance: we were processing telecom billing at a scale comparable to VISA's transaction volume, and a 10% throughput improvement wasn't an academic exercise, it was the difference between batch jobs completing on time or not. After that I spent time at Sabre — migration of a high-throughput shopping engine from 200-plus MySQL nodes to a 6-node Oracle RAC cluster, reducing the hardware footprint by 95% while maintaining sub-second query latency.</p>
+    <p>From there my career shifted toward application performance monitoring and data. Five years at CA Technologies as an SME for CA APM at TIAA-CREF, managing 50-plus Enterprise Managers and 4,000-to-6,000 instrumented agents. That's where I moved from building systems to building intelligence about systems — performance dashboards, Perl scripts for automated reporting, SLA thresholds and alerting. Then G6 Hospitality — a performance engineering role where I built the data extraction pipeline from Dynatrace AppMon, segmented performance by geography and device, and produced the analytics that drove frontend optimization recommendations for brand.com.</p>
+    <p>Then eight years at Citigroup — that's the core of my recent story. I joined as a capacity and data engineer. I built Python and Pandas ETL pipelines ingesting P95 telemetry from thousands of endpoints. I designed an ML forecasting layer that predicted infrastructure capacity bottlenecks six months ahead using Prophet and scikit-learn. I built the hybrid AWS and Oracle platform — S3 landing zone, Glue ETL, Redshift for ML workloads, ECS for containerized pipeline jobs. And I built the analytics and reporting layer on top. I left Citigroup at the end of 2025 after eight years, with everything I set out to build there delivered.</p>
+    <p>Right now I'm looking for the next chapter — a dedicated data engineering or cloud data platform role where I can work with modern tooling and apply the full stack I've built up.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="why">&#127919; Why Now &amp; What I'm Looking For</h2>
+
+<div class="qa">
+  <div class="qa-q">Why did you leave Citi? Why are you looking now?</div>
+  <div class="qa-a">
+    <p>Eight years is a long run, and I'm proud of what I built there. The honest answer is that the role had reached its natural ceiling within the capacity planning function. I'd built the ETL pipeline, the ML forecasting layer, the AWS migration, the dashboards — and the team's mandate didn't have room to go further into the modern data stack. There wasn't a path to work with Databricks, or dbt, or event-driven architectures, or the kind of lakehouse design I want to be doing in the next phase of my career.</p>
+    <p>I left on my own terms at the end of 2025 and immediately started building: HorizonScale to deepen my ML and PySpark work, the AI job search pipeline to get hands-on with LLM APIs and agentic patterns, and self-study on Databricks, Delta Lake, and dbt. I'm looking for a role where data engineering is a first-class function — not a support function embedded in an infrastructure team — and where I can contribute from day one on Python, PySpark, and AWS while building toward the modern lakehouse stack.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">What are you looking for in your next role?</div>
+  <div class="qa-a">
+    <p>Three things. First, engineering craft — I want to be on a team where the pipeline design, data modeling, and platform architecture are taken seriously. Not just "move data from A to B" but the full discipline: quality gates, idempotency, data contracts, observability. Second, modern tooling — cloud-native architecture, Spark or Databricks, dbt, event streaming. I've done the legacy migration work; I want to work on the destination, not the migration. Third, AI and data together — I'm genuinely excited about the intersection of data engineering and AI. Whether that's building inference pipelines, integrating LLM capabilities into data products, or working on the data infrastructure that AI systems run on. I want to be where those two fields are converging, not where they're still treated as separate domains.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">What's your ideal company size / type?</div>
+  <div class="qa-a">
+    <p>I've spent most of my career in large enterprises — Sprint, Sabre, TIAA-CREF, Citi — so I understand how to operate in regulated, high-stakes environments where reliability and compliance matter. I'm genuinely open to that context again if the engineering ambition is there. But I'm also attracted to mid-size companies — Series B to Series D, or established companies with a strong engineering culture — where data engineering is closer to the core product and the feedback loop between what I build and business impact is shorter. What matters more than size is whether the team takes data engineering seriously as a discipline.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="b-impact">&#9889; Behavioral: Impact &amp; Automation</h2>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a time you turned a slow manual process into an automated system.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> At Citi, the monthly capacity planning report was produced entirely manually in Excel. The team would extract P95 telemetry from BMC TrueSight across 65,000-plus endpoints worldwide, manually divide it by region and system type, enrich it by hand with data from our Change Management Database and AppDynamics, apply safety and ceiling factors using spreadsheet formulas, and then sort and publish reports to enterprise teams. That process took five to ten business days every single month.</p>
+    <p><span class="star st-t">T</span> When I joined the team I identified this as both the highest-friction problem and the highest-leverage opportunity. My goal was to replace the entire manual workflow with a pipeline that produced the same deliverables — same format, same structure — but automatically and reliably.</p>
+    <p><span class="star st-a">A</span> I built a Python ETL pipeline end to end. The extraction queried Oracle databases directly via SQLAlchemy and cx_Oracle — no manual exports. I used Pandas for the transformation work and NumPy for the vectorized safety and ceiling calculations across 65,000-plus rows. SQLAlchemy plus pyodbc handled the SQL Server CMDB joins. The enrichment logic resolved identifier mismatches across three source systems with different naming conventions — that was the hardest part, getting the join keys to work reliably at scale. The output loaded into a dual SQLite architecture: monthly databases for per-period detail and a master database for multi-month progression tracking. openpyxl generated the Excel workbooks automatically. Streamlit provided an internal dashboard for the team. The whole thing was version-controlled in GitLab with merge requests required for any logic changes.</p>
+    <p><span class="star st-r">R</span> The reports that previously took five to ten days were produced in the first or second hour after the monthly data was available. Same deliverables, same format, but generated deterministically and consistently across all 65,000-plus endpoints. The secondary impact was quality — the manual process introduced drift and inconsistency across a ten-day run; the pipeline applied identical logic to every row every month. The team went from spending most of the month producing data to spending the month actually doing capacity planning work.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a project you built from scratch that had real business impact.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> The capacity forecasting ML system at Citi. The team had good historical data but no way to look forward — all the analysis was backward-looking. "Here's what happened last month." Teams only found out their infrastructure was approaching capacity when it was already close to the limit, leaving very little time to respond — and at a bank, capacity failures have regulatory implications.</p>
+    <p><span class="star st-t">T</span> I set out to build a forecasting system that predicted infrastructure capacity six months ahead with enough reliability to actually drive procurement and architecture decisions.</p>
+    <p><span class="star st-a">A</span> I built the ML layer in Python using Prophet for the primary model — using logistic growth mode to constrain forecasts between zero and 100% utilization, which is critical because a linear model will forecast 110% CPU which is meaningless. I added scikit-learn models for ensemble validation. Applied safety factors and ceiling thresholds to produce conservative adjusted utilization numbers. Built the output into the Streamlit dashboard so teams could see their systems' projected trajectory months ahead. Then migrated the ML workloads from on-premises Oracle to Redshift to enable parallel forecasting at cloud scale.</p>
+    <p><span class="star st-r">R</span> The system achieved 90-plus percent forecast accuracy over the six-month window. Teams received proactive capacity warnings weeks to months before systems approached the ceiling — enough time to investigate root causes, plan procurement, or fix software issues rather than reactively adding hardware. In one important case, a memory utilization trend that looked like a capacity problem turned out to be a memory leak — the early warning created the time and context to fix it properly rather than just provisioning more RAM.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Give me an example of a time you identified a cost-saving opportunity through data.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> In the capacity planning work at Citi, the same pipeline that identified near-capacity systems also surfaced the opposite: systems with consistently low adjusted utilization that were over-provisioned relative to their actual workloads.</p>
+    <p><span class="star st-a">A</span> The risk report generated two ranked lists — one for systems approaching the capacity ceiling, and one for the most under-utilized systems in the fleet. Each under-utilized entry had the owner, department, region, and system type attached — the enrichment joins made every row actionable. The recommendations ranged from downsizing VM resource allocation, to consolidating workloads from multiple physical hosts onto fewer, to promoting from physical on-premises to virtual or cloud where the workload profile supported it.</p>
+    <p><span class="star st-r">R</span> The capacity team published these findings to the owning teams across the enterprise. Hardware consolidation decisions followed from the data. In a bank running tens of thousands of physical and virtual servers, over-provisioned infrastructure adds up to significant recurring cost. The data-driven evidence — ranked, with owner attribution — was what made the conversations actionable. Without it, teams would push back on anecdotal suggestions to reduce their allocations. With a ranked list showing specific systems at 12% average adjusted utilization over twelve months, the case was hard to argue with.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="b-lead">&#127775; Behavioral: Leadership &amp; Influence</h2>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a time you influenced a technical decision without having direct authority.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> At Citi, the capacity planning team had always operated on a manual Excel-based workflow. When I joined, there was no mandate to change it — it worked, it was familiar, and people had processes built around it. I didn't have authority to mandate a pipeline; I had to build the case.</p>
+    <p><span class="star st-a">A</span> I started by building the pipeline as a proof of concept, running it in parallel with the manual process for one monthly cycle. I presented the comparison side by side: the manual output took nine days; the pipeline output took two hours. More importantly, I ran a diff between the two outputs and showed where they diverged — places where the manual process had applied factors inconsistently or missed enrichment data for some endpoints. The quality argument was as strong as the speed argument. I made the case in terms of what the team cared about: reliability of the reports they were putting in front of senior stakeholders.</p>
+    <p><span class="star st-r">R</span> The pipeline replaced the manual process. More importantly, the approach established a pattern for how the team thought about data work — building repeatable, validated pipelines rather than repeatable manual workflows. That mental shift opened the door for the ML forecasting work that came after.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a time you had to explain a complex technical concept to a non-technical audience.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> The ML capacity forecasting system produced outputs that senior infrastructure stakeholders needed to act on — but explaining "the Prophet model with logistic growth and a 1.15 safety factor predicts your system will reach 90% adjusted utilization in 11 weeks" doesn't land with a VP who manages a budget, not a model.</p>
+    <p><span class="star st-a">A</span> I built the Streamlit dashboard deliberately around the business question rather than the model output. The dashboard didn't show "yhat_upper" — it showed a chart of the system's utilization trend over the past two years with a shaded forward window and a clear red line at the 90% ceiling. The language on the risk report wasn't model terminology — it was "this system needs attention before the end of Q2" with the owner's name, the region, and a color-coded priority flag. For the under-utilization findings, the output was a savings recommendation in plain English, not a statistical summary.</p>
+    <p><span class="star st-r">R</span> Stakeholders engaged with the forecasts and acted on the recommendations — which was the only real measure of success. A technically perfect model that nobody acts on has no business value. The geographic performance maps I built at G6 Hospitality had the same design philosophy: turn P95 response time data into a map that a VP can look at and immediately understand which regions need attention.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a time you mentored or helped a colleague grow technically.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> At CA Technologies, I was the SME for CA APM at TIAA-CREF. Part of that role was training — both the client's internal IT team and junior CA consultants who were learning the platform.</p>
+    <p><span class="star st-a">A</span> Rather than delivering knowledge as lectures, I structured learning around real problems in the client environment. When I built custom management modules — dashboards, alert thresholds, SLA monitoring — I walked team members through why each design choice was made, not just what the configuration was. I documented the patterns in a way that was reusable across environments, and those documentation templates were adopted as standards by both the CA team and the client's internal team.</p>
+    <p><span class="star st-r">R</span> The training programs I delivered were adopted by CA internally for other client engagements. The client team became capable of extending and maintaining the APM configuration independently rather than remaining dependent on external consultants. That's the right measure of successful knowledge transfer — when you've worked yourself out of being the only person who knows how something works.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="b-growth">&#127945; Behavioral: Challenge &amp; Growth</h2>
+
+<div class="qa">
+  <div class="qa-q">Tell me about the hardest technical problem you've ever solved.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> At Sabre, I was the lead on migrating a high-throughput shopping engine from 200-plus MySQL nodes to a 6-node Oracle RAC cluster. This system handled a transaction volume comparable to VISA. The constraint was zero tolerance for data loss and sub-second query latency maintained throughout the phased cutover.</p>
+    <p><span class="star st-a">A</span> The core engineering problem was: how do you validate that 200-plus MySQL nodes' worth of data arrived intact in a 6-node Oracle RAC cluster when the transaction volumes are in the billions? I built a CPPUNIT testing framework in C++ with OCCI/OCI that ran automated validation across millions of transaction records, comparing source and target at multiple granularities — row counts, hash-based checksums on key fields, spot-check queries on high-value transactions. Schema conversion had to be automated — manually converting MySQL schemas to Oracle at that scale isn't tractable. The C++ transaction processing code had to be optimized for the Oracle environment: OCCI query patterns, connection pooling, batch commit sizing. We reduced the physical hardware footprint by 95% while maintaining the latency requirements throughout.</p>
+    <p><span class="star st-r">R</span> The migration completed successfully — no data loss, no SLA breach during cutover. The 95% hardware footprint reduction was the headline outcome. The deeper lesson was that at that scale, you can't test migration correctness manually. You need automated validation that runs at machine speed across the full dataset. That thinking shows up in everything I've built since: quality gates, validation pipelines, automated correctness checks before marking a process complete.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a failure and what you learned from it.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> Early in my data engineering work at Citi, I built a reporting pipeline that was producing outputs quickly — I was proud of the speed improvement. What I hadn't built was a robust validation layer. The pipeline completed successfully but silently produced incorrect output in one case — the enrichment join had failed for a subset of records in a way that didn't raise an error, and the reports went out with those records showing as unowned rather than flagged for investigation.</p>
+    <p><span class="star st-a">A</span> When the gap was discovered, I investigated the root cause — an edge case in the hostname normalization logic that wasn't covered by my test data. I rebuilt the validation layer completely: explicit row count checks at each stage, enrichment coverage rate tracking, a flag for any records with no join match rather than silently including them with nulls, and an exit criteria check that the pipeline had to pass before marking the run complete. I also added structured logging that recorded coverage rates per run, so any degradation in enrichment quality would be visible over time.</p>
+    <p><span class="star st-r">R</span> The validation layer caught several subsequent edge cases before they reached the output. More importantly, it changed my design philosophy: a pipeline that completes without errors but produces wrong output is more dangerous than one that fails loudly. Silent success is not success. I apply that principle to every pipeline I build now — quality gates, not just completion gates.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a time you had to learn a new technology quickly under pressure.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> When Citi started the AWS migration of the ML forecasting workloads, I had to get productive on AWS Glue and PySpark quickly — the infrastructure team was moving on a timeline and the data engineering layer had to be ready.</p>
+    <p><span class="star st-a">A</span> My approach was to map what I already knew onto the new environment rather than treating it as starting from zero. I understood Python, Pandas, and ETL patterns deeply. PySpark is a distributed execution layer over the same conceptual model. Glue is managed Spark with an AWS-native job scheduler. The concepts transferred; I needed to learn the operational specifics — job configuration, worker sizing, the Python shell vs Spark job distinction, IAM roles for Glue. I built a small end-to-end Glue job quickly to validate my understanding, then extended it to the real workload. The PySpark Grouped Map UDF pattern for distributing Python ML models was the key new concept — I spent focused time understanding exactly why it works and when to use it before applying it to the Prophet forecasting jobs.</p>
+    <p><span class="star st-r">R</span> The AWS migration delivered on schedule. The Glue-based forecasting pipeline ran the full fleet in a fraction of the time the on-premises Oracle approach did. The broader lesson: when learning under pressure, map first — understand what transfers from what you know, then fill in the specific gaps. That's faster than treating everything as new.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Tell me about a time you disagreed with a technical approach and how you handled it.</div>
+  <div class="qa-a">
+    <p><span class="star st-s">S</span> At one point during the Citi platform work, there was a proposal to continue storing all the capacity analysis outputs in a monolithic Excel-based system even after the pipeline was built — the idea was that the existing stakeholder reports were familiar and the Excel output was good enough for the enterprise audience.</p>
+    <p><span class="star st-a">A</span> I agreed that the Excel output format should stay — that was the right call for the enterprise audience. But I disagreed that Excel files should be the persistence layer for historical data that we needed to query and trend. My argument was specific: cross-job queries and month-over-month trend analysis require either scanning every file or maintaining a separate database. I proposed the dual SQLite architecture — monthly databases for per-period detail, master database for longitudinal querying — as a solution that kept the Excel output for stakeholders while giving the team a proper query interface for their internal analysis. I presented the trade-offs explicitly: SQLite was zero infrastructure overhead, already familiar to anyone with SQL knowledge, and could be running the same day.</p>
+    <p><span class="star st-r">R</span> The dual database architecture was adopted. The Streamlit dashboard queried directly from SQLite, enabling the month-over-month trend analysis the team needed for their planning conversations. The Excel outputs for enterprise distribution continued unchanged. Both audiences got what they needed.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="t-pipeline">&#9881; Technical: Data Pipeline Design</h2>
+
+<div class="qa">
+  <div class="qa-q">How do you approach designing a data pipeline from scratch?</div>
+  <div class="qa-a">
+    <p>I start with the output — what decision or product does this pipeline serve, and what does the consumer actually need? That drives everything backward: what's the schema at the end, what transformations produce it, what data sources provide the inputs, what's the acceptable latency for the use case (batch vs streaming), and what does failure look like in each stage.</p>
+    <p>Then I think about the data contract between stages. Each stage has an input schema and an output schema. I define those contracts explicitly — even if it's just a documented YAML or a Pydantic model — before writing any transformation logic. This makes the pipeline modular: each stage can be tested, replaced, or rerun independently without breaking the others.</p>
+    <p>Quality gates are non-negotiable. Every stage has entrance criteria (validate input before processing) and exit criteria (validate output before passing downstream). Silent success — completing without errors but producing wrong output — is the worst failure mode because it propagates quietly. A loud failure at stage 3 is far better than wrong data arriving at stage 10.</p>
+    <p>Finally, idempotency: every stage should be safe to rerun. If I drop and recreate a table or overwrite a Parquet file, I get the same result every time from the same input. This makes debugging practical — I can rerun any stage from the last known-good checkpoint without worrying about duplicates or state corruption.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How do you handle data quality in production pipelines?</div>
+  <div class="qa-a">
+    <p>In layers. The first layer is structural validation at ingestion — does the data have the expected schema, the required columns, row counts above the minimum threshold, and non-null join keys? If any of these fail, the pipeline halts and logs a descriptive error. Don't process corrupt input; surface the problem immediately.</p>
+    <p>The second layer is semantic validation after transformation — does the output make sense? For capacity data: are utilization values between 0 and 100? Are there no negative response times? Are join coverage rates above the expected floor? I track coverage rates over time because degrading coverage is itself a signal — it means reference data is going stale or a source system changed its format.</p>
+    <p>The third layer is trend monitoring — automated checks on whether today's output is consistent with historical patterns. A sudden 50% drop in row count after an extraction is a signal worth investigating even if the structural checks pass. I've seen cases where a source system silently stopped writing certain record types and the pipeline processed successfully with half the data it should have had.</p>
+    <p>The key principle is: fail loudly and early. The cost of a delayed pipeline run is far lower than the cost of wrong data reaching downstream consumers who act on it.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Batch vs streaming — how do you choose?</div>
+  <div class="qa-a">
+    <p>Start with the business latency requirement. If decisions need to be made on data that's seconds old — fraud detection, real-time pricing, operational alerting — streaming is required. If the decision horizon is hours or days — monthly capacity reports, daily business analytics, weekly ML model refresh — batch is simpler, cheaper, and more reliable.</p>
+    <p>Most of my production work has been batch. The Citi capacity pipeline was monthly. HorizonScale is a monthly forecast cycle. The G6 performance analysis was weekly. In all of those cases, streaming would have added significant infrastructure and operational complexity with no business benefit — the analysis wasn't consumed in real time.</p>
+    <p>Where I'd choose streaming: anything where the data's value decays in minutes, where downstream systems need to react immediately, or where the data volume makes periodic large batch loads impractical. For most analytics and reporting use cases, well-designed micro-batch or scheduled batch with tight SLAs covers the need without the streaming overhead.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">What does idempotency mean in a data pipeline and why does it matter?</div>
+  <div class="qa-a">
+    <p>An idempotent pipeline stage produces the same output every time it's run against the same input, regardless of how many times it's been run. In practice: if I run stage 4 twice on the same input data, I don't get duplicate records, corrupted state, or a different result. I get exactly the same output both times.</p>
+    <p>Why it matters: pipelines fail. Source data arrives late and needs to be reprocessed. A bug gets fixed and historical data needs to be rerun. A deployment breaks a stage and needs to be rolled back and rerun. In all of these cases, being able to rerun a stage or an entire pipeline without manual cleanup — without worrying about "did this already run partially?" — is the difference between a manageable recovery and a data archaeology project.</p>
+    <p>How I implement it: for database tables, drop-and-recreate rather than appending (unless the design explicitly requires append-only with deduplication). For master/history tables, use upsert logic on a natural key — insert if not exists, update if exists. For Parquet outputs, overwrite. Never append to an output that might already contain the same data. If you need to preserve history, design that explicitly with time-partitioned storage.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How do you think about data modeling — when do you use star schema vs something else?</div>
+  <div class="qa-a">
+    <p>Star schema is my default for analytical workloads where the query pattern is "give me a measure filtered and grouped by multiple dimensions." Fact table with foreign keys to dimension tables. Queries are simple, optimizer-friendly, and easy to explain to stakeholders who need to understand the data model. That's what I used for the capacity planning analytics at Citi — utilization metrics as the fact, server metadata and time as dimensions.</p>
+    <p>I use a flattened wide table (a single denormalized analytics base table, or ABT) when the query patterns are dominated by a single analytical workflow and join performance is more important than flexibility. For the HorizonScale forecast outputs, the downstream Streamlit dashboard and risk reports always need host metadata joined to forecast data — denormalizing into a single table eliminates runtime joins and simplifies the query layer.</p>
+    <p>For operational data stores where writes are frequent and data integrity is critical, normalized relational design. For event logs and time-series data, columnar Parquet with time partitioning — star schema joins become expensive at millions of rows; column pruning and partition pushdown on Parquet are the right tools.</p>
+    <p>The modeling choice should follow the access pattern, not the other way around.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="t-aws">&#9729; Technical: AWS Architecture</h2>
+
+<div class="qa">
+  <div class="qa-q">Walk me through how you'd design an AWS data lake for a large enterprise.</div>
+  <div class="qa-a">
+    <p>Start with S3 as the storage foundation — it's cheap, durable, and decoupled from compute. Structure the bucket with a medallion-style or equivalent layered prefix: raw or bronze layer for data exactly as it arrived from the source (never transform in place); silver layer for cleaned, validated, and enriched data in Parquet with Snappy compression; gold layer for business-ready aggregates and analytical views. Keep the layers separate so any layer can be reprocessed from the layer above it without touching source data.</p>
+    <p>AWS Glue Data Catalog as the metastore — register all table schemas, partition information, and data lineage. This makes the data discoverable to Athena for ad-hoc queries without loading anything into a warehouse. For ETL jobs, Glue PySpark jobs for heavy transformation; Glue Python Shell for lightweight orchestration and data quality checks. Step Functions or Airflow (via MWAA) for orchestration with dependency management.</p>
+    <p>For serving: Athena for ad-hoc SQL over S3 — serverless, no cluster management, pay per query. Redshift for workloads that need consistent sub-second response — executive dashboards, ML feature stores. IAM roles with least-privilege at every layer: Glue jobs get only the S3 prefixes they need; Athena workgroups control query costs; no long-lived credentials anywhere.</p>
+    <p>The keys at scale: partition strategy (Parquet partitioned by date or region eliminates full-table scans), small file consolidation (OPTIMIZE or periodic compaction jobs to prevent the small-file performance problem), and data catalog governance so teams can discover what exists without having to ask someone.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">When would you use Glue vs EMR vs Lambda for a data processing job?</div>
+  <div class="qa-a">
+    <p>Glue for managed ETL where I don't want to manage cluster lifecycle — it's the right default for Spark workloads that run on a schedule and don't need persistent cluster configuration. Glue abstracts away the Spark cluster; I write the job, configure worker count and type, and it handles the rest. I used Glue for the HorizonScale distributed Prophet forecasting: 10 G.2X workers, Glue 4.0, PySpark Grouped Map UDF. Works well for batch ETL jobs measured in minutes to hours.</p>
+    <p>EMR when I need more control — specific Spark version, custom libraries, long-running clusters, spot instance fleets for cost optimization, or workloads that Glue's managed environment can't accommodate. For massive-scale jobs where tuning YARN memory settings, executor configuration, and cluster topology matters, EMR gives that control at the cost of more operational responsibility.</p>
+    <p>Lambda for event-driven lightweight processing: S3 trigger on new file arrival, DynamoDB Streams processing, API Gateway integration. Lambda's constraints — 15-minute timeout, 10GB memory max, cold start latency — make it wrong for heavy ETL. But for "a file arrived, validate it and write a notification" or "an API call arrived, look up a value and return it," Lambda is the right tool. I'd use Lambda as the orchestration glue between services rather than as the processing engine for large data.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How does IAM work and why does it matter for data engineering?</div>
+  <div class="qa-a">
+    <p>IAM is the authorization layer for every AWS API call. Every action — reading from S3, running a Glue job, writing to Redshift — is evaluated against the attached policies of the calling principal. The default is deny; an explicit allow must exist in an applicable policy, and any explicit deny anywhere overrides all allows.</p>
+    <p>For data engineering it matters in three specific ways. First, least privilege for service roles: a Glue job should have S3 read access on the source prefix and S3 write access on the destination prefix, nothing else. Not S3 full access on the entire account. If a job gets compromised or misconfigured, the blast radius should be contained to exactly the data it legitimately touches. I auto-provision scoped IAM roles for every Glue job rather than reusing a single broad role.</p>
+    <p>Second, cross-account access: in enterprise environments, data commonly lives in one AWS account and consuming teams are in others. The trust relationship pattern — assume role with STS, scoped to the target account — is how you do this securely without sharing credentials. Third, audit trail: IAM events flow into CloudTrail, which means you have a complete log of who accessed what data when. In regulated environments like financial services, that audit trail is a compliance requirement, not a nice-to-have.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="t-spark">&#9889; Technical: PySpark &amp; Scale</h2>
+
+<div class="qa">
+  <div class="qa-q">How does Spark's execution model work? What's the difference between a transformation and an action?</div>
+  <div class="qa-a">
+    <p>Spark uses lazy evaluation. Transformations — map, filter, join, groupBy — build a logical execution plan (a DAG) but don't execute anything. Nothing actually runs until an action is called — collect, count, write, show. This lets Spark optimize the entire computation graph before executing: filter pushdown, predicate pushdown to Parquet readers, join reordering.</p>
+    <p>Wide transformations — joins, groupBy, distinct — require a shuffle: data moves across partitions and across nodes. Shuffles are expensive. Narrow transformations — map, filter, select — don't shuffle; each partition is processed independently. Performance tuning in Spark is largely about minimizing shuffles: broadcast joins for small tables (broadcast the small table to every worker, avoid the shuffle entirely), partition by the join key before joining large tables, avoid unnecessary wide transformations.</p>
+    <p>In the Citi context: the Grouped Map UDF pattern is deliberately narrow — each partition (one host-resource pair) is processed independently with no cross-partition communication. Zero shuffles in the forecasting stage. The only shuffle is the initial groupBy that creates the partitions, which happens once.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">You have 8,000+ time-series models to run. How do you parallelize that in Spark?</div>
+  <div class="qa-a">
+    <p>The PySpark Grouped Map UDF pattern. This is the right approach when you have a Python ML function (like Prophet) that can't natively distribute across a Spark cluster but needs to run independently on each logical group in the data.</p>
+    <p>Structure: group the data by (host_id, resource), so each partition contains the complete time series for one host-resource pair. Define a Pandas UDF that receives a Pandas DataFrame for one partition, runs the complete model fit, generates the forecast, and returns the results. Spark automatically distributes partitions across the worker fleet. No cross-partition communication, no shared state, no coordination overhead — embarrassingly parallel. With 10 Glue G.2X workers processing 8,000-plus partitions, the throughput difference over sequential or local multiprocessing is dramatic.</p>
+    <p>Key operational detail: reduce Prophet's uncertainty_samples from 1,000 to 100 in the distributed version. The confidence interval accuracy degradation at fleet scale is negligible but the throughput gain is 10x. That single change is what makes the fleet-scale run tractable within a reasonable job window.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="t-ml">&#129302; Technical: ML &amp; Forecasting</h2>
+
+<div class="qa">
+  <div class="qa-q">How does Facebook Prophet work and when would you choose it over SARIMA?</div>
+  <div class="qa-a">
+    <p>Prophet is a decomposable model: it separates the time series into a trend component, seasonality components at multiple frequencies (daily, weekly, annual via Fourier series), and holiday effects. It fits these components independently via Stan's Bayesian inference, then combines them to produce the forecast. Because it's decomposable, it handles missing data gracefully, it's robust to outliers, and the components are interpretable — you can look at the trend and seasonality contributions separately.</p>
+    <p>I'd choose Prophet when: the series has strong multi-frequency seasonality (weekly business cycles plus annual cycles), when you need to incorporate known future events (holidays, planned maintenance windows), when you need well-calibrated uncertainty intervals for decision-making, or when you're running a model tournament across heterogeneous series and want a robust default that handles many patterns reasonably well.</p>
+    <p>SARIMA is better when: the series has a single dominant seasonal period, the data is regular with no missing values, and you want a classical statistical model whose behavior is well-understood and auditable. SARIMA with seasonal order (1,1,1,7) is very precise on a server with a clean weekly business cycle and low noise — it'll often beat Prophet on MAPE on those specific series. The model tournament selects between them per series, which is exactly the right approach.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">What's the champion-challenger framework and why use it for forecasting?</div>
+  <div class="qa-a">
+    <p>The champion-challenger framework evaluates multiple models on a held-out backtest window and selects the best-performing one as the champion for deployment. In the HorizonScale context: I use the first 32 months of data for training, hold out the most recent 4 months as a backtest window that no model sees during training, and then compare Prophet, SARIMA, and XGBoost on MAPE — mean absolute percentage error — against those real held-out values. The model with the lowest MAPE wins for that specific host-resource pair.</p>
+    <p>Why use it rather than picking a single model for the whole fleet: no single model fits all behavioral patterns equally well. Prophet wins on seasonal series. SARIMA wins on clean weekly-cycle series with low noise. XGBoost wins on trend-dominated series. Using a single global model means accepting poor forecast quality on the series where it doesn't fit — and those are often the CAPACITY_BREACH scenarios where accuracy matters most. The tournament adds engineering complexity but produces a risk report that is genuinely more trustworthy, which determines whether infrastructure teams act on it.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="t-ai">&#129504; Technical: AI / LLM / Agentic</h2>
+
+<div class="qa">
+  <div class="qa-q">What is RAG and how does it work in a production pipeline?</div>
+  <div class="qa-a">
+    <p>RAG — Retrieval-Augmented Generation — grounds an LLM's response in retrieved documents rather than relying solely on the model's training knowledge. The pattern: embed a query and a document corpus using the same embedding model, retrieve the most semantically similar documents to the query, inject those documents into the prompt context, and ask the LLM to answer using that context. This lets you use a general-purpose LLM on proprietary or current data without fine-tuning.</p>
+    <p>In my job search pipeline, the RAG pattern drives the job scoring stage. The master career profile — a structured YAML with all skills, roles, and experience summaries — is the retrieval corpus. The incoming job description is the query. The pipeline retrieves the relevant profile sections, injects them alongside the job description into a structured prompt, and asks Grok to return a match score, skill gap analysis, and recommendation. The key design decision: the career profile is the hard boundary for what the LLM can say about experience. It can't invent accomplishments that aren't in the profile YAML. The retrieval grounds the generation.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How does FAISS work for semantic similarity and why use it locally?</div>
+  <div class="qa-a">
+    <p>FAISS — Facebook AI Similarity Search — is a library for efficient nearest-neighbor search in high-dimensional vector spaces. The workflow: embed documents using a sentence transformer model to produce fixed-dimension vectors. Store those vectors in a FAISS index. At query time, embed the query, search the index for the nearest vectors by cosine similarity, and return the top-k matches with their similarity scores.</p>
+    <p>In my job search pipeline, I use FAISS for the duplicate detection gate at stage zero. Every previously processed job description is embedded and stored in the index. When a new posting arrives, it's embedded and compared against all previous entries. If cosine similarity exceeds the threshold, the pipeline blocks — the job has likely been processed before under a different posting URL.</p>
+    <p>I run this locally with the all-MiniLM-L6-v2 model from sentence-transformers for three reasons: speed (milliseconds, no network call), cost (no API charge on every intake), and privacy (job descriptions contain detailed company and role information that doesn't need to leave the machine for an embedding operation). The index persists to disk and rebuilds in seconds when a new job is accepted.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="projects">&#128196; Project Deep-Dives</h2>
+
+<h3>AI-Powered Job Search Pipeline</h3>
+<div class="qa">
+  <div class="qa-q">Walk me through the job search pipeline you built.</div>
+  <div class="qa-a">
+    <p>It's a ten-stage sequential pipeline where the input is a raw job posting and the output is a production-ready application package — tailored resume, cover letter, company research — tracked in a structured system. Stage zero runs a FAISS semantic duplicate check so I don't waste API credits on jobs I've already processed. Stage one uses RAG to score the posting against my career profile and return a match score and skill gap analysis — first live run scored 85% on a Collective Health role. If accepted, stages three through five extract structured job data, generate a tailored JSON resume grounded in the master profile, and render it to ATS-safe DOCX. Stages six through eight run company research and generate a cover letter that references specific things about the company — the generator classifies the target as agency vs direct employer and adjusts tone automatically. Stage nine is a blocking quality gate before anything is marked as applied. The whole thing runs from a single orchestrator script. Primary LLM is Grok via its OpenAI-compatible API — grok-3-mini for light tasks like scoring and parsing, grok-3 for heavy generation that goes in front of a hiring manager.</p>
+  </div>
+</div>
+
+<h3>HorizonScale — ML Forecasting at Scale</h3>
+<div class="qa">
+  <div class="qa-q">How did you approach the forecasting problem at 8,000+ series?</div>
+  <div class="qa-a">
+    <p>Two phases. Phase one was local: DuckDB and Polars for data processing, Prophet with logistic growth for the primary model, SARIMA and ETS as alternatives, a model tournament using a 32-month train / 4-month MAPE backtest split to select the champion per series, and Streamlit for internal dashboarding. I validated the approach completely in Phase one before committing to cloud infrastructure. Phase two migrated to AWS: S3 data lake for all inputs and outputs, AWS Glue with ten G.2X workers running Spark 3.3, and a PySpark Grouped Map UDF to distribute Prophet across the worker fleet — one partition per host-resource pair, one complete independent Prophet fit per UDF call. Gating on yhat_upper at 95% for breach detection. MLflow for experiment tracking across model runs. The two confidence tiers — three months high-confidence with tight intervals, six months directional — are explicit in the output design so teams know what they're acting on versus planning around.</p>
+  </div>
+</div>
+
+<h3>Citi High-Scale Telemetry Pipeline</h3>
+<div class="qa">
+  <div class="qa-q">What was the scale of the Citi pipeline and what were the key engineering decisions?</div>
+  <div class="qa-a">
+    <p>65,000 to 70,000 endpoints worldwide across four regions and dozens of departments. Four KPIs: CPU, memory, disk, and network — all at P95. Three data sources: BMC TrueSight (Oracle DB backend, extracted via SQLAlchemy and cx_Oracle), the Change Management Database on SQL Server (joined via pyodbc), and AppDynamics for supplementary server metadata. The hardest engineering problem was cross-system identifier normalization — three sources with independent naming conventions for the same endpoints. I built normalization rules to produce a canonical hostname key, then used a priority-order join strategy with enrichment fallback. Safety factor of 1.15 applied to raw P95 — accounts for roughly 85% measurement confidence — against a 90% ceiling threshold. Dual SQLite design: monthly databases for per-period detail and a master database for multi-month progression tracking. The process went from five to ten business days manually to one to two hours automatically. Version-controlled in GitLab, openpyxl for Excel output, Streamlit for the internal team dashboard.</p>
+  </div>
+</div>
+
+<h3>G6 Hospitality AppMon</h3>
+<div class="qa">
+  <div class="qa-q">What was the engineering insight on the G6 performance project?</div>
+  <div class="qa-a">
+    <p>The core insight was that Dynatrace AppMon was capturing all the right data but the built-in dashboards couldn't answer the questions the business needed answered. The artifact chain — the waterfall of HTML, CSS, JavaScript, images, third-party scripts, API calls — was all instrumented. But "the site is slow" is not actionable. "The checkout flow is slow specifically on mobile in the midwest and this third-party script is the dominant contributor" is actionable. The engineering work was building the extraction pipeline from AppMon, structuring the data in MySQL with geography and device class as dimensions, and generating reports that ranked the artifact chain by response time segmented by those dimensions. P95 rather than average as the reporting metric — averages hide the tail of slow experiences that matter most for conversion. The findings drove specific frontend recommendations: deferred loading of non-critical JS, async loading of third-party head scripts, CDN configuration review for regional gaps. Response times improved measurably after implementation.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="career">&#127775; Career &amp; Motivation</h2>
+
+<div class="qa">
+  <div class="qa-q">Why data engineering? What draws you to this field specifically?</div>
+  <div class="qa-a">
+    <p>I backed into data engineering from performance engineering and systems work, and what I found was that the problems I cared most about — how do you make a complex system visible, how do you turn raw telemetry into a decision, how do you build something that reliably produces correct output at scale — are exactly what data engineering is. The craft of it: designing a pipeline that's idempotent, that fails loudly rather than silently, that has validated contracts between stages, that scales horizontally when the data grows — that's genuinely interesting engineering. It's not just moving data from A to B. Done well, it's platform engineering that determines what a business can know about itself.</p>
+    <p>What's exciting now is the AI layer on top of data engineering. The intersection of LLMs and data pipelines — Text-to-SQL agents, AI-assisted data quality, inference pipelines that serve ML models at scale — that's where I want to be. I've been building at that intersection personally for the past two years and it's where I see the field going.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Where do you see yourself in three to five years?</div>
+  <div class="qa-a">
+    <p>In three years: deeply proficient with the modern lakehouse stack — Databricks, Delta Lake, dbt — in a production environment, not just in self-study. Having shipped data platform work that a business relies on, contributed to data contracts and governance at an organizational level, and probably having built something at the AI-data intersection that I'm genuinely proud of.</p>
+    <p>In five years: a staff or principal level role where I'm influencing platform architecture decisions — not just executing them — and where my combination of deep systems background, data engineering experience, and AI/ML work is being applied to hard problems at real scale. I'm also interested in the technical leadership path: I've been in the room for large-scale migrations, high-stakes architecture decisions, and performance-critical systems across a 25-year career. There's a version of the next five years where that experience becomes an asset for a broader team, not just my own work.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">What are you self-studying right now and why?</div>
+  <div class="qa-a">
+    <p>Three areas. Databricks and the lakehouse stack — Delta Lake, Delta Live Tables, Unity Catalog, Workflows. My core Spark and PySpark work is solid; I'm learning the Databricks operational layer and the governance model. I know enough to be productive quickly and I'm honest that the depth comes from production use, which is why I want this role.</p>
+    <p>dbt — the SQL transformation layer. I built similar transformations manually at Citi: multi-stage SQL that cleaned, validated, and aggregated data. dbt formalizes exactly that pattern with dependency resolution, testing, lineage documentation, and incremental materialization. I've been practicing with dbt-duckdb locally. The concepts aren't new — the tooling is.</p>
+    <p>And AI patterns for data engineering: RAG, vector search, LLM integration in data pipelines, Text-to-SQL. I built a Text-to-SQL agent at Citi using Claude 3 Sonnet and Bedrock. I'm building the job search pipeline with Grok. This isn't theoretical study — I'm writing production code at this intersection and the study reinforces the practice.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="self">&#129504; Strengths &amp; Self-Awareness</h2>
+
+<div class="qa">
+  <div class="qa-q">What are your strongest technical areas?</div>
+  <div class="qa-a">
+    <p>Three things I'd say are genuine strengths, not just claimed ones.</p>
+    <p><strong>Production pipeline engineering.</strong> Twenty years of building systems that can't fail — telecom billing at Sprint, migration at Sabre, capacity intelligence at Citi. I think in terms of failure modes first, then correctness, then performance. Quality gates, idempotency, validation at every stage boundary — that discipline is deeply ingrained.</p>
+    <p><strong>Cross-system data integration.</strong> Most of my interesting work has involved joining data from multiple sources with incompatible identifiers, different update cadences, and inconsistent data quality. The Citi enrichment join across three enterprise systems. The G6 analysis across AppMon, geography, and device data. Making disparate systems speak to each other cleanly is where I've done some of my best work.</p>
+    <p><strong>Translating data into decisions.</strong> I think carefully about who consumes the output and what they actually need. The Streamlit dashboards I build look the way they do because I've thought about the VP who needs to act on this, not the data engineer who produced it. That translation layer — from technical output to business decision — is something I've developed over a long career of working with both sides.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">What's a genuine weakness or area you're actively working on?</div>
+  <div class="qa-a">
+    <p>The modern lakehouse tooling gap is real and I'm honest about it. Databricks in production, dbt at enterprise scale, event streaming with Kafka or Kinesis — I have strong conceptual understanding and I've been actively studying and building with these tools, but I haven't shipped production systems with them yet. That's the honest assessment.</p>
+    <p>What I'd push back on is treating that as a disqualifying gap. I have 20-plus years of the underlying skills — Python, PySpark, SQL, distributed systems, data modeling — and I've demonstrated across my career that I ramp quickly on new tooling by mapping it to what I already know rather than starting from zero. Glue and PySpark at Citi, Prophet and FAISS for HorizonScale, Grok and LangChain for the job search pipeline — each of those was new and I shipped production work on all of them. The Databricks and dbt gap is a 3-to-6 month gap with production access, not a foundational one.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How do you handle ambiguity — when requirements aren't clear?</div>
+  <div class="qa-a">
+    <p>I start by identifying which kind of ambiguity it is. If it's unclear what the business outcome should be — "build a capacity forecasting system" with no further specification — I ask one specific question: what decision will this output drive, and who makes it? That single answer usually unlocks the right design direction more than any technical discussion.</p>
+    <p>If the requirements are clear at the business level but unclear at the technical level — "we need forecasts but we don't know which model" — I build the MVP that validates the approach rather than designing the full system up front. Phase one of HorizonScale was exactly this: build locally, prove the tournament works, prove the confidence tiers are calibrated correctly. Commit to cloud infrastructure only once the approach is validated.</p>
+    <p>What I don't do is wait for perfect requirements before starting. Clarify the most important uncertainty, build to the decision boundary, learn from the output. Iteration over analysis paralysis.</p>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="ask">&#10067; Questions I Ask Back</h2>
+
+<div class="win">
+  Ask at least three of these. They signal genuine interest, senior thinking, and respect for the interviewer's knowledge. Never ask about salary or PTO in technical rounds.
+</div>
+
+<div class="ask-q"><span class="ask-num">1.</span> What does the data engineering team own end-to-end — from raw ingestion to serving — and where does the boundary with data science or analytics engineering sit?</div>
+<div class="ask-q"><span class="ask-num">2.</span> What's the biggest data reliability or quality challenge you're dealing with right now?</div>
+<div class="ask-q"><span class="ask-num">3.</span> How do you currently handle pipeline observability — what does a data engineer know about whether their pipelines ran correctly last night?</div>
+<div class="ask-q"><span class="ask-num">4.</span> Is the data platform on a modern lakehouse stack or is there active migration work underway? Where are you on that journey?</div>
+<div class="ask-q"><span class="ask-num">5.</span> How are data contracts and schema evolution handled between teams — is there a formal process or is it coordinated informally?</div>
+<div class="ask-q"><span class="ask-num">6.</span> What does the on-call or incident rotation look like for the data team? How do data pipeline failures get detected and escalated?</div>
+<div class="ask-q"><span class="ask-num">7.</span> What would a successful first 90 days look like for someone in this role — what would they have shipped, what would they have learned?</div>
+<div class="ask-q"><span class="ask-num">8.</span> How does AI or ML fit into the data team's roadmap — is it a separate team, integrated, or somewhere in between?</div>
+<div class="ask-q"><span class="ask-num">9.</span> What's the most recent hard technical decision the team made, and how did you evaluate the options?</div>
+<div class="ask-q"><span class="ask-num">10.</span> What's the thing that would make someone in this role unusually successful — beyond the job description?</div>
+
+<a href="#top" class="back-top">&#8593; Top</a>
+
+</div>
+</body>
+</html>

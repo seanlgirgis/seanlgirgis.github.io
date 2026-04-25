@@ -11,6 +11,7 @@ __pycache__/
 !templates/*.html
 !projects/*.html
 !index.html
+!interview-master.html
 !googled5fb877a5db7013f.html
 learning/_prompts/
 venv/
