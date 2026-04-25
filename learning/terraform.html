@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terraform - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/terraform.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Terraform - Master Engineering Reference
+</div>
+
+<h1>Terraform</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 45-60 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Infrastructure as Code</span>
+  <span class="tag">AWS</span>
+  <span class="tag">HCL</span>
+  <span class="tag">Remote State</span>
+  <span class="tag">CI/CD</span>
+  <span class="tag">Data Platforms</span>
+  <span class="tag">DevOps</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_terraform.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Terraform Actually Solves</a></li>
+    <li><a href="#s2">HCL Syntax and Project Structure</a></li>
+    <li><a href="#s3">Providers, Resources, Data Sources, and Outputs</a></li>
+    <li><a href="#s4">State: The Real Source of Truth</a></li>
+    <li><a href="#s5">Remote State with S3 and DynamoDB Locking</a></li>
+    <li><a href="#s6">Plan, Apply, Destroy, and State Mutation</a></li>
+    <li><a href="#s7">Modules for Reusable Infrastructure</a></li>
+    <li><a href="#s8">Workspaces vs Separate State Files</a></li>
+    <li><a href="#s9">Importing Existing AWS Resources</a></li>
+    <li><a href="#s10">Terraform for Data Engineering Infrastructure</a></li>
+    <li><a href="#s11">Secrets, Sensitive Values, and State Exposure</a></li>
+    <li><a href="#s12">Drift Detection and Remediation</a></li>
+    <li><a href="#s13">CI/CD with GitHub Actions and OIDC</a></li>
+    <li><a href="#s14">Terraform vs CloudFormation</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Terraform Actually Solves</h2>
+<p>Terraform is an infrastructure as code tool that turns cloud infrastructure into versioned, reviewable, repeatable configuration. For a senior data engineer, the value is not only creating servers or buckets. The real value is making a data platform reproducible: S3 buckets, IAM roles, Glue catalogs, VPC networking, RDS databases, ECS services, EventBridge schedules, Secrets Manager entries, and monitoring policies can be described in code and promoted through environments.</p>
+<p>Terraform is declarative. You describe the desired end state, and Terraform compares that desired state against its recorded state and the provider API. The result is an execution plan. This is different from a script that says, step by step, how to create infrastructure. Terraform works best when infrastructure ownership is clear, naming is deterministic, and state is protected like a production database.</p>
+<div class="hi">Terraform is not just automation. It is a contract between code, state, and the cloud provider.</div>
+<div class="warn">The fastest way to make Terraform dangerous is to treat it like a loose deployment script. If state is wrong, backend access is weak, or multiple people apply at once, the tool can delete or recreate important resources.</div>
+<table>
+  <tr><th>Use Terraform for</th><th>Be careful with</th></tr>
+  <tr><td>Repeatable AWS environments</td><td>One-off manual experiments that are never imported into state</td></tr>
+  <tr><td>Shared platform components</td><td>Application deploys better handled by CI/CD or Helm</td></tr>
+  <tr><td>Network, IAM, storage, databases</td><td>Secrets, credentials, and generated passwords in state</td></tr>
+  <tr><td>Cross-cloud or vendor-neutral IaC</td><td>AWS-native services where CloudFormation features arrive first</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">HCL Syntax and Project Structure</h2>
+<p>Terraform uses HCL, HashiCorp Configuration Language. HCL is designed to be readable configuration, not a general-purpose programming language. Blocks define things, arguments configure them, expressions compute values, and references connect resources together. A clean project usually separates provider configuration, variables, resources, outputs, and backend configuration.</p>
+<pre><code>terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+variable "aws_region" {
+  type        = string
+  description = "AWS region for the workload."
+  default     = "us-east-1"
+}
+
+resource "aws_s3_bucket" "raw" {
+  bucket = "sean-data-platform-raw-${var.environment}"
+
+  tags = {
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+output "raw_bucket_name" {
+  value = aws_s3_bucket.raw.bucket
+}</code></pre>
+<div class="hi">Good Terraform structure makes ownership obvious: who owns the module, what variables are required, what resources are created, and what outputs downstream stacks can safely consume.</div>
+<div class="warn">Do not overuse clever HCL. Deep nested expressions, heavy dynamic blocks, and magic naming conventions make plans hard to review and failures hard to debug.</div>
+<h3>Common file layout</h3>
+<table>
+  <tr><th>File</th><th>Purpose</th></tr>
+  <tr><td><code>main.tf</code></td><td>Core resources or module calls</td></tr>
+  <tr><td><code>providers.tf</code></td><td>Provider versions and provider configuration</td></tr>
+  <tr><td><code>variables.tf</code></td><td>Input variables and validation rules</td></tr>
+  <tr><td><code>outputs.tf</code></td><td>Values exposed to humans, CI/CD, or other Terraform stacks</td></tr>
+  <tr><td><code>backend.tf</code></td><td>Remote backend configuration</td></tr>
+  <tr><td><code>terraform.tfvars</code></td><td>Environment-specific values, never secrets</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Providers, Resources, Data Sources, and Outputs</h2>
+<p>Providers are plugins that know how to talk to APIs such as AWS, GitHub, Datadog, Snowflake, or Kubernetes. Resources create and manage infrastructure. Data sources read existing infrastructure without owning it. Outputs expose selected values after apply. These four concepts are enough to model most production stacks.</p>
+<pre><code>data "aws_caller_identity" "current" {}
+
+data "aws_vpc" "shared" {
+  tags = {
+    Name = "shared-data-vpc"
+  }
+}
+
+resource "aws_security_group" "glue_jobs" {
+  name        = "glue-jobs-${var.environment}"
+  description = "Security group for Glue jobs"
+  vpc_id      = data.aws_vpc.shared.id
+}
+
+output "account_id" {
+  value = data.aws_caller_identity.current.account_id
+}</code></pre>
+<div class="hi">Use data sources when Terraform needs to reference shared infrastructure owned somewhere else. Use resources only when this state file is responsible for the lifecycle.</div>
+<div class="warn">If two Terraform states manage the same AWS resource, you have an ownership conflict. The result is drift, surprise changes, or destructive replacements.</div>
+<table>
+  <tr><th>Concept</th><th>Creates?</th><th>Typical use</th></tr>
+  <tr><td>Provider</td><td>No</td><td>Defines API client and credentials</td></tr>
+  <tr><td>Resource</td><td>Yes</td><td>Owns lifecycle of infrastructure</td></tr>
+  <tr><td>Data source</td><td>No</td><td>Reads existing infrastructure</td></tr>
+  <tr><td>Output</td><td>No</td><td>Publishes selected values from the state</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">State: The Real Source of Truth</h2>
+<p>Terraform state maps configuration addresses to real provider objects. For example, <code>aws_s3_bucket.raw</code> might map to an actual S3 bucket. State contains resource IDs, dependency metadata, many attribute values, and sometimes sensitive values. Terraform uses state to decide whether a plan should create, update, replace, or delete infrastructure.</p>
+<p>Configuration says what you want. The cloud provider says what exists. State says what Terraform believes it owns. A plan is the reconciliation between those three views.</p>
+<div class="hi">For production Terraform, state is operational data. Back it up, lock it, restrict it, encrypt it, and treat edits as a break-glass operation.</div>
+<div class="warn">Deleting a local <code>terraform.tfstate</code> file does not delete AWS resources. It deletes Terraform's memory of them, which can cause duplicate creation or destructive imports later.</div>
+<pre><code># Inspect state addresses
+terraform state list
+
+# Show one tracked object
+terraform state show aws_s3_bucket.raw
+
+# Move an object after refactoring resource names
+terraform state mv aws_s3_bucket.raw aws_s3_bucket.data_raw
+
+# Remove from state without deleting the cloud resource
+terraform state rm aws_s3_bucket.legacy</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Remote State with S3 and DynamoDB Locking</h2>
+<p>Local state is acceptable for a solo lab. Production teams should use remote state. On AWS, the classic backend is an encrypted S3 bucket with versioning enabled, plus a DynamoDB table for state locking. S3 stores the state file. DynamoDB prevents two applies from mutating the same state at the same time.</p>
+<pre><code>terraform {
+  backend "s3" {
+    bucket         = "company-terraform-state-prod"
+    key            = "data-platform/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-state-locks"
+    encrypt        = true
+  }
+}</code></pre>
+<div class="hi">Remote state gives the team one shared memory of infrastructure. Versioned S3 gives recovery. DynamoDB locking gives concurrency control.</div>
+<div class="warn">Do not put Terraform state in the same AWS account or bucket policy blast radius as the workload without thinking. If the workload account is compromised, state exposure can reveal infrastructure topology and sensitive attributes.</div>
+<table>
+  <tr><th>Backend option</th><th>Best for</th><th>Tradeoff</th></tr>
+  <tr><td>Local state</td><td>Personal demos and throwaway labs</td><td>No collaboration, easy to lose</td></tr>
+  <tr><td>S3 backend</td><td>AWS teams wanting simple remote state</td><td>You manage bucket, encryption, versioning, and lock table</td></tr>
+  <tr><td>Terraform Cloud</td><td>Policy checks, hosted state, run history</td><td>Vendor platform and pricing considerations</td></tr>
+  <tr><td>Consul backend</td><td>HashiCorp-heavy environments</td><td>More operational overhead</td></tr>
+</table>
+<h3>Bootstrap pattern</h3>
+<p>The backend bucket and lock table cannot be created by the same backend they configure on the first run. Most teams use a small bootstrap stack, a separate admin script, or a manually approved foundation module.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Plan, Apply, Destroy, and State Mutation</h2>
+<p>The Terraform workflow has three core actions. <code>terraform plan</code> calculates proposed changes. <code>terraform apply</code> executes those changes and updates state. <code>terraform destroy</code> plans and applies deletion for resources owned by the current state. In production, the plan is the review artifact. The apply is the mutation event.</p>
+<pre><code>terraform init
+terraform fmt -recursive
+terraform validate
+terraform plan -out=tfplan
+terraform apply tfplan
+
+# Dangerous: destroys resources tracked by this state
+terraform destroy</code></pre>
+<div class="hi">The plan should be reviewed like code. For data infrastructure, look closely for replacements of stateful resources such as RDS, buckets, KMS keys, Glue catalogs, and IAM roles used by running pipelines.</div>
+<div class="warn">A clean <code>terraform plan</code> does not mean the change is safe. It means Terraform can calculate the change. Provider bugs, AWS quotas, naming collisions, and runtime dependencies can still break the apply.</div>
+<table>
+  <tr><th>Command</th><th>Changes cloud?</th><th>Changes state?</th><th>Notes</th></tr>
+  <tr><td><code>terraform plan</code></td><td>No</td><td>No</td><td>Reads state and provider APIs</td></tr>
+  <tr><td><code>terraform apply</code></td><td>Yes</td><td>Yes</td><td>State is updated after successful operations</td></tr>
+  <tr><td><code>terraform destroy</code></td><td>Yes</td><td>Yes</td><td>Deletes tracked resources unless protected by policy or lifecycle</td></tr>
+  <tr><td><code>terraform refresh</code></td><td>No</td><td>Yes</td><td>Updates state view from provider; use carefully</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Modules for Reusable Infrastructure</h2>
+<p>Modules package resources into reusable units. A module can represent an S3 data lake bucket, an ECS service, a Glue job pattern, an RDS instance, or an entire environment slice. Good modules expose stable inputs and outputs while hiding repetitive implementation details. Bad modules hide too much, become giant abstraction walls, and make simple changes painful.</p>
+<pre><code>module "raw_bucket" {
+  source = "./modules/s3-data-bucket"
+
+  name        = "raw"
+  environment = var.environment
+  kms_key_id  = module.kms.key_id
+  tags        = local.common_tags
+}
+
+module "glue_job" {
+  source = "./modules/glue-python-job"
+
+  job_name         = "ingest-customer-events"
+  script_s3_path   = "s3://company-artifacts/glue/ingest.py"
+  role_arn         = module.iam.glue_role_arn
+  worker_type      = "G.1X"
+  number_of_workers = 5
+}</code></pre>
+<div class="hi">The best modules encode platform standards: encryption, tags, logging, network rules, naming, and least-privilege IAM.</div>
+<div class="warn">Avoid making one universal mega-module for every workload. Large modules create tight coupling and make blast radius hard to reason about.</div>
+<table>
+  <tr><th>Module style</th><th>Good fit</th><th>Risk</th></tr>
+  <tr><td>Small resource module</td><td>Reusable S3 bucket, IAM role, Glue job</td><td>Too many tiny wrappers with little value</td></tr>
+  <tr><td>Service module</td><td>ECS service, RDS cluster, data pipeline unit</td><td>Inputs can become huge</td></tr>
+  <tr><td>Environment module</td><td>Full dev/test/prod composition</td><td>Harder to promote changes independently</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Workspaces vs Separate State Files</h2>
+<p>Terraform workspaces allow one configuration directory to maintain multiple state files. They are useful for small variations, ephemeral environments, or preview stacks. For serious environment promotion, many teams prefer separate state keys, separate folders, or separate root modules per environment. Separate state files make blast radius clearer and permissions easier to control.</p>
+<div class="hi">For data platforms, separate state files usually win for dev, test, and prod because access control and blast radius are easier to explain.</div>
+<div class="warn">Workspaces are not a strong environment boundary. A bad variable, provider alias, or backend misconfiguration can still point a workspace at the wrong account or resource names.</div>
+<table>
+  <tr><th>Approach</th><th>Pros</th><th>Cons</th></tr>
+  <tr><td>Workspaces</td><td>Simple for similar stacks and temporary environments</td><td>Weak boundary; easy to confuse current workspace</td></tr>
+  <tr><td>Separate backend keys</td><td>Clear state split while sharing code</td><td>Requires disciplined backend config</td></tr>
+  <tr><td>Separate root folders</td><td>Very explicit environment ownership</td><td>Can duplicate code if modules are weak</td></tr>
+  <tr><td>Separate accounts</td><td>Strongest AWS isolation</td><td>Requires account vending and cross-account access design</td></tr>
+</table>
+<pre><code># Workspace commands
+terraform workspace list
+terraform workspace new dev
+terraform workspace select prod
+
+# Many teams prefer explicit backend keys instead:
+# dev/data-platform/terraform.tfstate
+# prod/data-platform/terraform.tfstate</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Importing Existing AWS Resources</h2>
+<p>Import brings existing infrastructure under Terraform state. This is common when a team has manually created S3 buckets, IAM roles, VPCs, RDS instances, or Glue resources and wants to standardize management. Import does not automatically write perfect Terraform code. You must create matching resource blocks, import the real object, run a plan, and reconcile differences until the plan is safe.</p>
+<pre><code># Terraform 1.5+ import block style
+import {
+  to = aws_s3_bucket.raw
+  id = "existing-raw-data-bucket"
+}
+
+resource "aws_s3_bucket" "raw" {
+  bucket = "existing-raw-data-bucket"
+}
+
+# Then run:
+terraform plan
+terraform apply</code></pre>
+<div class="hi">Import is a migration process, not a magic scanner. The goal is to reach a no-op plan where Terraform code, state, and AWS reality agree.</div>
+<div class="warn">Importing a production resource with incomplete configuration can cause Terraform to plan destructive changes on the next apply. Always review the first post-import plan carefully.</div>
+<h3>Practical import flow</h3>
+<pre><code>terraform import aws_iam_role.glue_role DataPlatformGlueRole
+terraform state show aws_iam_role.glue_role
+# Copy important attributes into configuration
+terraform plan
+# Repeat until the plan is no-op or intentionally controlled</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">Terraform for Data Engineering Infrastructure</h2>
+<p>Terraform is especially useful for provisioning the durable infrastructure around data pipelines. In AWS, that usually includes S3 buckets for raw, curated, and artifact zones; IAM roles for Glue, ECS, Lambda, and Airflow; VPC networking for private jobs; RDS or Aurora for metadata stores; ECS services for workers; EventBridge schedules; and CloudWatch alarms.</p>
+<pre><code>resource "aws_glue_catalog_database" "curated" {
+  name = "curated_${var.environment}"
+}
+
+resource "aws_iam_role" "glue" {
+  name = "data-platform-glue-${var.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "glue.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_db_instance" "metadata" {
+  identifier        = "metadata-${var.environment}"
+  engine            = "postgres"
+  instance_class    = "db.t4g.medium"
+  allocated_storage = 100
+  storage_encrypted = true
+  skip_final_snapshot = false
+}</code></pre>
+<div class="hi">Terraform should create the platform skeleton. Pipeline code, SQL transformations, and job artifacts should usually be deployed by application CI/CD, not buried inside infrastructure state.</div>
+<div class="warn">Do not let Terraform upload large scripts, data files, or changing artifacts into S3 on every apply. That mixes infrastructure lifecycle with application release lifecycle and makes plans noisy.</div>
+<table>
+  <tr><th>Data component</th><th>Terraform should manage</th><th>Usually not Terraform</th></tr>
+  <tr><td>S3 data lake</td><td>Buckets, encryption, lifecycle, access policies</td><td>Data files and daily partitions</td></tr>
+  <tr><td>Glue</td><td>Catalog DBs, roles, job definitions, connections</td><td>Rapid script iteration and package builds</td></tr>
+  <tr><td>RDS</td><td>Instance, subnet group, security group, parameters</td><td>Schema migrations and seed data</td></tr>
+  <tr><td>ECS</td><td>Cluster, service, task definition baseline, IAM</td><td>Frequent container image promotion logic</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">Secrets, Sensitive Values, and State Exposure</h2>
+<p>Terraform state can contain sensitive values even when variables are marked <code>sensitive = true</code>. The sensitive flag hides values from CLI output, but it does not remove them from state. For production, secrets should live in AWS Secrets Manager, SSM Parameter Store, Vault, or a CI/CD secret store. Terraform can create secret containers and access policies, but it should not be the place where secret values are casually stored.</p>
+<pre><code>resource "aws_secretsmanager_secret" "db_password" {
+  name = "data-platform/${var.environment}/metadata-db-password"
+}
+
+# Better: create the secret container and let a secure rotation process set the value.
+# Avoid hardcoding secret_string in Terraform unless there is a strict reason.</code></pre>
+<div class="hi">Terraform can manage where secrets live and who can access them. It should rarely manage the secret payload itself.</div>
+<div class="warn">A secret passed into Terraform can end up in state, logs, crash files, plan files, or CI artifacts. Treat plan files and state files as sensitive.</div>
+<table>
+  <tr><th>Pattern</th><th>Risk</th><th>Recommendation</th></tr>
+  <tr><td>Plain variable password</td><td>High</td><td>Avoid</td></tr>
+  <tr><td><code>sensitive = true</code></td><td>Still in state</td><td>Useful for output masking only</td></tr>
+  <tr><td>Secrets Manager container only</td><td>Low</td><td>Preferred for many teams</td></tr>
+  <tr><td>External rotation</td><td>Low</td><td>Best for production databases</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">Drift Detection and Remediation</h2>
+<p>Drift happens when real infrastructure changes outside Terraform. Someone edits an IAM policy in the console, changes an RDS parameter manually, deletes a security group rule, or modifies bucket encryption. Terraform detects drift during plan by reading provider APIs and comparing reality against state and configuration.</p>
+<pre><code># Detect drift without applying
+terraform plan -detailed-exitcode
+
+# Exit codes:
+# 0 = no changes
+# 1 = error
+# 2 = changes present</code></pre>
+<div class="hi">Drift is not always bad. Emergency fixes happen. The discipline is to reconcile the change back into code or revert it intentionally.</div>
+<div class="warn">Blindly applying after drift detection can undo an emergency production change. Review whether the drift represents a bug, a hotfix, or an unauthorized mutation.</div>
+<table>
+  <tr><th>Drift type</th><th>Example</th><th>Typical response</th></tr>
+  <tr><td>Manual hotfix</td><td>Temporary security group rule</td><td>Convert to code or remove after incident</td></tr>
+  <tr><td>Console accident</td><td>Bucket policy edited incorrectly</td><td>Apply Terraform to restore desired state</td></tr>
+  <tr><td>Provider default change</td><td>AWS default attribute differs</td><td>Pin provider or add explicit config</td></tr>
+  <tr><td>External controller</td><td>Kubernetes or autoscaler changes count</td><td>Use lifecycle ignore carefully</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s13">CI/CD with GitHub Actions and OIDC</h2>
+<p>Terraform should run through a controlled pipeline for shared environments. GitHub Actions can authenticate to AWS using OIDC, which avoids long-lived AWS access keys. A common pattern is: pull request runs format, validate, and plan; main branch approval runs apply. Production applies should require environment protection, code review, and sometimes a manual approval gate.</p>
+<pre><code>name: terraform
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-terraform-role
+          aws-region: us-east-1
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - run: terraform init
+      - run: terraform fmt -check -recursive
+      - run: terraform validate
+      - run: terraform plan -out=tfplan
+
+      - name: Apply
+        if: github.ref == 'refs/heads/main' &amp;&amp; github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan</code></pre>
+<div class="hi">OIDC lets GitHub request short-lived AWS credentials. That is much safer than storing an AWS access key as a repository secret.</div>
+<div class="warn">Never run automatic production apply from every branch. Plans from untrusted pull requests can expose values through logs or abuse provider credentials if the workflow is not locked down.</div>
+<h3>Pipeline controls worth having</h3>
+<table>
+  <tr><th>Control</th><th>Why it matters</th></tr>
+  <tr><td>Provider lock file</td><td>Keeps provider versions reproducible</td></tr>
+  <tr><td>Plan artifact retention limits</td><td>Plan files can contain sensitive values</td></tr>
+  <tr><td>Environment approval</td><td>Prevents accidental prod mutation</td></tr>
+  <tr><td>Policy checks</td><td>Blocks public buckets, weak IAM, missing encryption</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s14">Terraform vs CloudFormation</h2>
+<p>Terraform and CloudFormation both manage infrastructure as code, but they optimize for different realities. CloudFormation is AWS-native and often supports AWS features early. Terraform is provider-neutral, widely adopted across platforms, and has a mature module ecosystem. In AWS-only enterprises, the choice often comes down to governance, skill set, service coverage, and whether the platform needs to manage non-AWS systems in the same workflow.</p>
+<div class="hi">Choose Terraform when the platform spans AWS plus external services, or when module reuse and cross-provider workflow matter. Choose CloudFormation when AWS-native integration, StackSets, or first-class AWS support matter more.</div>
+<div class="warn">Do not split ownership of the same resource between Terraform and CloudFormation. One resource should have one infrastructure authority.</div>
+<table>
+  <tr><th>Area</th><th>Terraform</th><th>CloudFormation</th></tr>
+  <tr><td>Scope</td><td>Multi-cloud and third-party providers</td><td>AWS-native</td></tr>
+  <tr><td>Language</td><td>HCL</td><td>YAML or JSON</td></tr>
+  <tr><td>State</td><td>Managed by backend</td><td>Managed by AWS service</td></tr>
+  <tr><td>Feature freshness</td><td>Depends on provider updates</td><td>Often earlier for AWS features</td></tr>
+  <tr><td>Ecosystem</td><td>Strong module registry</td><td>Strong AWS-native governance</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: What is Terraform state, and why is it risky in production?</div>
+  <div class="qa-a">A: State maps Terraform resource addresses to real cloud resources and stores many resource attributes. It is risky because losing it breaks ownership, corrupting it causes wrong plans, and exposing it can leak sensitive infrastructure details or secret values.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you design Terraform state for dev, test, and prod data platform environments?</div>
+  <div class="qa-a">A: I would usually use separate state files, separate backend keys, and ideally separate AWS accounts. Shared modules can keep the code reusable, but state isolation keeps blast radius, IAM permissions, and promotion boundaries clear.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why use S3 plus DynamoDB for Terraform backend storage?</div>
+  <div class="qa-a">A: S3 provides durable, versioned, encrypted state storage. DynamoDB provides state locking so two applies do not mutate the same state at the same time. Together they solve collaboration and recovery better than local state.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What should Terraform manage in a data engineering platform?</div>
+  <div class="qa-a">A: Terraform should manage durable infrastructure: S3 buckets, IAM roles, VPC networking, Glue resources, RDS instances, ECS services, EventBridge rules, KMS keys, and monitoring. It should not usually manage daily data files, database schema migrations, or fast-changing application artifacts.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you handle secrets with Terraform?</div>
+  <div class="qa-a">A: I avoid putting secret values directly in Terraform. I let Terraform create secret containers and IAM permissions, then use Secrets Manager, SSM, Vault, or a rotation process to set the actual value. Marking a variable sensitive hides output but does not remove the value from state.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose CloudFormation over Terraform?</div>
+  <div class="qa-a">A: I would choose CloudFormation when the organization is AWS-only, needs native AWS governance, wants StackSets, or requires immediate support for new AWS features. I would choose Terraform when cross-provider infrastructure, reusable modules, and a wider ecosystem matter more.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">terraform init</div>
+    <div class="cd">Initializes providers, modules, and backend configuration.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">terraform fmt</div>
+    <div class="cd">Formats HCL files consistently; use <code>-recursive</code> for modules.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">terraform validate</div>
+    <div class="cd">Checks syntax and internal configuration validity.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">terraform plan</div>
+    <div class="cd">Shows proposed changes before mutating infrastructure or state.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">terraform apply</div>
+    <div class="cd">Executes the plan and updates Terraform state.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">terraform destroy</div>
+    <div class="cd">Deletes resources tracked by the current state; dangerous in shared environments.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">resource</div>
+    <div class="cd">A managed object Terraform creates, updates, or deletes.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">data</div>
+    <div class="cd">A read-only lookup of existing infrastructure not owned by this state.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">module</div>
+    <div class="cd">Reusable Terraform package with inputs, resources, and outputs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">backend</div>
+    <div class="cd">Where Terraform stores state, such as S3 or Terraform Cloud.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">state lock</div>
+    <div class="cd">Concurrency guard that prevents simultaneous applies against one state file.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">terraform import</div>
+    <div class="cd">Associates an existing cloud resource with a Terraform address.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">state mv</div>
+    <div class="cd">Moves tracked objects when refactoring resource names or module paths.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">sensitive</div>
+    <div class="cd">Masks CLI display, but values can still exist in state.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">OIDC</div>
+    <div class="cd">Preferred GitHub Actions to AWS authentication pattern using short-lived credentials.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">drift</div>
+    <div class="cd">Difference between Terraform configuration, state, and real infrastructure.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
