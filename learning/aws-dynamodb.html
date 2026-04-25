@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon DynamoDB - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-dynamodb.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Amazon DynamoDB - Master Engineering Reference
+</div>
+
+<h1>Amazon DynamoDB</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 45-55 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">NoSQL</span>
+  <span class="tag">DynamoDB</span>
+  <span class="tag">Serverless</span>
+  <span class="tag">Single-Table Design</span>
+  <span class="tag">Event Pipelines</span>
+  <span class="tag">Data Engineering</span>
+  <span class="tag">Metadata Store</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-dynamodb.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What DynamoDB Is</a></li>
+    <li><a href="#s2">Relational Thinking vs Single-Table Design</a></li>
+    <li><a href="#s3">Partition Keys, Sort Keys, and Access Patterns</a></li>
+    <li><a href="#s4">Item Modeling for Data Engineering</a></li>
+    <li><a href="#s5">GSIs and LSIs</a></li>
+    <li><a href="#s6">Capacity Modes and Throughput Economics</a></li>
+    <li><a href="#s7">Hot Partitions and Scale Failure Modes</a></li>
+    <li><a href="#s8">Streams and Event-Driven Pipelines</a></li>
+    <li><a href="#s9">TTL, DAX, and Read Optimization</a></li>
+    <li><a href="#s10">DynamoDB in the AWS Data Stack</a></li>
+    <li><a href="#s11">Operations, Observability, and Recovery</a></li>
+    <li><a href="#s12">When DynamoDB Is the Wrong Choice</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What DynamoDB Is</h2>
+<p>Amazon DynamoDB is a fully managed, serverless NoSQL database built for predictable low-latency access at very large scale. It is not a relational database with weaker SQL. It is a key-value and document database where the physical access path is part of the data model.</p>
+<p>For a senior data engineer, the important mental shift is this: DynamoDB rewards knowing the exact questions your application will ask before you design the table. You do not model around entities first. You model around access patterns, cardinality, write rate, read rate, item size, and partition distribution.</p>
+
+<table>
+  <tr>
+    <th>Dimension</th>
+    <th>DynamoDB Behavior</th>
+    <th>Engineering Implication</th>
+  </tr>
+  <tr>
+    <td>Query model</td>
+    <td>Primary key, sort key, indexes, point reads, range reads</td>
+    <td>Fast when access patterns are known; awkward for ad hoc analytics</td>
+  </tr>
+  <tr>
+    <td>Scaling model</td>
+    <td>Managed partitions and distributed storage</td>
+    <td>Great for high concurrency if keys distribute load well</td>
+  </tr>
+  <tr>
+    <td>Schema</td>
+    <td>Schemaless items with optional attributes</td>
+    <td>Flexible, but requires strong application-side discipline</td>
+  </tr>
+  <tr>
+    <td>Transactions</td>
+    <td>Supported, but not the default modeling style</td>
+    <td>Useful for integrity boundaries; expensive if overused</td>
+  </tr>
+</table>
+
+<div class="hi">DynamoDB is strongest when your workload is operational: known queries, high request volume, predictable key access, and strict latency goals.</div>
+<div class="warn">The classic failure is treating DynamoDB like PostgreSQL without joins. That usually leads to scan-heavy access, index sprawl, and surprise cost.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Relational Thinking vs Single-Table Design</h2>
+<p>Relational modeling separates entities into normalized tables and lets SQL reconstruct views through joins. DynamoDB pushes the opposite direction: duplicate data intentionally, colocate related items under the same partition key, and encode item type into the key structure.</p>
+<p>Single-table design means multiple logical entity types live in one physical table. A customer profile, order, order line, payment status, shipment, and audit marker can share one table if their access patterns benefit from colocated reads.</p>
+
+<h3>Example single-table pattern</h3>
+<pre><code>PK                  SK                       Entity
+CUSTOMER#123        PROFILE                  Customer profile
+CUSTOMER#123        ORDER#2026-04-25#9001    Order header
+CUSTOMER#123        ORDER#2026-04-25#9001#L1 Order line
+CUSTOMER#123        PAYMENT#9001             Payment status
+ORDER#9001          EVENT#001                Order event record</code></pre>
+
+<p>This pattern lets the application query <code>PK = CUSTOMER#123</code> and retrieve a customer-centered view without a join. It also allows range filtering on the sort key, such as only orders or only recent orders.</p>
+
+<div class="hi">Single-table design is not about forcing everything into one table. It is about optimizing item adjacency for your most important reads.</div>
+<div class="warn">Do not use single-table design as a religious rule. If two domains have unrelated access patterns, separate tables can be cleaner, cheaper, and safer.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Partition Keys, Sort Keys, and Access Patterns</h2>
+<p>The partition key determines physical distribution. The sort key determines ordered retrieval inside an item collection. Together, they define what DynamoDB can retrieve efficiently without scanning.</p>
+<p>A strong table design begins with an access-pattern inventory. For each query, write down the required key condition, expected cardinality, peak read/write rate, and whether results must be strongly consistent.</p>
+
+<table>
+  <tr>
+    <th>Access Pattern</th>
+    <th>Good Key Shape</th>
+    <th>Why It Works</th>
+  </tr>
+  <tr>
+    <td>Get pipeline run by ID</td>
+    <td><code>PK=PIPELINE#id</code>, <code>SK=RUN#timestamp</code></td>
+    <td>Point or bounded range lookup</td>
+  </tr>
+  <tr>
+    <td>List latest jobs for tenant</td>
+    <td><code>PK=TENANT#id</code>, <code>SK=JOB#date#id</code></td>
+    <td>Sorted time-based retrieval</td>
+  </tr>
+  <tr>
+    <td>Lookup by external request ID</td>
+    <td>GSI with <code>request_id</code> as key</td>
+    <td>Alternate unique access path</td>
+  </tr>
+  <tr>
+    <td>Find all failed jobs today</td>
+    <td>GSI with bucketed status/date key</td>
+    <td>Avoids full table scan</td>
+  </tr>
+</table>
+
+<h3>Common sort key tricks</h3>
+<pre><code>RUN#2026-04-25T01:30:00Z
+RUN#2026-04-25T01:30:00Z#ATTEMPT#001
+STATUS#FAILED#2026-04-25#RUN#abc123
+TYPE#METADATA
+TYPE#CHECKPOINT#000042</code></pre>
+
+<div class="hi">Design keys so DynamoDB can answer with <code>GetItem</code> or <code>Query</code>. If your design needs frequent <code>Scan</code>, the model is probably wrong.</div>
+<div class="warn">A high-cardinality partition key is not enough. It must also distribute traffic. A million keys do not help if 80 percent of traffic hits one key.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Item Modeling for Data Engineering</h2>
+<p>DynamoDB is often excellent as a metadata store for data engineering pipelines. It can track ingestion jobs, checkpoints, file manifests, idempotency keys, schema versions, workflow locks, backfill status, and compact operational state.</p>
+<p>It is usually not the place to store large analytical facts. Put raw and curated datasets in S3, query with Athena or Spark, warehouse in Redshift or Snowflake, and keep DynamoDB for fast operational coordination.</p>
+
+<h3>Pipeline metadata item example</h3>
+<pre><code>{
+  "PK": "PIPELINE#daily_customer_extract",
+  "SK": "RUN#2026-04-25T00:00:00Z",
+  "status": "RUNNING",
+  "source": "s3://landing/customer/",
+  "target": "s3://curated/customer/",
+  "watermark": "2026-04-24T23:59:59Z",
+  "attempt": 2,
+  "owner": "data-platform",
+  "ttl_epoch": 1777075200
+}</code></pre>
+
+<table>
+  <tr>
+    <th>Use Case</th>
+    <th>DynamoDB Fit</th>
+    <th>Reason</th>
+  </tr>
+  <tr>
+    <td>Idempotency record</td>
+    <td>Excellent</td>
+    <td>Conditional writes prevent duplicate processing</td>
+  </tr>
+  <tr>
+    <td>Workflow checkpoint</td>
+    <td>Excellent</td>
+    <td>Fast point reads and atomic updates</td>
+  </tr>
+  <tr>
+    <td>Large time-series metrics</td>
+    <td>Weak</td>
+    <td>Usually better in Timestream, InfluxDB, OpenSearch, or S3</td>
+  </tr>
+  <tr>
+    <td>Ad hoc reporting</td>
+    <td>Weak</td>
+    <td>No joins, no SQL aggregation, scan cost risk</td>
+  </tr>
+</table>
+
+<div class="hi">For data engineering, DynamoDB is often the control plane, not the data plane.</div>
+<div class="warn">The 400 KB item limit matters. Store large payloads in S3 and keep a pointer, checksum, status, and metadata in DynamoDB.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">GSIs and LSIs</h2>
+<p>Global Secondary Indexes and Local Secondary Indexes add alternate access paths. They are powerful, but every index is also another write target, another cost surface, and another operational dependency.</p>
+<p>A GSI can use a different partition key and sort key from the base table. An LSI shares the base table partition key but uses a different sort key. LSIs must be created with the table. GSIs can be added later, but backfilling them on a large table can take time and consume capacity.</p>
+
+<table>
+  <tr>
+    <th>Index Type</th>
+    <th>Key Behavior</th>
+    <th>Best Use</th>
+    <th>Tradeoff</th>
+  </tr>
+  <tr>
+    <td>GSI</td>
+    <td>Different partition key and optional sort key</td>
+    <td>Alternate query path such as status, tenant, external ID</td>
+    <td>Extra write cost and eventual consistency</td>
+  </tr>
+  <tr>
+    <td>LSI</td>
+    <td>Same partition key, different sort key</td>
+    <td>Alternate ordering within the same item collection</td>
+    <td>Must be planned at table creation</td>
+  </tr>
+  <tr>
+    <td>Sparse GSI</td>
+    <td>Only items with index keys appear</td>
+    <td>Queues, open tasks, failed jobs, active sessions</td>
+    <td>Requires careful attribute lifecycle management</td>
+  </tr>
+  <tr>
+    <td>Overloaded GSI</td>
+    <td>Multiple entity types share one index</td>
+    <td>Single-table designs with many access patterns</td>
+    <td>Harder naming discipline and testing</td>
+  </tr>
+</table>
+
+<h3>Sparse GSI example</h3>
+<pre><code>{
+  "PK": "JOB#abc123",
+  "SK": "METADATA",
+  "status": "FAILED",
+  "GSI1PK": "FAILED#2026-04-25",
+  "GSI1SK": "PIPELINE#customer_extract#JOB#abc123"
+}</code></pre>
+
+<div class="hi">A sparse GSI is one of DynamoDB's best production patterns. Only the items you need to query appear in the index.</div>
+<div class="warn">Every GSI has its own partitioning problem. A low-cardinality GSI key like <code>status=FAILED</code> can become a hot partition unless bucketed by date, tenant, or shard.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Capacity Modes and Throughput Economics</h2>
+<p>DynamoDB offers on-demand capacity and provisioned capacity. On-demand removes most capacity planning and charges per request. Provisioned capacity charges for configured read and write capacity, commonly with auto scaling for predictable workloads.</p>
+<p>The engineering choice is not only price per request. It also includes operational overhead, traffic predictability, cold-start growth, budget guardrails, and the blast radius of accidental high-volume traffic.</p>
+
+<table>
+  <tr>
+    <th>Mode</th>
+    <th>Use When</th>
+    <th>Cost Behavior</th>
+    <th>Risk</th>
+  </tr>
+  <tr>
+    <td>On-demand</td>
+    <td>Unknown, bursty, spiky, or early-stage workloads</td>
+    <td>Pay per request</td>
+    <td>Cost can rise quickly if traffic or scans explode</td>
+  </tr>
+  <tr>
+    <td>Provisioned</td>
+    <td>Predictable steady workloads</td>
+    <td>Pay for configured capacity</td>
+    <td>Throttling if auto scaling lags or limits are wrong</td>
+  </tr>
+  <tr>
+    <td>Provisioned + auto scaling</td>
+    <td>Known baseline with moderate variation</td>
+    <td>Balances cost and elasticity</td>
+    <td>Scaling is reactive, not magical</td>
+  </tr>
+  <tr>
+    <td>Reserved capacity</td>
+    <td>Long-running predictable provisioned workloads</td>
+    <td>Discounted commitment</td>
+    <td>Waste if usage drops</td>
+  </tr>
+</table>
+
+<h3>Simple CLI examples</h3>
+<pre><code>aws dynamodb update-table \
+  --table-name pipeline_metadata \
+  --billing-mode PAY_PER_REQUEST
+
+aws dynamodb update-table \
+  --table-name pipeline_metadata \
+  --provisioned-throughput ReadCapacityUnits=200,WriteCapacityUnits=100</code></pre>
+
+<div class="hi">Use on-demand when product traffic is unknown. Move to provisioned only when measurement proves a stable workload and the team can manage capacity intentionally.</div>
+<div class="warn">Scans, large items, global tables, backups, Streams, DAX, exports, and GSIs can all show up as bill surprises. The table request rate is only one part of cost.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Hot Partitions and Scale Failure Modes</h2>
+<p>The hot partition problem happens when too many reads or writes target the same partition key or a small set of partition keys. DynamoDB can scale horizontally, but your key design must give it room to distribute traffic.</p>
+<p>Senior engineers should ask: what is the hottest key, not just how many keys exist? A table can have millions of distinct tenants but still fail if one enterprise tenant produces most traffic under one partition key.</p>
+
+<table>
+  <tr>
+    <th>Bad Pattern</th>
+    <th>Why It Breaks</th>
+    <th>Better Pattern</th>
+  </tr>
+  <tr>
+    <td><code>PK=STATUS#OPEN</code></td>
+    <td>All open records hit one partition</td>
+    <td><code>PK=STATUS#OPEN#DATE#2026-04-25#SHARD#03</code></td>
+  </tr>
+  <tr>
+    <td><code>PK=TENANT#big_customer</code></td>
+    <td>One tenant dominates traffic</td>
+    <td>Add write shards or split by workload dimension</td>
+  </tr>
+  <tr>
+    <td><code>PK=DATE#today</code></td>
+    <td>All current writes concentrate on today</td>
+    <td>Bucket by date plus source, region, or shard</td>
+  </tr>
+  <tr>
+    <td>Unbounded item collection</td>
+    <td>Large partition grows forever</td>
+    <td>Time bucket the partition key</td>
+  </tr>
+</table>
+
+<h3>Write sharding pattern</h3>
+<pre><code>PK = "TENANT#123#INGEST#SHARD#" + random_int(0, 19)
+SK = "EVENT#2026-04-25T01:30:00Z#uuid"</code></pre>
+
+<p>Write sharding improves write distribution, but it complicates reads because the application must query multiple shards and merge results. That tradeoff is acceptable for high-ingest systems but annoying for simple dashboards.</p>
+
+<div class="hi">Hot partitions are usually modeling bugs, not DynamoDB bugs.</div>
+<div class="warn">Random sharding solves write heat but can hurt query simplicity. Use it only when measured traffic justifies the added read fan-out.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Streams and Event-Driven Pipelines</h2>
+<p>DynamoDB Streams capture item-level changes and make them available for downstream processing. They are commonly connected to Lambda, EventBridge Pipes, Kinesis, or custom consumers to build event-driven workflows.</p>
+<p>For data engineering, Streams are useful for change propagation, audit capture, cache invalidation, search indexing, CDC-style fanout, and triggering downstream processing when metadata changes.</p>
+
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>Flow</th>
+    <th>Engineering Note</th>
+  </tr>
+  <tr>
+    <td>Metadata event</td>
+    <td>DynamoDB Streams to Lambda to Step Functions</td>
+    <td>Trigger orchestration when a job status changes</td>
+  </tr>
+  <tr>
+    <td>Search indexing</td>
+    <td>DynamoDB Streams to Lambda to OpenSearch</td>
+    <td>Keep operational lookup separate from search</td>
+  </tr>
+  <tr>
+    <td>Lake export</td>
+    <td>Streams or export to S3</td>
+    <td>Use S3/Athena for analytics, not table scans</td>
+  </tr>
+  <tr>
+    <td>Cache invalidation</td>
+    <td>Streams to Lambda to Redis or DAX strategy</td>
+    <td>Invalidate derived read models after writes</td>
+  </tr>
+</table>
+
+<h3>Lambda trigger shape</h3>
+<pre><code>for record in event["Records"]:
+    event_name = record["eventName"]        # INSERT, MODIFY, REMOVE
+    keys = record["dynamodb"]["Keys"]
+    new_image = record["dynamodb"].get("NewImage")
+    old_image = record["dynamodb"].get("OldImage")</code></pre>
+
+<div class="hi">Streams let DynamoDB become the source of operational truth while downstream systems build analytics, search, notifications, and workflow side effects.</div>
+<div class="warn">Stream consumers must be idempotent. Retries, duplicate deliveries, partial batch failures, and poison records are normal production concerns.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">TTL, DAX, and Read Optimization</h2>
+<p>Time to Live automatically marks expired items for deletion using an epoch timestamp attribute. TTL is excellent for sessions, locks, temporary idempotency records, short-lived pipeline state, and deduplication windows.</p>
+<p>DAX is DynamoDB Accelerator, an in-memory cache compatible with DynamoDB API calls. It is useful for read-heavy, eventually consistent, low-latency workloads where repeated key-value reads dominate.</p>
+
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>Best Use</th>
+    <th>Gotcha</th>
+  </tr>
+  <tr>
+    <td>TTL</td>
+    <td>Automatic expiry of temporary records</td>
+    <td>Deletion is asynchronous, not immediate</td>
+  </tr>
+  <tr>
+    <td>DAX</td>
+    <td>Microsecond read latency for repeated reads</td>
+    <td>Not useful for write-heavy or strongly consistent reads</td>
+  </tr>
+  <tr>
+    <td>ProjectionExpression</td>
+    <td>Read only attributes needed</td>
+    <td>Does not reduce read capacity for full item read in all cases the way people expect</td>
+  </tr>
+  <tr>
+    <td>BatchGetItem</td>
+    <td>Many known keys</td>
+    <td>Handle unprocessed keys and retries</td>
+  </tr>
+</table>
+
+<h3>Enable TTL</h3>
+<pre><code>aws dynamodb update-time-to-live \
+  --table-name pipeline_metadata \
+  --time-to-live-specification "Enabled=true,AttributeName=ttl_epoch"</code></pre>
+
+<div class="hi">TTL is great for operational hygiene. It prevents metadata tables from becoming junk drawers full of expired locks and stale deduplication keys.</div>
+<div class="warn">Never build correctness on the assumption that TTL deletes exactly at expiration time. Treat it as eventual cleanup, not a scheduler.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">DynamoDB in the AWS Data Stack</h2>
+<p>DynamoDB fits cleanly into AWS data systems when used as the fast operational layer around slower analytical systems. It can coordinate Glue jobs, store Athena query metadata, track Step Functions state, support Lambda-driven APIs, and feed S3-based analytics through exports or streams.</p>
+<p>The strong architecture pattern is separation of concerns: DynamoDB for current operational state, S3 for durable lake storage, Glue Data Catalog for table metadata, Athena or Spark for analysis, OpenSearch for search, and Redshift for warehouse-style serving.</p>
+
+<table>
+  <tr>
+    <th>AWS Service</th>
+    <th>DynamoDB Interaction</th>
+    <th>Typical Data Engineering Use</th>
+  </tr>
+  <tr>
+    <td>S3</td>
+    <td>Store object pointers, manifests, checksums</td>
+    <td>Track file ingestion and curated outputs</td>
+  </tr>
+  <tr>
+    <td>Glue</td>
+    <td>Store job run metadata and watermarks</td>
+    <td>Coordinate ETL and backfills</td>
+  </tr>
+  <tr>
+    <td>Lambda</td>
+    <td>Read/write metadata, consume Streams</td>
+    <td>Serverless orchestration and event handling</td>
+  </tr>
+  <tr>
+    <td>Step Functions</td>
+    <td>Persist workflow checkpoints</td>
+    <td>Retry-safe state management</td>
+  </tr>
+  <tr>
+    <td>Athena</td>
+    <td>Query exported data in S3</td>
+    <td>Analyze historical table snapshots</td>
+  </tr>
+  <tr>
+    <td>OpenSearch</td>
+    <td>Build search projection from Streams</td>
+    <td>Search by text, many filters, relevance</td>
+  </tr>
+</table>
+
+<div class="hi">DynamoDB is a sharp tool for metadata, state, and coordination. Pair it with S3 and analytics engines instead of forcing analytics into the table.</div>
+<div class="warn">Do not run large analytical scans against production DynamoDB tables. Export to S3 or stream changes into an analytical store.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">Operations, Observability, and Recovery</h2>
+<p>Production DynamoDB ownership means watching throttles, latency, consumed capacity, hot keys, stream iterator age, conditional check failures, item size growth, replication health, and account-level quotas.</p>
+<p>Backups and recovery should be designed before the first outage. Use point-in-time recovery where appropriate, on-demand backups for release checkpoints, and export-to-S3 patterns for analytical replay and audit retention.</p>
+
+<h3>Operational signals to monitor</h3>
+<pre><code>ConsumedReadCapacityUnits
+ConsumedWriteCapacityUnits
+ReadThrottleEvents
+WriteThrottleEvents
+SuccessfulRequestLatency
+SystemErrors
+UserErrors
+ConditionalCheckFailedRequests
+ReturnedItemCount
+StreamIteratorAgeMilliseconds</code></pre>
+
+<table>
+  <tr>
+    <th>Concern</th>
+    <th>Control</th>
+    <th>Why It Matters</th>
+  </tr>
+  <tr>
+    <td>Accidental deletes</td>
+    <td>PITR and least-privilege IAM</td>
+    <td>Fast recovery from application or operator mistakes</td>
+  </tr>
+  <tr>
+    <td>Runaway cost</td>
+    <td>Budgets, alarms, scan controls</td>
+    <td>Scans and GSIs can create surprise bills</td>
+  </tr>
+  <tr>
+    <td>Data corruption</td>
+    <td>Conditional writes and validation</td>
+    <td>Schemaless does not mean ruleless</td>
+  </tr>
+  <tr>
+    <td>Consumer lag</td>
+    <td>Stream iterator age alarms</td>
+    <td>Delayed event processing breaks downstream SLAs</td>
+  </tr>
+</table>
+
+<div class="hi">The most valuable DynamoDB dashboards show access-pattern health: throttles by operation, consumed capacity by index, latency, hot keys, and stream lag.</div>
+<div class="warn">IAM permissions should separate table reads, table writes, index access, backup actions, and destructive operations. Admin-like access from apps is asking for pain.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">When DynamoDB Is the Wrong Choice</h2>
+<p>DynamoDB is excellent for specific access patterns, but it is not a universal database. If the business needs ad hoc filtering, many joins, complex reporting, heavy aggregations, relational constraints, or analyst-friendly SQL, DynamoDB will fight the team.</p>
+<p>It can still participate in those systems, but usually as the operational state store feeding another system. Senior judgment means choosing the right persistence layer, not proving every workload can be squeezed into one service.</p>
+
+<table>
+  <tr>
+    <th>Requirement</th>
+    <th>Better Fit</th>
+    <th>Reason</th>
+  </tr>
+  <tr>
+    <td>Complex SQL reporting</td>
+    <td>PostgreSQL, Redshift, Snowflake, Athena</td>
+    <td>Joins, aggregations, flexible predicates</td>
+  </tr>
+  <tr>
+    <td>Full-text search</td>
+    <td>OpenSearch</td>
+    <td>Text analysis, scoring, search filters</td>
+  </tr>
+  <tr>
+    <td>Large analytical datasets</td>
+    <td>S3 + Parquet + Spark/Athena</td>
+    <td>Columnar scans and cheap storage</td>
+  </tr>
+  <tr>
+    <td>Strong relational integrity</td>
+    <td>PostgreSQL or another RDBMS</td>
+    <td>Foreign keys, joins, constraints, transactions</td>
+  </tr>
+  <tr>
+    <td>High-cardinality metrics</td>
+    <td>Timestream, InfluxDB, Prometheus-style stores</td>
+    <td>Time-series compression and range analytics</td>
+  </tr>
+</table>
+
+<div class="hi">Choose DynamoDB when access is known and latency matters. Choose relational or analytical systems when questions are unknown and exploration matters.</div>
+<div class="warn">The most expensive DynamoDB migration is the one caused by using it before the access patterns were understood.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you explain single-table design to a team coming from relational databases?</div>
+  <div class="qa-a">A: I would explain that relational design optimizes for normalized storage and flexible joins, while DynamoDB optimizes for known access paths. In single-table design, related items are intentionally colocated by partition key and ordered by sort key so the application can answer business queries with key-based reads instead of joins.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you choose a partition key for a high-volume DynamoDB table?</div>
+  <div class="qa-a">A: I start from access patterns and traffic distribution. The key must support the query, have high enough cardinality, and distribute actual read/write traffic. I also look for hot tenants, hot dates, status buckets, and write bursts. If one key can dominate traffic, I bucket or shard intentionally.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you use a GSI instead of changing the base table key?</div>
+  <div class="qa-a">A: I use a GSI when the table needs an alternate access pattern that cannot be served by the primary key, such as lookup by external ID or listing failed jobs by date. I avoid adding GSIs casually because each one increases write cost, storage, backfill complexity, and operational monitoring.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you use DynamoDB in a data pipeline architecture?</div>
+  <div class="qa-a">A: I would use it as the control plane: pipeline run records, watermarks, file manifests, idempotency keys, locks, and retry state. The actual large datasets would live in S3 as Parquet or another analytical format, with Glue, Athena, Spark, or Redshift doing the heavy analytical work.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What are common DynamoDB cost surprises?</div>
+  <div class="qa-a">A: Common surprises include scans, large item sizes, too many GSIs, stream reads, global table replication, backups, exports, DAX clusters, and provisioned capacity that sits idle. Another subtle one is a GSI with a bad key design that becomes both expensive and throttled.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you reject DynamoDB for a project?</div>
+  <div class="qa-a">A: I would reject it if the team needs ad hoc analytics, complex SQL, many joins, strong relational constraints, or flexible reporting as a primary requirement. DynamoDB is excellent when access patterns are known. It is a poor fit when the main requirement is exploratory querying.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">PK</div>
+    <div class="cd">Partition key; controls data distribution and primary lookup path.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SK</div>
+    <div class="cd">Sort key; orders related items within the same partition key.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">GetItem</div>
+    <div class="cd">Fast point lookup by full primary key.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Query</div>
+    <div class="cd">Efficient lookup by partition key with optional sort key condition.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Scan</div>
+    <div class="cd">Reads across table or index; dangerous for large production workloads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">GSI</div>
+    <div class="cd">Global Secondary Index; alternate partition/sort key access path with extra write and storage cost.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">LSI</div>
+    <div class="cd">Local Secondary Index; same partition key, alternate sort key, created with the table.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Sparse GSI</div>
+    <div class="cd">Index only items that contain the index key attributes; useful for queues and filtered states.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">On-demand</div>
+    <div class="cd">Pay-per-request capacity mode for unknown or spiky workloads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Provisioned</div>
+    <div class="cd">Capacity mode where read/write throughput is configured and paid hourly.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TTL</div>
+    <div class="cd">Epoch timestamp attribute used for eventual automatic item expiry.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Streams</div>
+    <div class="cd">Ordered change records for item inserts, updates, and deletes.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">DAX</div>
+    <div class="cd">Managed in-memory cache for read-heavy DynamoDB workloads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">400 KB</div>
+    <div class="cd">Maximum DynamoDB item size; store large payloads in S3 and keep pointers in DynamoDB.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
