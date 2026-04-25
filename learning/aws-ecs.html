@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ECS &amp; Docker — Master Engineering Reference | Sean Girgis</title>
+<title>ECS and Docker - Master Engineering Reference | Sean Girgis</title>
 <link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-ecs.html">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -62,834 +62,737 @@ tr:nth-child(even) td { background:#f8fafc; }
 <body id="top">
 <div class="doc">
 
-  <div class="topnav">
-    <a href="https://seanlgirgis.github.io/#learning">&larr; Learning Hub</a> / ECS &amp; Docker - Master Engineering Reference
-  </div>
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / ECS and Docker - Master Engineering Reference
+</div>
 
-  <h1>ECS &amp; Docker</h1>
-  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-24 &middot; 25-35 min read</p>
+<h1>ECS and Docker</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 26-32 min read</p>
 
-  <div class="tag-row">
-    <span class="tag">AWS</span>
-    <span class="tag">ECS</span>
-    <span class="tag">Docker</span>
-    <span class="tag">Fargate</span>
-    <span class="tag">Containers</span>
-    <span class="tag">ECR</span>
-    <span class="tag">IAM</span>
-  </div>
+<div class="tag-row">
+  <span class="tag">AWS ECS</span>
+  <span class="tag">Docker</span>
+  <span class="tag">Fargate</span>
+  <span class="tag">ECR</span>
+  <span class="tag">CI/CD</span>
+  <span class="tag">CloudWatch</span>
+  <span class="tag">Data Pipelines</span>
+  <span class="tag">Containers</span>
+</div>
 
-  <div class="audio-box">
-    <div class="audio-label">&#127911; Audio Overview</div>
-    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-ecs.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
-    <div class="video-hint" style="margin-top:10px;">&#127916; Video Overview (coming soon)</div>
-  </div>
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-ecs.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
 
-  <div class="toc">
-    <h2>Contents</h2>
-    <ol>
-      <li><a href="#s1">What ECS &amp; Docker Actually Are</a></li>
-      <li><a href="#s2">Docker Core Concepts</a></li>
-      <li><a href="#s3">Writing Effective Dockerfiles</a></li>
-      <li><a href="#s4">ECR — Elastic Container Registry</a></li>
-      <li><a href="#s5">ECS Architecture — Clusters, Services, Tasks</a></li>
-      <li><a href="#s6">Task Definitions Deep-Dive</a></li>
-      <li><a href="#s7">Fargate vs EC2 Launch Type</a></li>
-      <li><a href="#s8">IAM — Task Roles vs Execution Roles</a></li>
-      <li><a href="#s9">Networking — awsvpc, ALB, Service Discovery</a></li>
-      <li><a href="#s10">ECS for Data Pipelines</a></li>
-      <li><a href="#s11">Auto Scaling ECS Services</a></li>
-      <li><a href="#s12">Logging &amp; Observability</a></li>
-      <li><a href="#s13">Secrets &amp; Configuration Management</a></li>
-      <li><a href="#s14">Common Gotchas and Anti-Patterns</a></li>
-      <li><a href="#s15">10 Key Engineering Questions</a></li>
-      <li><a href="#s16">Production Story Angles</a></li>
-      <li><a href="#s17">Quick Reference Cheat Sheet</a></li>
-    </ol>
-  </div>
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Docker Mental Model</a></li>
+    <li><a href="#s2">Images, Layers, and Union Filesystems</a></li>
+    <li><a href="#s3">Containers vs Virtual Machines</a></li>
+    <li><a href="#s4">Dockerfile Best Practices</a></li>
+    <li><a href="#s5">Amazon ECR</a></li>
+    <li><a href="#s6">ECS Architecture</a></li>
+    <li><a href="#s7">Fargate vs EC2 Launch Type</a></li>
+    <li><a href="#s8">Task Execution Role vs Task Role</a></li>
+    <li><a href="#s9">awsvpc Networking</a></li>
+    <li><a href="#s10">Scaling, Deployments, and Rollbacks</a></li>
+    <li><a href="#s11">ECS for Data Pipelines</a></li>
+    <li><a href="#s12">Secrets, Logs, Health, and Observability</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
 
-  <!-- SECTION 1 -->
-  <h2 id="s1">1. What ECS &amp; Docker Actually Are</h2>
+<h2 id="s1">Docker Mental Model</h2>
+<p>Docker packages an application, runtime, libraries, and startup command into an immutable image. ECS then runs that image as a task, keeps the desired number of copies alive through a service, and integrates the workload with IAM, VPC networking, load balancers, CloudWatch, ECR, Secrets Manager, and deployment automation.</p>
+<p>For data engineers, the important shift is that the runtime environment becomes versioned infrastructure. A Spark helper API, dbt runner, Kafka consumer, FastAPI model endpoint, Airflow utility task, or backfill worker can all run from the same reproducible container image across laptop, CI, staging, and production.</p>
+<div class="hi">The best mental model: Docker standardizes the process image; ECS standardizes the production scheduler around that image.</div>
+<div class="warn">A container is not a mini-server. Treat it as disposable. Anything written only to the container filesystem should be assumed lost after restart, redeploy, scaling, or host replacement.</div>
+<table>
+  <tr>
+    <th>Layer</th>
+    <th>Responsibility</th>
+    <th>Data engineering example</th>
+  </tr>
+  <tr>
+    <td>Docker image</td>
+    <td>Application package and runtime dependencies</td>
+    <td>Python app with pandas, boto3, PyIceberg, and validation code</td>
+  </tr>
+  <tr>
+    <td>ECR</td>
+    <td>Private image registry</td>
+    <td>Stores versioned ETL runner images</td>
+  </tr>
+  <tr>
+    <td>ECS task definition</td>
+    <td>Runtime contract: image, CPU, memory, env vars, roles, logs</td>
+    <td>Defines the container for an S3-to-Redshift loader</td>
+  </tr>
+  <tr>
+    <td>ECS service</td>
+    <td>Long-running desired state</td>
+    <td>Keeps Kafka consumers or APIs running</td>
+  </tr>
+  <tr>
+    <td>Run task</td>
+    <td>One-off execution</td>
+    <td>Backfill one date range or repair a failed partition</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <p>Docker is a container runtime — a technology for packaging an application and all its dependencies (libraries, runtime, OS packages, config) into a portable, reproducible unit called a <strong>container image</strong>. A container image runs identically on any host that has a Docker-compatible runtime, eliminating the "works on my machine" class of environment inconsistencies. Containers share the host OS kernel (unlike virtual machines which emulate full hardware), making them lightweight and fast to start.</p>
+<h2 id="s2">Images, Layers, and Union Filesystems</h2>
+<p>A Docker image is built from read-only layers. Each Dockerfile instruction can create a layer. At runtime, Docker adds a thin writable layer on top. This is why image build order, dependency caching, and file placement matter so much. A tiny source-code change should not force a full reinstall of system packages and Python dependencies.</p>
+<p>The union filesystem merges those layers into one visible filesystem. The application sees one directory tree, but Docker can reuse unchanged layers across builds and deployments. ECS benefits because pulling a cached layer is faster than pulling a whole new image.</p>
+<div class="hi">Layer design is a delivery-speed issue. Bad layer order makes every CI build slow and every ECS rollout slower.</div>
+<div class="warn">Never bake secrets, SSH keys, cloud credentials, or environment-specific config into an image layer. Deleted files can still exist in image history.</div>
+<pre><code># Bad: requirements reinstall every time source changes
+COPY . /app
+RUN pip install -r /app/requirements.txt
 
-  <p>Amazon ECS (Elastic Container Service) is AWS's fully managed container orchestration platform. It handles scheduling containers across a cluster of compute, maintaining desired container counts, integrating with load balancers, managing rolling deployments, and wiring containers into the VPC networking model. ECS answers the question: "I have container images — how do I run them reliably at scale in AWS?" You define <em>what</em> to run (task definitions), ECS decides <em>where</em> and handles the <em>how</em>.</p>
+# Better: dependency layer is cached until requirements change
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY . /app</code></pre>
+<table>
+  <tr>
+    <th>Image concern</th>
+    <th>Why it matters</th>
+    <th>Production habit</th>
+  </tr>
+  <tr>
+    <td>Layer size</td>
+    <td>Large layers slow pull time and rollout</td>
+    <td>Use slim bases and multi-stage builds</td>
+  </tr>
+  <tr>
+    <td>Layer order</td>
+    <td>Invalidated layers rebuild downstream layers</td>
+    <td>Copy dependency manifests before source code</td>
+  </tr>
+  <tr>
+    <td>Writable layer</td>
+    <td>Lost on task replacement</td>
+    <td>Write durable outputs to S3, EFS, RDS, or queues</td>
+  </tr>
+  <tr>
+    <td>Image digest</td>
+    <td>Uniquely identifies exact image contents</td>
+    <td>Deploy immutable tags or digests, not floating tags</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <p>ECS competes with Kubernetes (EKS on AWS) in the container orchestration space. ECS is simpler to operate — it has less surface area, fewer abstractions, and integrates more naturally with native AWS services (IAM, ALB, CloudWatch, Secrets Manager) without custom operators or controllers. EKS offers more flexibility, a larger ecosystem, and portability across clouds. For teams building entirely on AWS without Kubernetes expertise, ECS is typically the right starting point. For organizations with existing Kubernetes knowledge or multi-cloud requirements, EKS makes more sense.</p>
+<h2 id="s3">Containers vs Virtual Machines</h2>
+<p>Virtual machines virtualize hardware and run a full guest operating system. Containers isolate processes while sharing the host kernel. This makes containers lighter, faster to start, and easier to pack densely, but it also means kernel-level compatibility and host isolation must be understood.</p>
+<p>On ECS Fargate, AWS hides the host management. On ECS with EC2 launch type, you own the capacity pool, AMIs, patching, instance families, Docker/container runtime configuration, and bin packing behavior. The operational model changes substantially.</p>
+<div class="hi">Containers are usually the right packaging unit; ECS launch type decides who owns the servers underneath.</div>
+<div class="warn">Do not assume containers provide the same isolation boundary as separate VMs. Security still depends on IAM, least privilege, image hygiene, network boundaries, and runtime configuration.</div>
+<table>
+  <tr>
+    <th>Dimension</th>
+    <th>Container</th>
+    <th>Virtual machine</th>
+  </tr>
+  <tr>
+    <td>Startup time</td>
+    <td>Seconds</td>
+    <td>Usually slower</td>
+  </tr>
+  <tr>
+    <td>Packaging</td>
+    <td>App plus dependencies</td>
+    <td>Full OS image plus app</td>
+  </tr>
+  <tr>
+    <td>Density</td>
+    <td>High</td>
+    <td>Lower due to OS overhead</td>
+  </tr>
+  <tr>
+    <td>Isolation</td>
+    <td>Process and namespace isolation</td>
+    <td>Hardware virtualization boundary</td>
+  </tr>
+  <tr>
+    <td>Data workload fit</td>
+    <td>APIs, workers, scheduled jobs, lightweight batch</td>
+    <td>Specialized runtimes, heavy custom hosts, legacy tools</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <div class="hi">For data engineering, containers solve a critical problem: reproducible execution environments. A Python ETL job that runs in a Docker container carries its exact Python version, library versions, and system dependencies with it — no dependency drift between dev, staging, and production, and no "the Glue runtime doesn't have my library version" problem.</div>
-
-<pre>
-Container vs VM vs Bare Metal
-──────────────────────────────────────────────────────
-
-  Bare Metal          VM                  Container
-  ──────────          ──────────────      ──────────────
-  App                 App                 App
-  OS + Libs           OS + Libs           Libs only
-  Hardware            Hypervisor +        Container
-                      Virtual HW          Runtime
-                      Host OS             Host OS kernel
-                      Hardware            Hardware
-
-  Boot: minutes       Boot: 30-60s        Start: <1s
-  Isolation: full     Isolation: full     Isolation: process
-  Overhead: none      Overhead: high      Overhead: minimal
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 2 -->
-  <h2 id="s2">2. Docker Core Concepts</h2>
-
-  <p>Understanding Docker's core primitives is prerequisite to working effectively with ECS. The concepts are simple but the implications for security, performance, and reproducibility run deep.</p>
-
-  <h3>Image vs Container</h3>
-  <p>An <strong>image</strong> is an immutable, layered snapshot of a filesystem — the blueprint. A <strong>container</strong> is a running instance of an image — the process. You can run many containers from the same image simultaneously. Images are built from Dockerfiles and stored in registries (ECR, Docker Hub). Containers are ephemeral by default — when a container stops, any filesystem changes within it are lost unless written to a mounted volume.</p>
-
-  <h3>Image Layers</h3>
-  <p>Docker images are composed of layers, each corresponding to a Dockerfile instruction (<code>FROM</code>, <code>RUN</code>, <code>COPY</code>, etc.). Layers are cached by content hash. When rebuilding an image, Docker reuses cached layers up to the first changed instruction and only rebuilds from that point forward. Layer ordering in a Dockerfile directly impacts build speed — instructions that change frequently (copying application code) should come last; instructions that change rarely (OS package installs, pip installs) should come first.</p>
-
-  <h3>Volumes and Bind Mounts</h3>
-  <p>Containers are ephemeral — data written to the container filesystem is lost when the container exits. For persistence, Docker provides volumes (managed by Docker, stored on the host filesystem) and bind mounts (a host directory mounted into the container). In ECS/Fargate, bind mounts work differently — Fargate tasks don't have a persistent host, so ephemeral storage (configurable up to 200 GB on Fargate) or EFS mounts are used for data that must outlive the task.</p>
-
-  <h3>Docker Networking Basics</h3>
-  <p>Containers can communicate via Docker networks. By default, each container gets a network namespace with its own IP. Containers on the same Docker network can reach each other by container name (DNS resolution). In ECS, the <code>awsvpc</code> network mode replaces Docker networking with VPC-native ENIs — each task gets its own VPC IP and communicates via standard VPC routing.</p>
-
-<pre>
-# Essential Docker commands
-docker build -t my-etl-job:1.0.0 .          # Build image from Dockerfile
-docker run --rm my-etl-job:1.0.0            # Run container, remove on exit
-docker run -it my-etl-job:1.0.0 /bin/bash  # Interactive shell into container
-docker ps                                    # List running containers
-docker images                               # List local images
-docker logs <container-id>                  # Tail container stdout/stderr
-docker exec -it <container-id> /bin/bash   # Shell into running container
-docker stop <container-id>                  # Graceful stop (SIGTERM)
-docker rm <container-id>                    # Remove stopped container
-docker rmi my-etl-job:1.0.0               # Remove image
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 3 -->
-  <h2 id="s3">3. Writing Effective Dockerfiles</h2>
-
-  <p>A Dockerfile is a sequence of instructions that build a container image. Writing good Dockerfiles means: small final image size, fast rebuild times via layer caching, security (minimal attack surface, no root), and reproducibility (pinned versions).</p>
-
-  <h3>Multi-Stage Builds</h3>
-  <p>Multi-stage builds use multiple <code>FROM</code> statements in a single Dockerfile. An early stage performs heavy build steps (compiling code, installing build tools, pip install with all dev dependencies). A final stage starts from a clean base image and copies only the build artifacts. The final image contains no build tools, no source code, no test dependencies — only what's needed to run. This is the most impactful technique for reducing image size.</p>
-
-<pre>
-# Multi-stage Dockerfile for a Python ETL job
-# ─────────────────────────────────────────────
-
-# Stage 1: Build — install all dependencies including build tools
-FROM python:3.12-slim AS builder
-
+<h2 id="s4">Dockerfile Best Practices</h2>
+<p>A production Dockerfile should optimize for reproducibility, build cache, minimal runtime footprint, non-root execution, clean dependency boundaries, and predictable startup. For senior data engineering workloads, also consider native dependencies such as ODBC drivers, Java runtimes, database clients, compression libraries, and security scanning noise.</p>
+<p>Multi-stage builds are especially useful when the build environment is heavy but the runtime is small. Compile, install, or generate artifacts in a builder stage, then copy only the final runtime assets into the production stage.</p>
+<div class="hi">A good Dockerfile is part of your deployment contract. It should be deterministic enough that CI, ECS, and local debugging all run the same application.</div>
+<div class="warn">The most common Dockerfile smell is using a huge base image, running as root, installing build tools in the runtime image, and relying on <code>latest</code> tags.</div>
+<pre><code>FROM python:3.12-slim AS builder
 WORKDIR /build
-
-# Copy requirements first — cached until requirements change
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Stage 2: Runtime — clean minimal image
 FROM python:3.12-slim AS runtime
-
-# Non-root user for security
-RUN useradd --create-home --shell /bin/bash appuser
-
-# Copy installed packages from builder stage
-COPY --from=builder /install /usr/local
-
-# Copy application code
 WORKDIR /app
-COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser entrypoint.sh .
-RUN chmod +x entrypoint.sh
+
+RUN useradd -m appuser
+COPY --from=builder /root/.local /home/appuser/.local
+COPY src/ ./src/
+
+ENV PATH="/home/appuser/.local/bin:${PATH}"
+ENV PYTHONUNBUFFERED=1
 
 USER appuser
+CMD ["python", "-m", "src.main"]</code></pre>
+<h3>Practical Dockerfile rules</h3>
+<table>
+  <tr>
+    <th>Rule</th>
+    <th>Reason</th>
+  </tr>
+  <tr>
+    <td>Pin base image versions</td>
+    <td>Prevents surprise runtime changes</td>
+  </tr>
+  <tr>
+    <td>Use <code>.dockerignore</code></td>
+    <td>Keeps build context small and avoids leaking files</td>
+  </tr>
+  <tr>
+    <td>Install dependencies before copying source</td>
+    <td>Preserves layer cache</td>
+  </tr>
+  <tr>
+    <td>Run as non-root</td>
+    <td>Reduces blast radius after compromise</td>
+  </tr>
+  <tr>
+    <td>Use exec-form <code>CMD</code></td>
+    <td>Handles signals correctly for graceful shutdown</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-ENTRYPOINT ["./entrypoint.sh"]
-</pre>
+<h2 id="s5">Amazon ECR</h2>
+<p>Amazon Elastic Container Registry is the private registry commonly used with ECS. CI builds an image, tags it, pushes it to ECR, and ECS pulls that image during task launch. ECR also supports lifecycle policies, vulnerability scanning, repository permissions, cross-account access patterns, and immutable tags.</p>
+<p>For production, image tags are not just labels; they are deployment references. A tag like <code>aws-ecs-worker:2026-04-25.1830.sha-9f32a1c</code> is auditable. A tag like <code>latest</code> is an incident waiting to happen because the same task definition can silently point to different image contents over time.</p>
+<div class="hi">Use immutable image tags tied to Git SHA, build number, or semantic version. This makes rollback and forensic analysis possible.</div>
+<div class="warn">The tag <code>latest</code> is dangerous in ECS because a task definition revision may appear unchanged while new tasks pull different image bytes.</div>
+<pre><code>aws ecr create-repository \
+  --repository-name data/ecs-worker \
+  --image-scanning-configuration scanOnPush=true \
+  --image-tag-mutability IMMUTABLE
 
-  <h3>Layer Caching Strategy</h3>
-  <p>Order Dockerfile instructions from least-frequently-changing to most-frequently-changing. Package installs (<code>RUN pip install</code>) should come before application code copies (<code>COPY src/ ./</code>) because code changes on every commit but requirements change rarely. A <code>COPY . .</code> at the top of a Dockerfile busts the cache on every build, forcing full reinstallation of dependencies every time.</p>
-
-<pre>
-# BAD — cache busts on every code change
-FROM python:3.12-slim
-COPY . .                          # Busts cache for everything below
-RUN pip install -r requirements.txt
-
-# GOOD — pip install cached until requirements.txt changes
-FROM python:3.12-slim
-COPY requirements.txt .           # Only changes when deps change
-RUN pip install -r requirements.txt
-COPY src/ ./src/                  # Code changes don't bust pip cache
-</pre>
-
-  <h3>Security Hardening</h3>
-  <ul>
-    <li><strong>Never run as root:</strong> Add a non-root user with <code>RUN useradd</code> and switch with <code>USER</code>. Containers running as root that escape their namespace have host-root access.</li>
-    <li><strong>Pin base image versions:</strong> <code>FROM python:3.12-slim</code> not <code>FROM python:latest</code>. Unpinned base images change silently and break reproducibility.</li>
-    <li><strong>No secrets in image layers:</strong> Every layer is permanently in the image history. A secret in a <code>RUN</code> command (even if deleted in a later layer) is extractable. Use Docker BuildKit secrets or pass secrets at runtime via environment variables.</li>
-    <li><strong>Minimize installed packages:</strong> Fewer packages = smaller attack surface. Use <code>-slim</code> or <code>-alpine</code> base images. Don't install <code>curl</code>, <code>wget</code>, or SSH unless genuinely required.</li>
-  </ul>
-
-  <div class="warn"><strong>Never COPY .env or credentials files into an image:</strong> A <code>COPY . .</code> instruction will include any <code>.env</code>, <code>~/.aws/credentials</code>, or other sensitive files in the current directory unless explicitly excluded in <code>.dockerignore</code>. Always maintain a thorough <code>.dockerignore</code> that excludes <code>.env</code>, <code>*.pem</code>, <code>.git/</code>, <code>__pycache__/</code>, and test fixtures.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 4 -->
-  <h2 id="s4">4. ECR — Elastic Container Registry</h2>
-
-  <p>Amazon ECR is AWS's managed Docker container registry. It stores, versions, and serves container images to ECS tasks, Lambda container functions, and EC2 instances. ECR integrates natively with IAM for access control, with KMS for image encryption at rest, and with CloudWatch for pull metrics and lifecycle policies.</p>
-
-  <h3>Pushing Images to ECR</h3>
-<pre>
-# Authenticate Docker to ECR (token valid 12 hours)
-aws ecr get-login-password --region us-east-1 \
-  | docker login --username AWS \
-    --password-stdin 123456789.dkr.ecr.us-east-1.amazonaws.com
-
-# Tag local image for ECR
-docker tag my-etl-job:1.0.0 \
-  123456789.dkr.ecr.us-east-1.amazonaws.com/my-etl-job:1.0.0
-
-# Push to ECR
-docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/my-etl-job:1.0.0
-
-# In CI/CD (GitHub Actions, CodeBuild) — use IRSA or CodeBuild role,
-# never hardcode AWS credentials
-</pre>
-
-  <h3>Image Tagging Strategy</h3>
-  <p>Tag images with both a specific version tag and <code>latest</code>. Version tags should be immutable — once pushed, never overwrite a tagged version. Use semantic versioning (<code>1.2.3</code>) or Git commit SHA tags (<code>abc1234</code>) for production deployments. <code>latest</code> is useful for development but should never be what ECS task definitions reference in production — a new <code>latest</code> push would immediately affect any task definition using it on next deployment.</p>
-
-  <div class="hi">Reference container images in ECS task definitions by their full URI including the digest (<code>@sha256:...</code>) for maximum reproducibility, or by a specific immutable tag. Never use <code>:latest</code> in production task definitions — it makes deployments non-deterministic.</div>
-
-  <h3>Lifecycle Policies</h3>
-  <p>ECR repositories accumulate images over time. Without lifecycle policies, storage costs grow unboundedly and repositories become cluttered. Configure policies to: keep the last N tagged images per repository, expire untagged images after N days, and retain release-tagged images indefinitely. Lifecycle policies run daily and are evaluated per-repository.</p>
-
-<pre>
-# ECR lifecycle policy — keep last 10 tagged images, expire untagged after 1 day
-{
+aws ecr put-lifecycle-policy \
+  --repository-name data/ecs-worker \
+  --lifecycle-policy-text file://ecr-lifecycle.json</code></pre>
+<pre><code>{
   "rules": [
     {
       "rulePriority": 1,
-      "description": "Expire untagged images after 1 day",
+      "description": "Keep last 30 production images",
       "selection": {
-        "tagStatus": "untagged",
-        "countType": "sinceImagePushed",
-        "countUnit": "days",
-        "countNumber": 1
+        "tagStatus": "tagged",
+        "tagPrefixList": ["prod-"],
+        "countType": "imageCountMoreThan",
+        "countNumber": 30
       },
       "action": { "type": "expire" }
     },
     {
       "rulePriority": 2,
-      "description": "Keep only last 10 tagged images",
+      "description": "Delete old untagged layers",
       "selection": {
-        "tagStatus": "tagged",
-        "tagPrefixList": ["v"],
-        "countType": "imageCountMoreThan",
-        "countNumber": 10
+        "tagStatus": "untagged",
+        "countType": "sinceImagePushed",
+        "countUnit": "days",
+        "countNumber": 7
       },
       "action": { "type": "expire" }
     }
   ]
-}
-</pre>
+}</code></pre>
+<table>
+  <tr>
+    <th>ECR feature</th>
+    <th>Use it for</th>
+    <th>Gotcha</th>
+  </tr>
+  <tr>
+    <td>Lifecycle policy</td>
+    <td>Pruning old images and untagged layers</td>
+    <td>Keep enough history for rollback</td>
+  </tr>
+  <tr>
+    <td>Scan on push</td>
+    <td>Detecting known CVEs</td>
+    <td>Scanning does not replace patch discipline</td>
+  </tr>
+  <tr>
+    <td>Immutable tags</td>
+    <td>Preventing tag overwrite</td>
+    <td>Requires unique build tags</td>
+  </tr>
+  <tr>
+    <td>Cross-account policy</td>
+    <td>Central build account to workload accounts</td>
+    <td>Task execution role still needs pull permission</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <a class="back-top" href="#top">↑ Back to top</a>
+<h2 id="s6">ECS Architecture</h2>
+<p>ECS is organized around clusters, task definitions, tasks, services, and capacity. A cluster is a logical scheduling boundary. A task definition is the versioned blueprint. A task is a running copy of that blueprint. A service maintains a desired count of tasks and optionally connects them to a load balancer. A task definition revision is created whenever you change the image, CPU, memory, environment variables, roles, ports, logging, or secrets.</p>
+<p>For data platforms, ECS often sits between serverless event systems and heavyweight distributed compute. It is a strong fit for custom workers, long-running consumers, operational APIs, file processors, metadata services, model-serving APIs, and scheduled batch jobs that need more control than Lambda but less infrastructure than EMR or Kubernetes.</p>
+<div class="hi">Task definition revisions are the deployment unit. Services decide how many tasks to keep alive from a specific revision.</div>
+<div class="warn">Changing an image in ECR does not automatically update running ECS tasks unless the service is redeployed or a new task definition revision is used.</div>
+<table>
+  <tr>
+    <th>Concept</th>
+    <th>What it means</th>
+    <th>Production example</th>
+  </tr>
+  <tr>
+    <td>Cluster</td>
+    <td>Logical group of ECS capacity</td>
+    <td><code>prod-data-services</code></td>
+  </tr>
+  <tr>
+    <td>Task definition</td>
+    <td>Versioned runtime specification</td>
+    <td>Python ETL worker with CPU, memory, role, logs</td>
+  </tr>
+  <tr>
+    <td>Task revision</td>
+    <td>Immutable version of the task definition</td>
+    <td><code>etl-worker:42</code></td>
+  </tr>
+  <tr>
+    <td>Task</td>
+    <td>Running instance of a task definition</td>
+    <td>One active partition processor</td>
+  </tr>
+  <tr>
+    <td>Service</td>
+    <td>Maintains desired count and deployment strategy</td>
+    <td>Ten Kafka consumer tasks</td>
+  </tr>
+</table>
+<pre><code>aws ecs register-task-definition \
+  --cli-input-json file://task-definition.json
 
-  <!-- SECTION 5 -->
-  <h2 id="s5">5. ECS Architecture — Clusters, Services, Tasks</h2>
+aws ecs update-service \
+  --cluster prod-data-services \
+  --service kafka-alert-consumer \
+  --task-definition kafka-alert-consumer:42</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <p>ECS has a clear three-level hierarchy: <strong>Clusters</strong> contain <strong>Services</strong> (or standalone Tasks), and Services manage <strong>Tasks</strong> (running container instances defined by Task Definitions).</p>
+<h2 id="s7">Fargate vs EC2 Launch Type</h2>
+<p>ECS can run tasks on Fargate or on EC2 capacity that you manage. Fargate removes host operations: no instance patching, cluster bin packing, AMI upgrades, or container host scaling. EC2 launch type gives more control over cost density, specialized instances, GPU, local NVMe, daemon sidecars, and advanced host-level tuning.</p>
+<p>For data engineering, Fargate is excellent for APIs, lightweight workers, scheduled jobs, and predictable containerized services. EC2 launch type can win for high-density always-on workers, large memory footprints, GPU workloads, custom networking needs, or workloads that benefit from instance store and host-level control.</p>
+<div class="hi">Choose Fargate when operational simplicity matters more than maximum packing efficiency. Choose EC2 when host control, density, or specialized hardware matters.</div>
+<div class="warn">Fargate pricing can surprise teams with many always-on idle workers. EC2 can be cheaper at steady high utilization, but only if you actually manage capacity well.</div>
+<table>
+  <tr>
+    <th>Dimension</th>
+    <th>Fargate</th>
+    <th>EC2 launch type</th>
+  </tr>
+  <tr>
+    <td>Operations</td>
+    <td>AWS manages hosts</td>
+    <td>You manage instances, AMIs, patching, capacity</td>
+  </tr>
+  <tr>
+    <td>Cost model</td>
+    <td>Pay per task vCPU and memory</td>
+    <td>Pay for EC2 instances whether packed or not</td>
+  </tr>
+  <tr>
+    <td>Density</td>
+    <td>Simpler, less host-level control</td>
+    <td>Can pack many tasks per instance</td>
+  </tr>
+  <tr>
+    <td>GPU</td>
+    <td>Limited fit compared with EC2 options</td>
+    <td>Best for GPU and special instance families</td>
+  </tr>
+  <tr>
+    <td>Host customization</td>
+    <td>Minimal</td>
+    <td>Strong control over agents, volumes, kernel, daemon config</td>
+  </tr>
+  <tr>
+    <td>Best fit</td>
+    <td>APIs, batch jobs, event workers</td>
+    <td>Heavy, dense, specialized, or cost-optimized fleets</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h3>Cluster</h3>
-  <p>An ECS Cluster is a logical grouping of compute capacity. For Fargate, the cluster is purely logical — AWS manages the underlying compute. For EC2 launch type, the cluster contains a fleet of EC2 instances running the ECS agent. One cluster can contain both Fargate and EC2 capacity simultaneously. Clusters are typically environment-scoped (one cluster per environment: dev, staging, prod) or workload-scoped for larger organizations.</p>
-
-  <h3>Task Definition</h3>
-  <p>A Task Definition is the blueprint for a task — analogous to a Docker Compose file or a pod spec in Kubernetes. It specifies: container image(s), CPU and memory allocation, network mode, IAM roles, environment variables, secrets, log configuration, volumes, and health checks. Task Definitions are versioned; each update creates a new revision. ECS services reference a specific revision.</p>
-
-  <h3>Task</h3>
-  <p>A Task is a running instance of a Task Definition — one or more containers executing together on the same compute. Tasks can be launched standalone (run-task, for batch jobs) or managed by a Service (for long-running workloads). Tasks in the same task definition share the same network namespace (in awsvpc mode, they share the task's ENI and IP address).</p>
-
-  <h3>Service</h3>
-  <p>An ECS Service ensures a desired number of tasks are always running. If a task exits or fails a health check, the service scheduler replaces it. Services integrate with ALB/NLB target groups for load-balanced traffic distribution, support rolling and blue/green deployments, and can be auto-scaled based on CloudWatch metrics.</p>
-
-<pre>
-ECS Architecture Overview
-──────────────────────────────────────────────────────
-
-  ECS Cluster (prod-cluster)
-  │
-  ├── Service: api-service (desired: 3 tasks)
-  │   ├── Task (running) ── Container: api:1.2.0
-  │   ├── Task (running) ── Container: api:1.2.0
-  │   └── Task (running) ── Container: api:1.2.0
-  │           │
-  │           └── ALB Target Group ← internet traffic
-  │
-  └── Standalone Tasks (batch ETL jobs)
-      ├── Task (running) ── Container: etl-job:2.1.0
-      └── Task (stopped) ── Container: etl-job:2.1.0
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 6 -->
-  <h2 id="s6">6. Task Definitions Deep-Dive</h2>
-
-  <p>The Task Definition is where most ECS configuration lives. Understanding its structure is essential for correctly deploying containerized workloads.</p>
-
-<pre>
-# Task Definition JSON structure (key fields)
-{
-  "family": "my-etl-job",
-  "taskRoleArn": "arn:aws:iam::123456789:role/ETLTaskRole",
-  "executionRoleArn": "arn:aws:iam::123456789:role/ECSExecutionRole",
-  "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
-  "cpu": "1024",        # 1 vCPU (in units: 256=0.25, 512=0.5, 1024=1, 2048=2, 4096=4)
-  "memory": "4096",     # MB (must be compatible with cpu value)
+<h2 id="s8">Task Execution Role vs Task Role</h2>
+<p>ECS has two IAM roles that are commonly confused. The task execution role is used by the ECS agent or Fargate platform to start the task: pull images from ECR, write logs to CloudWatch, and fetch startup secrets. The task role is used by the application code running inside the container: read S3, query DynamoDB, call Bedrock, write to SQS, or access Glue.</p>
+<p>This separation is critical for least privilege. Your container runtime may need permission to pull a private image, but your application should not automatically inherit broad ECR or CloudWatch permissions. Likewise, your app may need S3 read/write, but the ECS platform does not need application data access.</p>
+<div class="hi">Execution role starts the container. Task role is what your code uses after it is running.</div>
+<div class="warn">A common production bug is putting S3, DynamoDB, or Secrets Manager app permissions on the execution role and then wondering why boto3 inside the container gets AccessDenied.</div>
+<table>
+  <tr>
+    <th>Role</th>
+    <th>Used by</th>
+    <th>Typical permissions</th>
+  </tr>
+  <tr>
+    <td>Task execution role</td>
+    <td>ECS agent or Fargate platform</td>
+    <td>ECR pull, CloudWatch logs, startup secret fetch</td>
+  </tr>
+  <tr>
+    <td>Task role</td>
+    <td>Application code in container</td>
+    <td>S3, SQS, DynamoDB, Glue, Athena, Bedrock, RDS IAM auth</td>
+  </tr>
+</table>
+<pre><code>{
+  "family": "s3-partition-loader",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/s3PartitionLoaderTaskRole",
   "containerDefinitions": [
     {
-      "name": "etl-worker",
-      "image": "123456789.dkr.ecr.us-east-1.amazonaws.com/my-etl-job:1.0.0",
-      "essential": true,
-      "environment": [
-        {"name": "ENV",        "value": "production"},
-        {"name": "S3_BUCKET",  "value": "my-processed-bucket"}
-      ],
+      "name": "loader",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/data/loader:prod-9f32a1c",
+      "essential": true
+    }
+  ]
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">awsvpc Networking</h2>
+<p>With <code>awsvpc</code> networking, each ECS task receives its own elastic network interface, private IP address, and security group behavior. This makes tasks first-class VPC citizens. Security groups can be applied at the task level, traffic can be routed through private subnets, and tasks can access VPC endpoints for S3, ECR, CloudWatch, Secrets Manager, and other AWS APIs without public internet exposure.</p>
+<p>The tradeoff is IP address consumption. At scale, a service with hundreds or thousands of tasks can exhaust subnet CIDR space. This is especially relevant for data workers that scale out by partition, queue depth, or consumer lag.</p>
+<div class="hi">In <code>awsvpc</code> mode, design subnets for task count, not just EC2 instance count.</div>
+<div class="warn">Private ECS tasks still need a path to ECR, CloudWatch Logs, Secrets Manager, and any external dependency. Use NAT gateways or VPC endpoints intentionally; do not discover the missing route during deployment.</div>
+<table>
+  <tr>
+    <th>Networking item</th>
+    <th>Why it matters</th>
+    <th>Data platform angle</th>
+  </tr>
+  <tr>
+    <td>Task ENI</td>
+    <td>Each task gets private networking</td>
+    <td>Per-worker network identity</td>
+  </tr>
+  <tr>
+    <td>Security group</td>
+    <td>Controls inbound and outbound task traffic</td>
+    <td>Limit RDS, MSK, Redis, or OpenSearch access</td>
+  </tr>
+  <tr>
+    <td>Private subnet</td>
+    <td>Keeps workers off public internet</td>
+    <td>Preferred for internal pipelines</td>
+  </tr>
+  <tr>
+    <td>NAT gateway</td>
+    <td>Outbound internet for private tasks</td>
+    <td>Can become a cost and throughput bottleneck</td>
+  </tr>
+  <tr>
+    <td>VPC endpoint</td>
+    <td>Private AWS service access</td>
+    <td>Useful for S3, ECR, Logs, Secrets, SSM</td>
+  </tr>
+</table>
+<pre><code>aws ecs run-task \
+  --cluster prod-data-services \
+  --launch-type FARGATE \
+  --task-definition s3-partition-loader:42 \
+  --network-configuration "awsvpcConfiguration={subnets=[subnet-aaa,subnet-bbb],securityGroups=[sg-loader],assignPublicIp=DISABLED}"</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">Scaling, Deployments, and Rollbacks</h2>
+<p>ECS services can scale manually or automatically. Target tracking policies commonly scale based on average CPU or memory. Step scaling can react to custom CloudWatch metrics such as queue depth, Kafka consumer lag, pending file count, or API latency. Cooldowns prevent the service from thrashing during noisy workload changes.</p>
+<p>Deployments can be rolling or blue/green. Rolling deployments replace tasks gradually within the same service. Blue/green deployments with CodeDeploy shift traffic between old and new task sets using an ALB, support canary or linear traffic shifting, and can automatically roll back on failed alarms.</p>
+<div class="hi">For data workers, the best scaling metric is often business backlog: SQS depth, Kafka lag, partitions waiting, or files pending. CPU alone can be misleading.</div>
+<div class="warn">Scaling out a stateful consumer group too aggressively can trigger Kafka rebalances, duplicate work, database pressure, or downstream rate-limit failures.</div>
+<table>
+  <tr>
+    <th>Deployment strategy</th>
+    <th>Use when</th>
+    <th>Tradeoff</th>
+  </tr>
+  <tr>
+    <td>Rolling update</td>
+    <td>Simple internal services and workers</td>
+    <td>Less control over traffic testing</td>
+  </tr>
+  <tr>
+    <td>Blue/green</td>
+    <td>Critical APIs and risky releases</td>
+    <td>More moving parts: ALB, CodeDeploy, hooks, alarms</td>
+  </tr>
+  <tr>
+    <td>One-off run-task</td>
+    <td>Backfills and repairs</td>
+    <td>No service-level desired-state protection</td>
+  </tr>
+  <tr>
+    <td>Scheduled task</td>
+    <td>Periodic batch jobs</td>
+    <td>Must design idempotency and overlap protection</td>
+  </tr>
+</table>
+<pre><code>{
+  "TargetValue": 60.0,
+  "PredefinedMetricSpecification": {
+    "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+  },
+  "ScaleOutCooldown": 120,
+  "ScaleInCooldown": 300
+}</code></pre>
+<h3>Deployment lifecycle hooks</h3>
+<p>With CodeDeploy blue/green, lifecycle hooks can run validation before traffic shifting or after deployment. A senior pattern is to run smoke tests that verify the task can reach dependencies, read config, authenticate to AWS services, and return a healthy response before production traffic moves.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">ECS for Data Pipelines</h2>
+<p>ECS is not only for web services. It is a practical execution layer for data engineering work that does not need a full distributed compute engine. Common patterns include scheduled tasks for daily loads, event-driven workers consuming SQS, Kafka consumers processing telemetry, one-off <code>run-task</code> backfills, and long-running service workers that maintain throughput against a queue.</p>
+<p>ECS works well when the unit of work fits inside one container. When the job needs distributed shuffle, massive Spark joins, managed notebook workflows, or serverless SQL over S3, use Glue, EMR, Athena, Redshift, or Snowflake instead. The architecture should match the workload shape.</p>
+<div class="hi">ECS is the sweet spot for custom operational data code: too long or heavy for Lambda, too application-specific for Glue, too small for a full Spark cluster.</div>
+<div class="warn">Backfill workers must be idempotent. ECS can restart, duplicate, or replace tasks. Use job keys, checkpoint tables, partition status, or dedupe logic.</div>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>Use ECS how</th>
+    <th>Reliability design</th>
+  </tr>
+  <tr>
+    <td>Scheduled batch</td>
+    <td>EventBridge schedule starts task</td>
+    <td>Prevent overlap; write run metadata</td>
+  </tr>
+  <tr>
+    <td>Backfill</td>
+    <td><code>run-task</code> with date range env vars</td>
+    <td>Checkpoint by partition</td>
+  </tr>
+  <tr>
+    <td>Queue worker</td>
+    <td>Service scales on SQS depth</td>
+    <td>Visibility timeout, DLQ, idempotency</td>
+  </tr>
+  <tr>
+    <td>Kafka consumer</td>
+    <td>Service desired count maps to consumer group members</td>
+    <td>Commit offsets after durable write</td>
+  </tr>
+  <tr>
+    <td>Data API</td>
+    <td>Service behind ALB</td>
+    <td>Health checks, connection pooling, autoscaling</td>
+  </tr>
+</table>
+<pre><code>aws ecs run-task \
+  --cluster prod-data-services \
+  --launch-type FARGATE \
+  --task-definition parquet-backfill:17 \
+  --overrides '{
+    "containerOverrides": [
+      {
+        "name": "backfill",
+        "environment": [
+          {"name": "START_DATE", "value": "2026-04-01"},
+          {"name": "END_DATE", "value": "2026-04-07"},
+          {"name": "TARGET_TABLE", "value": "telemetry.metrics_daily"}
+        ]
+      }
+    ]
+  }'</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">Secrets, Logs, Health, and Observability</h2>
+<p>ECS integrates with Secrets Manager and SSM Parameter Store so secrets can be injected at task startup without baking them into the image. Logs commonly use the <code>awslogs</code> driver to ship stdout and stderr to CloudWatch Logs. Container Insights adds task-level and service-level metrics such as CPU, memory, network, task counts, and restart patterns.</p>
+<p>Health checks exist at multiple layers: Docker container health checks, ECS service health, and load balancer target group health checks. They should test the right thing. A web API health endpoint should confirm the process can serve requests. A worker health check should avoid expensive dependency checks that accidentally overload databases every few seconds.</p>
+<div class="hi">In ECS, stdout is the log API. Write structured JSON logs to stdout and let the platform route them.</div>
+<div class="warn">Secrets injected as environment variables are convenient but visible to the process environment. For high-sensitivity secrets, consider runtime fetch with tighter access controls and careful logging discipline.</div>
+<pre><code>{
+  "containerDefinitions": [
+    {
+      "name": "worker",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/data/worker:prod-9f32a1c",
       "secrets": [
         {
           "name": "DB_PASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789:secret:prod/db-password"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/db/password"
         }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group":         "/ecs/my-etl-job",
-          "awslogs-region":        "us-east-1",
-          "awslogs-stream-prefix": "etl"
+          "awslogs-group": "/ecs/data-worker",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
         }
       },
       "healthCheck": {
-        "command":     ["CMD-SHELL", "python -c 'import sys; sys.exit(0)' || exit 1"],
-        "interval":    30,
-        "timeout":     5,
-        "retries":     3,
+        "command": ["CMD-SHELL", "python -m src.healthcheck"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
         "startPeriod": 60
       }
     }
   ]
-}
-</pre>
-
-  <h3>CPU and Memory Sizing (Fargate)</h3>
-  <p>Fargate CPU and memory must be a valid combination. CPU is specified in vCPU units (256 = 0.25 vCPU) and memory in MB. Common valid combinations: 256 CPU / 512–2048 MB; 512 CPU / 1024–4096 MB; 1024 CPU / 2048–8192 MB; 2048 CPU / 4096–16384 MB; 4096 CPU / 8192–30720 MB. Fargate bills per vCPU-second and per GB-second — right-sizing matters. Over-allocating 4 GB for a job that uses 512 MB wastes 3.5 GB of billing with no benefit.</p>
-
-  <div class="warn"><strong>Essential containers:</strong> If a container is marked <code>"essential": true</code> and it exits (for any reason — success or failure), ECS stops all other containers in the task. For single-container tasks this is always correct. For multi-container tasks (sidecar patterns), only mark the primary application container as essential; sidecars (log forwarders, proxies) should be non-essential unless the task genuinely cannot function without them.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 7 -->
-  <h2 id="s7">7. Fargate vs EC2 Launch Type</h2>
-
-  <p>ECS supports two launch types that determine where tasks run: Fargate (serverless, AWS-managed compute) and EC2 (your own EC2 fleet managed by the ECS agent). The choice is one of the most consequential architectural decisions when adopting ECS.</p>
-
-  <h3>Fargate</h3>
-  <p>With Fargate, you never provision or manage EC2 instances. AWS allocates compute for each task on demand, handles OS patching, and charges per vCPU-second and GB-second consumed. Tasks start in seconds. There is no cluster capacity to manage — if you need to run 100 tasks simultaneously, Fargate handles it without pre-provisioning 100 instances. Fargate is the right choice for: teams that want minimal operational overhead, variable or bursty workloads, batch jobs with unpredictable concurrency, and organizations where patching EC2 instances is a compliance burden.</p>
-
-  <h3>EC2 Launch Type</h3>
-  <p>With EC2 launch type, you manage a fleet of EC2 instances in the cluster. The ECS agent on each instance reports available CPU/memory to ECS, and the scheduler places tasks onto instances with sufficient capacity. EC2 launch type gives you: access to GPU instances, access to instance store (local NVMe for high-I/O workloads), more control over instance placement (placement groups, dedicated hosts), and potentially lower cost at sustained high utilization (Reserved Instances or Savings Plans apply). The trade-off: you manage the EC2 fleet, patches, and capacity planning.</p>
-
-  <table>
-    <tr><th>Dimension</th><th>Fargate</th><th>EC2 Launch Type</th></tr>
-    <tr><td>Infrastructure management</td><td>None — fully managed</td><td>You manage EC2 fleet, patches, capacity</td></tr>
-    <tr><td>Cost model</td><td>Per vCPU-second + GB-second</td><td>EC2 instance hours (RI/SP applicable)</td></tr>
-    <tr><td>Cost at high sustained load</td><td>Higher</td><td>Lower (with RIs/Savings Plans)</td></tr>
-    <tr><td>GPU support</td><td>No</td><td>Yes (p3, g4dn instances)</td></tr>
-    <tr><td>Instance store access</td><td>No</td><td>Yes</td></tr>
-    <tr><td>Startup time</td><td>Seconds (image pull + init)</td><td>Faster if instance already warm</td></tr>
-    <tr><td>Max task memory</td><td>120 GB</td><td>Limited by instance type</td></tr>
-    <tr><td>Best for</td><td>Most workloads, variable scale</td><td>GPU, high-I/O, sustained high volume</td></tr>
-  </table>
-
-  <div class="hi">Start with Fargate. The operational simplicity dividend — no EC2 fleet to manage, no capacity planning, no AMI patching — is worth the cost premium for most data engineering workloads. Move to EC2 launch type only when you have a concrete, measured reason: GPU requirements, instance store I/O, or validated cost savings from Reserved Instances at sustained high utilization.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 8 -->
-  <h2 id="s8">8. IAM — Task Roles vs Execution Roles</h2>
-
-  <p>ECS uses two distinct IAM roles per task, and confusing them is one of the most common ECS misconfiguration problems. They serve entirely different purposes.</p>
-
-  <h3>Task Execution Role</h3>
-  <p>The execution role is used by the <strong>ECS agent and Fargate infrastructure</strong> — not your application code. It grants ECS permission to: pull the container image from ECR, write container logs to CloudWatch Logs, and fetch secrets from Secrets Manager or SSM Parameter Store to inject as environment variables at task startup. Your application never directly uses the execution role.</p>
-
-<pre>
-# Execution Role — used by ECS agent, not your code
-# Minimum required permissions:
-{
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-      ],
-      "Resource": "*"   # ECR auth is account-wide
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
-      "Resource": "arn:aws:logs:us-east-1:123456789:log-group:/ecs/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["secretsmanager:GetSecretValue"],
-      "Resource": "arn:aws:secretsmanager:us-east-1:123456789:secret:prod/*"
-    }
-  ]
-}
-</pre>
-
-  <h3>Task Role</h3>
-  <p>The task role is the IAM identity assumed by your <strong>application code</strong> running inside the container. When your Python code calls <code>boto3.client('s3')</code>, it uses credentials from the task role — fetched from the ECS task metadata endpoint (not IMDS, which is EC2-specific). The task role should follow least privilege: only the permissions the application actually needs.</p>
-
-<pre>
-# Task Role — used by your application code
-# Example: ETL job that reads S3, writes to Redshift
-{
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:ListBucket"],
-      "Resource": [
-        "arn:aws:s3:::my-raw-bucket",
-        "arn:aws:s3:::my-raw-bucket/raw/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:PutObject"],
-      "Resource": "arn:aws:s3:::my-processed-bucket/processed/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["glue:StartJobRun", "glue:GetJobRun"],
-      "Resource": "arn:aws:glue:us-east-1:123456789:job/my-job"
-    }
-  ]
-}
-</pre>
-
-  <div class="warn"><strong>Missing task role ≠ no AWS access:</strong> If no task role is specified, the container may still be able to reach the EC2 IMDS on EC2 launch type hosts and inherit the EC2 instance's IAM role — which is typically far more permissive than intended. Always explicitly specify a scoped task role, and on EC2 launch type, set <code>HttpPutResponseHopLimit=1</code> on the host instances to prevent container escape to the host IMDS.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 9 -->
-  <h2 id="s9">9. Networking — awsvpc, ALB, Service Discovery</h2>
-
-  <h3>awsvpc Network Mode</h3>
-  <p>The <code>awsvpc</code> network mode is required for Fargate and strongly recommended for EC2 launch type. In awsvpc mode, each ECS task gets its own Elastic Network Interface (ENI) with a dedicated VPC IP address. This means tasks are first-class VPC citizens — they can have security groups applied directly to them, they participate in VPC routing, and they can be targets in ALB target groups. Network traffic to/from a task is governed by the task's security group, not the host instance's security group.</p>
-
-<pre>
-# Run a Fargate task programmatically (boto3)
-import boto3
-
-ecs = boto3.client('ecs', region_name='us-east-1')
-
-response = ecs.run_task(
-    cluster='prod-cluster',
-    taskDefinition='my-etl-job:5',
-    launchType='FARGATE',
-    networkConfiguration={
-        'awsvpcConfiguration': {
-            'subnets': ['subnet-0a1b2c3d', 'subnet-0e5f6g7h'],
-            'securityGroups': ['sg-0123456789abcdef0'],
-            'assignPublicIp': 'DISABLED'   # private subnet — no public IP
-        }
-    },
-    overrides={
-        'containerOverrides': [{
-            'name': 'etl-worker',
-            'environment': [
-                {'name': 'PROCESSING_DATE', 'value': '2026-04-13'},
-                {'name': 'INPUT_PREFIX',    'value': 'raw/events/year=2026/month=04/day=13/'}
-            ]
-        }]
-    }
-)
-
-task_arn = response['tasks'][0]['taskArn']
-print(f"Task started: {task_arn}")
-</pre>
-
-  <h3>ALB Integration</h3>
-  <p>ECS Services integrate with Application Load Balancers via target groups. The service scheduler automatically registers new task ENI IPs into the target group when tasks start, and deregisters them when tasks stop or fail health checks. ALB health checks run against each task's IP directly, providing per-task health visibility. For rolling deployments, the service waits until new tasks are registered and healthy in the target group before deregistering old tasks.</p>
-
-  <h3>Service Discovery</h3>
-  <p>ECS Service Discovery (backed by Route 53 Auto Naming) automatically creates DNS records for each task in a service. Each task gets a DNS A record in a private hosted zone (<code>my-service.my-namespace.local</code>). Other services can reach it by name without going through an ALB. Service Discovery is useful for: internal microservice communication, gRPC services where ALB doesn't fit, and background workers that need to be reachable by name from other containers.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 10 -->
-  <h2 id="s10">10. ECS for Data Pipelines</h2>
-
-  <p>ECS is well-suited for containerized data pipelines that outgrow Lambda's constraints but don't warrant the Glue/EMR abstraction. The key pattern is: trigger an ECS task run-task call from Lambda, EventBridge, or Step Functions, passing job parameters as container environment variable overrides.</p>
-
-  <h3>Run-Task Pattern for Batch ETL</h3>
-  <p>Rather than running a long-lived ECS Service, batch ETL jobs run as standalone tasks launched on demand. A Lambda function or Step Functions state machine calls <code>ecs:RunTask</code> with the task definition, cluster, network config, and parameter overrides. The task runs to completion (success or failure) and ECS reports the exit code. The orchestrator waits for task completion by polling <code>ecs:DescribeTasks</code> or by listening for the <code>ECS Task State Change</code> EventBridge event.</p>
-
-<pre>
-# Step Functions ECS RunTask state (ASL)
-{
-  "Type": "Task",
-  "Resource": "arn:aws:states:::ecs:runTask.sync:2",
-  "Parameters": {
-    "Cluster": "prod-cluster",
-    "TaskDefinition": "my-etl-job:5",
-    "LaunchType": "FARGATE",
-    "NetworkConfiguration": {
-      "AwsvpcConfiguration": {
-        "Subnets":         ["subnet-0a1b2c3d"],
-        "SecurityGroups":  ["sg-0123456789abcdef0"],
-        "AssignPublicIp":  "DISABLED"
-      }
-    },
-    "Overrides": {
-      "ContainerOverrides": [{
-        "Name": "etl-worker",
-        "Environment": [
-          {"Name": "PROCESSING_DATE", "Value.$": "$.processing_date"},
-          {"Name": "INPUT_S3_PREFIX", "Value.$": "$.input_prefix"}
-        ]
-      }]
-    }
-  },
-  "Next": "RegisterPartitions"
-}
-</pre>
-
-  <h3>Advantages Over Glue for Containerized ETL</h3>
-  <p>ECS/Fargate gives you complete control over the runtime environment — any Python version, any library, any system package, compiled binaries, custom C extensions. Glue's Python Shell and PySpark runtimes are managed environments with version lag and library constraints. If your ETL needs a library not available in Glue, requires a specific Python version, or uses compiled native extensions that don't work in Glue's environment, ECS/Fargate is the right compute layer.</p>
-
-  <div class="hi">The ECS + Step Functions combination is a powerful pattern for complex multi-step data pipelines: Step Functions handles orchestration, retries, error handling, and branching logic; ECS provides the containerized compute for each step. This gives you the operational simplicity of managed containers with the orchestration power of a proper workflow engine.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 11 -->
-  <h2 id="s11">11. Auto Scaling ECS Services</h2>
-
-  <p>ECS Application Auto Scaling adjusts the desired task count for a service based on CloudWatch metrics. It uses the same Auto Scaling policies as EC2 ASGs: target tracking, step scaling, and scheduled scaling.</p>
-
-  <h3>Target Tracking</h3>
-  <p>The simplest policy: set a target value for a metric and let Auto Scaling adjust task count to maintain it. Common targets: <code>ECSServiceAverageCPUUtilization</code> (target 70%), <code>ECSServiceAverageMemoryUtilization</code> (target 80%), or ALB request count per target (for request-driven services). ECS will add tasks when the metric rises above the target and remove tasks (down to the minimum) when it falls below.</p>
-
-<pre>
-# Register ECS service as scalable target
-import boto3
-
-aas = boto3.client('application-autoscaling')
-
-aas.register_scalable_target(
-    ServiceNamespace='ecs',
-    ResourceId='service/prod-cluster/api-service',
-    ScalableDimension='ecs:service:DesiredCount',
-    MinCapacity=2,
-    MaxCapacity=20
-)
-
-# Target tracking — keep CPU at 70%
-aas.put_scaling_policy(
-    PolicyName='cpu-target-tracking',
-    ServiceNamespace='ecs',
-    ResourceId='service/prod-cluster/api-service',
-    ScalableDimension='ecs:service:DesiredCount',
-    PolicyType='TargetTrackingScaling',
-    TargetTrackingScalingPolicyConfiguration={
-        'PredefinedMetricSpecification': {
-            'PredefinedMetricType': 'ECSServiceAverageCPUUtilization'
-        },
-        'TargetValue': 70.0,
-        'ScaleInCooldown':  60,
-        'ScaleOutCooldown': 30
-    }
-)
-</pre>
-
-  <h3>SQS-Driven Scaling for Worker Services</h3>
-  <p>For ECS services consuming messages from SQS, scale on a custom metric: the ratio of <code>ApproximateNumberOfMessagesVisible</code> to the number of running tasks (messages per task). Target tracking on this ratio maintains a target number of messages per worker, scaling out when the queue grows and scaling in when it drains. This is more responsive than CPU-based scaling for queue-driven workloads where workers may be idle between messages.</p>
-
-  <div class="warn"><strong>Scale-in protection for long-running tasks:</strong> Auto Scaling scale-in can terminate tasks mid-processing. Enable scale-in protection for tasks that are actively processing jobs, and remove the protection when the task completes its current unit of work. ECS supports task-level scale-in protection via <code>ecs:UpdateTaskProtection</code>, callable from within the running container via the task metadata endpoint.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 12 -->
-  <h2 id="s12">12. Logging &amp; Observability</h2>
-
-  <h3>awslogs Log Driver</h3>
-  <p>The standard logging mechanism for ECS is the <code>awslogs</code> log driver, which streams container stdout/stderr directly to CloudWatch Logs. Configure it in the task definition's <code>logConfiguration</code> block. Each container gets a log stream within the configured log group. The stream name follows the pattern <code>{prefix}/{container-name}/{task-id}</code>, making it easy to find logs for a specific task.</p>
-
-<pre>
-# awslogs configuration in task definition
-"logConfiguration": {
-    "logDriver": "awslogs",
-    "options": {
-        "awslogs-group":         "/ecs/my-etl-job",
-        "awslogs-region":        "us-east-1",
-        "awslogs-stream-prefix": "etl",
-        "awslogs-create-group":  "true"   # Auto-create log group if not exists
-    }
-}
-
-# Structured logging from Python container
-import logging, json
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-def process():
-    logger.info(json.dumps({
-        "event":          "job_started",
-        "processing_date": "2026-04-13",
-        "input_records":   42500
-    }))
-</pre>
-
-  <h3>ECS Task Metadata Endpoint</h3>
-  <p>Every ECS task has a metadata endpoint accessible from within the container (no credentials required). It provides: task ARN, cluster, task definition family/revision, container resource limits, and crucially — temporary IAM credentials for the task role. The endpoint URL is available via the <code>ECS_CONTAINER_METADATA_URI_V4</code> environment variable injected by ECS automatically.</p>
-
-<pre>
-import os, requests
-
-metadata_uri = os.environ.get('ECS_CONTAINER_METADATA_URI_V4')
-task_metadata = requests.get(f"{metadata_uri}/task").json()
-
-task_arn = task_metadata['TaskARN']
-cluster   = task_metadata['Cluster']
-print(f"Running in task: {task_arn} on cluster: {cluster}")
-</pre>
-
-  <h3>CloudWatch Container Insights</h3>
-  <p>Enable Container Insights on the ECS cluster to get cluster-level, service-level, and task-level metrics (CPU, memory, network, disk) in CloudWatch. Container Insights also captures task lifecycle events and provides a pre-built dashboard in the CloudWatch console. It uses the CloudWatch agent deployed as a daemon task on EC2 launch type, or as a sidecar on Fargate.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 13 -->
-  <h2 id="s13">13. Secrets &amp; Configuration Management</h2>
-
-  <p>Injecting secrets into containers is a critical security concern. The wrong approach (hardcoding in images or passing as plain environment variables visible in task definition JSON) exposes secrets in multiple places. ECS provides a native mechanism for secure secret injection from Secrets Manager and SSM Parameter Store.</p>
-
-  <h3>Secrets Manager Integration</h3>
-  <p>In the task definition's <code>secrets</code> block, reference a Secrets Manager ARN. ECS fetches the secret value at task launch time using the execution role's permissions and injects it as an environment variable inside the container. The secret value never appears in task definition JSON, CloudFormation templates, or CloudWatch logs. It is only present as a decrypted environment variable inside the running container's process space.</p>
-
-<pre>
-# Task definition — secrets block
-"secrets": [
-    {
-        "name": "DB_PASSWORD",
-        "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789:secret:prod/rds/password-AbCd12"
-    },
-    {
-        "name": "API_KEY",
-        "valueFrom": "arn:aws:ssm:us-east-1:123456789:parameter/prod/api-key"
-    },
-    {
-        "name": "DB_HOST",
-        # Reference a specific JSON key within a Secrets Manager secret
-        "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789:secret:prod/rds-AbCd12::host::"
-    }
-]
-</pre>
-
-  <div class="warn"><strong>Secrets are fetched at task launch only:</strong> ECS injects secrets as environment variables when the task starts. If the secret is rotated in Secrets Manager after the task is running, the running task still has the old value. For services that need to pick up rotated secrets, you must restart the tasks (rolling deployment) after each rotation. Design your database and API connections to handle rotation gracefully.</div>
-
-  <h3>Non-Secret Configuration</h3>
-  <p>Non-sensitive configuration (environment names, S3 bucket names, feature flags, timeouts) should use plain environment variables in the task definition, or be retrieved from SSM Parameter Store at application startup. Keep task definitions as environment-agnostic as possible — pass the environment name as an env var and have the application construct resource names from it, rather than hardcoding prod-specific resource names in the task definition.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 14 -->
-  <h2 id="s14">14. Common Gotchas and Anti-Patterns</h2>
-
-  <div class="warn">
-    <strong>1. Confusing task role and execution role:</strong> The execution role is for ECS infrastructure (pull image, write logs, fetch secrets). The task role is for your application code (call S3, DynamoDB, etc.). Attaching application permissions to the execution role works but is incorrect — it grants the ECS agent unnecessarily broad permissions. Always use separate, scoped roles for each purpose.
+}</code></pre>
+<table>
+  <tr>
+    <th>Signal</th>
+    <th>Watch for</th>
+    <th>Common fix</th>
+  </tr>
+  <tr>
+    <td>CPU</td>
+    <td>Sustained saturation</td>
+    <td>Increase CPU, scale out, optimize code</td>
+  </tr>
+  <tr>
+    <td>Memory</td>
+    <td>OOM kills and restarts</td>
+    <td>Increase memory, stream data, reduce batch size</td>
+  </tr>
+  <tr>
+    <td>Task restarts</td>
+    <td>Crash loops</td>
+    <td>Check logs, env vars, secrets, dependency reachability</td>
+  </tr>
+  <tr>
+    <td>Queue depth</td>
+    <td>Backlog growth</td>
+    <td>Scale workers or fix downstream bottleneck</td>
+  </tr>
+  <tr>
+    <td>Health failures</td>
+    <td>ALB target deregistration</td>
+    <td>Fix endpoint, grace period, dependency check design</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: Explain the difference between an ECS task definition, task, service, and cluster.</div>
+  <div class="qa-a">A: A cluster is the logical scheduling boundary. A task definition is the versioned runtime blueprint. A task is a running copy of that blueprint. A service maintains desired count, deployment behavior, scaling, and load balancer integration for long-running workloads.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you choose ECS Fargate over ECS on EC2?</div>
+  <div class="qa-a">A: I choose Fargate when I want simple operations, fast delivery, and no host management. I choose EC2 when I need better cost density, GPU, local storage, custom AMIs, daemon-level control, or highly tuned always-on capacity.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between the task execution role and task role?</div>
+  <div class="qa-a">A: The execution role is used by ECS to pull images, publish logs, and fetch startup secrets. The task role is assumed by the application code inside the container to access AWS services like S3, SQS, DynamoDB, Glue, or Secrets Manager.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Why is using the Docker tag <code>latest</code> risky in ECS?</div>
+  <div class="qa-a">A: Because the same task definition can pull different image contents at different times. That breaks reproducibility, rollback, auditability, and incident analysis. Production deployments should use immutable tags or image digests.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you scale an ECS service that processes SQS or Kafka messages?</div>
+  <div class="qa-a">A: I would scale on backlog metrics rather than CPU alone: SQS visible messages, age of oldest message, or Kafka consumer lag. I would also set cooldowns, protect downstream systems, design idempotency, and make sure scale-out does not cause rebalance storms or database overload.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What production checks would you add before deploying a new ECS service?</div>
+  <div class="qa-a">A: I would verify image immutability, task role permissions, execution role permissions, subnet IP capacity, ECR and CloudWatch connectivity, secrets injection, health checks, logging, autoscaling metrics, rollback alarms, and whether the workload writes durable state outside the container.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Image</div>
+    <div class="cd">Immutable container package built from Dockerfile layers.</div>
   </div>
-
-  <div class="warn">
-    <strong>2. Using :latest tag in task definitions:</strong> Referencing <code>:latest</code> in a task definition makes deployments non-deterministic — a new push to ECR with the <code>:latest</code> tag changes what the next task launch runs without any deployment action. Always use specific version tags or image digests in production task definitions.
+  <div class="cheat-row">
+    <div class="ct">Container</div>
+    <div class="cd">Running isolated process created from an image.</div>
   </div>
-
-  <div class="warn">
-    <strong>3. Running containers as root:</strong> Unless a specific capability requires root, containers should run as a non-root user. Root containers that escape their namespace have host-level access. Add <code>RUN useradd</code> and <code>USER</code> to your Dockerfile. Set <code>"readonlyRootFilesystem": true</code> in the task definition to further restrict filesystem access.
+  <div class="cheat-row">
+    <div class="ct">Layer</div>
+    <div class="cd">Reusable read-only filesystem delta created during image build.</div>
   </div>
-
-  <div class="warn">
-    <strong>4. Not setting CPU and memory limits per container:</strong> If a task definition has multiple containers and only sets task-level CPU/memory without container-level limits, one container can consume all task resources, starving others. Set per-container <code>cpu</code> and <code>memory</code>/<code>memoryReservation</code> limits, especially for sidecar containers (log forwarders, proxies) that should be resource-constrained.
+  <div class="cheat-row">
+    <div class="ct">Union FS</div>
+    <div class="cd">Filesystem view that combines image layers plus a writable runtime layer.</div>
   </div>
-
-  <div class="warn">
-    <strong>5. Ignoring container health checks:</strong> Without a health check, ECS considers a container healthy as soon as it starts — even if the application inside hasn't finished initializing. A task that starts but serves errors will not be replaced because ECS sees it as healthy. Always define a meaningful health check that validates the application is actually ready to handle requests.
+  <div class="cheat-row">
+    <div class="ct">ECR</div>
+    <div class="cd">AWS private container registry used by ECS to pull images.</div>
   </div>
-
-  <div class="warn">
-    <strong>6. Not handling SIGTERM for graceful shutdown:</strong> When ECS stops a task (scale-in, deployment, spot interruption), it sends SIGTERM to the main process and waits up to 30 seconds (configurable) before sending SIGKILL. Applications that don't handle SIGTERM are killed mid-operation — mid-write, mid-transaction, mid-message-processing. Catch SIGTERM, finish the current unit of work, flush buffers, and exit cleanly.
+  <div class="cheat-row">
+    <div class="ct">Immutable tags</div>
+    <div class="cd">Prevents overwriting an existing image tag; safer for production rollbacks.</div>
   </div>
-
-  <div class="warn">
-    <strong>7. Storing state in the container filesystem:</strong> Containers are ephemeral. Any data written to the container's local filesystem is lost when the task exits. For data that must persist, write to S3, a database, or an EFS mount. A common pattern where developers write intermediate files to <code>/tmp</code> inside the container works fine for within-task scratch space, but breaks if the intent is for another task to read those files.
+  <div class="cheat-row">
+    <div class="ct">Cluster</div>
+    <div class="cd">Logical ECS scheduling boundary for tasks and services.</div>
   </div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 15 -->
-  <h2 id="s15">15. 10 Key Engineering Questions</h2>
-
-  <div class="qa">
-    <div class="qa-q">Q1. What is the difference between a Docker image and a container?</div>
-    <div class="qa-a">An image is an immutable, layered snapshot of a filesystem — the blueprint. It is built from a Dockerfile and stored in a registry. A container is a running instance of an image — a process with its own isolated filesystem, network namespace, and process space, created from the image. Multiple containers can run simultaneously from the same image. Container filesystem changes are ephemeral unless written to a mounted volume. Images are the artifact; containers are the runtime.</div>
+  <div class="cheat-row">
+    <div class="ct">Task definition</div>
+    <div class="cd">Versioned runtime spec: image, CPU, memory, roles, logs, secrets, ports.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q2. What is the difference between the ECS task role and the execution role?</div>
-    <div class="qa-a">The execution role is used by the ECS agent and Fargate infrastructure at task launch time — to pull the image from ECR, stream logs to CloudWatch, and fetch secrets from Secrets Manager. Your application code never uses it directly. The task role is the IAM identity assumed by your application code running inside the container — it's what boto3 uses when calling S3, DynamoDB, or other AWS services. Both roles must be specified separately in the task definition; confusing them leads to either broken infrastructure operations or over-privileged agents.</div>
+  <div class="cheat-row">
+    <div class="ct">Task</div>
+    <div class="cd">Running instance of a task definition revision.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q3. How do Docker layer caches work and how do you optimize a Dockerfile for fast builds?</div>
-    <div class="qa-a">Docker caches each layer by its content hash. When rebuilding, it reuses cached layers up to the first instruction whose inputs have changed, then rebuilds all subsequent layers. To optimize: order instructions from least-frequently-changing to most-frequently-changing — OS packages first, then pip/npm installs (triggered by requirements file changes), then application code (changes on every commit). A COPY . . at the top busts the cache on every code change, forcing full reinstallation. Use multi-stage builds to separate build-time dependencies from the runtime image.</div>
+  <div class="cheat-row">
+    <div class="ct">Service</div>
+    <div class="cd">Maintains desired count and deployment behavior for long-running tasks.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q4. When would you choose Fargate over EC2 launch type for ECS?</div>
-    <div class="qa-a">Fargate is the right default for most workloads — no EC2 fleet to manage, no capacity planning, no AMI patching, and tasks scale independently of instance availability. Choose EC2 launch type when: you need GPU instances (Fargate has no GPU support), you need access to instance store for high-I/O ephemeral workloads, you have validated cost savings from Reserved Instances at high sustained utilization, or you have workloads requiring specific instance placement (dedicated hosts, placement groups). The operational simplicity of Fargate outweighs its cost premium for variable or moderate workloads.</div>
+  <div class="cheat-row">
+    <div class="ct">Fargate</div>
+    <div class="cd">Serverless ECS compute where AWS manages the container hosts.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q5. How does awsvpc network mode change ECS networking compared to bridge mode?</div>
-    <div class="qa-a">In bridge mode, containers share the EC2 host's network namespace and communicate via Docker's virtual bridge network with port mapping. Multiple containers on the same host share an IP and are distinguished by port. In awsvpc mode, each task gets its own ENI with a dedicated VPC IP address — tasks are first-class VPC citizens with their own security groups, routing table entries, and VPC-native reachability. Security groups apply per-task rather than per-host, enabling fine-grained network control. awsvpc is required for Fargate and strongly recommended for EC2 launch type.</div>
+  <div class="cheat-row">
+    <div class="ct">EC2 launch</div>
+    <div class="cd">ECS mode where you manage the EC2 capacity, AMIs, scaling, and patching.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q6. How do you pass secrets securely into an ECS container?</div>
-    <div class="qa-a">Use the task definition's <code>secrets</code> block to reference Secrets Manager ARNs or SSM Parameter Store paths. ECS fetches the secret at task launch time using the execution role's permissions and injects the decrypted value as an environment variable inside the container. The secret never appears in task definition JSON, CloudFormation/CDK templates, CloudWatch logs, or the ECS console. Never pass secrets as plain environment variables in the task definition — they appear in plaintext in the console, API responses, and CloudTrail logs.</div>
+  <div class="cheat-row">
+    <div class="ct">Execution role</div>
+    <div class="cd">Role used by ECS to pull images, send logs, and fetch startup secrets.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q7. What happens when an ECS service task fails a health check?</div>
-    <div class="qa-a">ECS marks the task as unhealthy after the configured number of consecutive health check failures. It deregisters the task from the ALB target group (stopping new traffic from reaching it), stops the task, and launches a replacement task. The replacement goes through health checks before being registered in the target group. If tasks repeatedly fail health checks (a crash loop), ECS will continue launching replacements but the service enters a degraded state — monitor the <code>service:task:failed</code> metric and set alarms on repeated task launch failures.</div>
+  <div class="cheat-row">
+    <div class="ct">Task role</div>
+    <div class="cd">Role assumed by application code inside the running container.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q8. How does an ECS rolling deployment work and what controls prevent bad deployments?</div>
-    <div class="qa-a">A rolling deployment launches new tasks (with the updated task definition) while keeping old tasks running. The <code>minimumHealthyPercent</code> setting controls the minimum percentage of desired tasks that must remain healthy during deployment — at 100%, ECS can only replace tasks as capacity allows without reducing below desired count. The <code>maximumPercent</code> controls how far above desired count ECS can go to launch new tasks. Once new tasks pass ALB health checks, old tasks are deregistered and stopped. Setting both to 100/200 gives zero-downtime rolling deployments.</div>
+  <div class="cheat-row">
+    <div class="ct">awsvpc</div>
+    <div class="cd">Networking mode where each task gets its own ENI, private IP, and security group behavior.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q9. What is a multi-stage Docker build and when is it essential?</div>
-    <div class="qa-a">A multi-stage build uses multiple FROM instructions in one Dockerfile. An early stage installs build tools and compiles or installs all dependencies; a final stage starts from a clean minimal base image and copies only the runtime artifacts. The final image contains no build tools, compilers, or dev dependencies — dramatically reducing image size and attack surface. It is essential when: build tools (gcc, make, rust compiler) are needed to build native extensions but not to run the application, when dev/test dependencies must not appear in production images, or when image size is a concern (cold start time, ECR storage, pull latency).</div>
+  <div class="cheat-row">
+    <div class="ct">RunTask</div>
+    <div class="cd">Starts one-off ECS tasks, commonly used for backfills and repairs.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q10. How would you design a containerized ETL pipeline using ECS and Step Functions?</div>
-    <div class="qa-a">Define a task definition for each ETL step (or one generic task definition with parameter overrides for different job types). Store step parameters (date ranges, input paths, job types) as Step Functions execution input. Each Step Function state calls ecs:runTask.sync to launch a Fargate task with environment variable overrides, waits for completion, and branches on success or failure. Retries are configured at the Step Functions state level with exponential backoff. On terminal failure, an EventBridge rule captures the execution failure event and routes it to SNS for alerting. The orchestration logic lives in Step Functions; the execution logic lives in containers — cleanly separated.</div>
+  <div class="cheat-row">
+    <div class="ct">Container Insights</div>
+    <div class="cd">CloudWatch monitoring for ECS task, service, CPU, memory, network, and restart signals.</div>
   </div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 16 -->
-  <h2 id="s16">16. Production Story Angles</h2>
-
-  <p>At a large financial institution, containerized ETL jobs running on ECS/Fargate replaced a mix of cron-driven EC2 scripts and Lambda functions that had accumulated over several years. The Lambda functions were hitting the 15-minute ceiling on complex transformation jobs; the EC2 cron jobs had environment drift between instances that caused intermittent failures impossible to reproduce locally. Containerization solved both: each job had an exact, reproducible runtime environment, and Fargate removed any ceiling on job duration.</p>
-
-  <p>The migration pattern was incremental. New jobs were written as containerized Fargate tasks from the start. Existing Lambda jobs approaching the timeout limit were refactored into containers. The Dockerfile for each job used a multi-stage build: a builder stage ran <code>pip install</code> with all dependencies including large data libraries (pandas, pyarrow, a proprietary risk library with compiled C extensions), and a slim runtime stage carried only the installed packages and application code. Images averaged 280 MB — smaller than many Lambda layers, and built in under 2 minutes in the CI pipeline with layer caching.</p>
-
-  <p>All secrets were injected via the task definition's <code>secrets</code> block referencing Secrets Manager ARNs. The task role was scoped per-job: an ingestion job got S3 GetObject on the raw prefix and KMS Decrypt for the input bucket's CMK. A load job got S3 GetObject on the processed prefix and Redshift GetClusterCredentials. No job had cross-job access. This least-privilege posture was enforced through a CDK construct that generated task definitions — developers provided a job manifest specifying required resources, and the construct generated the appropriately scoped IAM policies automatically.</p>
-
-  <p>Step Functions orchestrated multi-step pipelines. A typical pipeline ran: validate schema (Fargate task) → transform and partition (Fargate task) → load to Redshift (Fargate task) → register Athena partitions (Lambda, fast and simple) → notify downstream consumers (SNS). Each Fargate step had a 3-retry policy in Step Functions with exponential backoff. Failed executions triggered a CloudWatch alarm which posted a structured alert including the failed step name, input parameters, and a link to the ECS task logs. Mean time to diagnose a failed job dropped significantly compared to the previous cron-based system, where the only signal was a missing output file.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 17 -->
-  <h2 id="s17">17. Quick Reference Cheat Sheet</h2>
-
-  <div class="cheat">
-    <div class="cheat-row">
-      <div class="ct">Image vs Container</div>
-      <div class="cd">Image = immutable blueprint (stored in ECR); Container = running instance of an image</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Layer Caching</div>
-      <div class="cd">Order Dockerfile: OS packages → pip install → app code; COPY requirements.txt before COPY src/</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Multi-stage Build</div>
-      <div class="cd">Build stage installs deps; runtime stage copies only artifacts — smaller, cleaner final image</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Execution Role</div>
-      <div class="cd">Used by ECS agent: pull ECR image, write CloudWatch logs, fetch Secrets Manager values</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Task Role</div>
-      <div class="cd">Used by your app code: S3, DynamoDB, Glue, etc. — scope to least privilege per job</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">awsvpc Mode</div>
-      <div class="cd">Each task gets its own ENI + VPC IP + security group — required for Fargate</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Fargate vs EC2</div>
-      <div class="cd">Fargate = no infra mgmt, pay per task-second; EC2 = your fleet, lower cost at scale, GPU support</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">secrets block</div>
-      <div class="cd">Reference Secrets Manager/SSM ARN; ECS injects decrypted value at task launch — never in plaintext</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">essential: true</div>
-      <div class="cd">If this container exits, all containers in the task stop — mark primary app only, not sidecars</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">:latest tag</div>
-      <div class="cd">Never use in production task definitions — non-deterministic; use specific version tag or digest</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">run-task pattern</div>
-      <div class="cd">Launch standalone Fargate task for batch ETL; pass params as container env var overrides</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">SIGTERM handling</div>
-      <div class="cd">ECS sends SIGTERM before SIGKILL (30s default); catch it, finish current work, exit cleanly</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Health Check</div>
-      <div class="cd">Without it ECS marks container healthy at start; unhealthy tasks deregistered from ALB + replaced</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">ECR Lifecycle Policy</div>
-      <div class="cd">Expire untagged images daily; keep last N tagged — prevents unbounded storage growth</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Scale-in Protection</div>
-      <div class="cd">Protect long-running tasks from mid-job termination via ecs:UpdateTaskProtection</div>
-    </div>
+  <div class="cheat-row">
+    <div class="ct">awslogs</div>
+    <div class="cd">Log driver that routes container stdout and stderr to CloudWatch Logs.</div>
   </div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
+</div>
 
 </div>
 </body>
