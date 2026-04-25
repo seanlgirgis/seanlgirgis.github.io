@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS VPC - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-vpc.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS VPC - Master Engineering Reference
+</div>
+
+<h1>AWS VPC</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 35-45 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">VPC</span>
+  <span class="tag">Networking</span>
+  <span class="tag">CIDR</span>
+  <span class="tag">Subnets</span>
+  <span class="tag">Transit Gateway</span>
+  <span class="tag">VPC Endpoints</span>
+  <span class="tag">Flow Logs</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-vpc.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What a VPC Really Is</a></li>
+    <li><a href="#s2">CIDR Planning and Address Strategy</a></li>
+    <li><a href="#s3">Multi-AZ Subnet Design for Data Workloads</a></li>
+    <li><a href="#s4">Route Tables, IGW, NAT, and Egress Control</a></li>
+    <li><a href="#s5">Security Groups vs Network ACLs</a></li>
+    <li><a href="#s6">VPC Peering vs Transit Gateway</a></li>
+    <li><a href="#s7">Gateway vs Interface Endpoints</a></li>
+    <li><a href="#s8">VPC Flow Logs and Network Observability</a></li>
+    <li><a href="#s9">Private Data Services and AWS Integration</a></li>
+    <li><a href="#s10">DNS, Private Hosted Zones, and Name Resolution</a></li>
+    <li><a href="#s11">Hybrid Connectivity and On-Prem Patterns</a></li>
+    <li><a href="#s12">Production Failure Modes and Design Review Checklist</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What a VPC Really Is</h2>
+<p>An Amazon Virtual Private Cloud is the private network boundary where AWS resources live. For a senior data engineer, the VPC is not just a place to put EC2 instances. It is the control plane for how pipelines, databases, analytics engines, orchestration services, and external networks communicate safely.</p>
+<p>A VPC gives you IP ranges, subnets, route tables, gateways, security controls, DNS behavior, and endpoint options. Data platforms use all of these: Airflow workers reaching S3, Glue jobs calling private databases, Spark clusters talking to Redshift, Lambda functions connecting to RDS, and private APIs serving internal tools.</p>
+<div class="hi">Key insight: VPC design is data platform design. Bad VPC decisions become pipeline latency, broken DNS, NAT cost spikes, unreachable databases, and painful cross-account networking later.</div>
+<div class="warn">Production gotcha: many teams start with a default VPC and later discover the CIDR is too small, overlapping with on-prem, or impossible to connect cleanly to shared services.</div>
+<table>
+  <tr><th>Layer</th><th>VPC concern</th><th>Data engineering impact</th></tr>
+  <tr><td>Network boundary</td><td>CIDR, subnets, routes</td><td>Where compute and databases can run</td></tr>
+  <tr><td>Security</td><td>Security groups, NACLs, endpoints</td><td>Controls blast radius between pipelines and stores</td></tr>
+  <tr><td>Connectivity</td><td>Peering, Transit Gateway, VPN, Direct Connect</td><td>Connects AWS data platforms to corporate systems</td></tr>
+  <tr><td>Observability</td><td>Flow Logs, DNS logs, CloudWatch</td><td>Explains packet drops, denied access, and cost anomalies</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">CIDR Planning and Address Strategy</h2>
+<p>CIDR planning decides how much private IP space your VPC has. AWS VPCs commonly use RFC1918 ranges such as <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, or <code>192.168.0.0/16</code>. The hard part is not creating a CIDR. The hard part is choosing a range that will not collide with future VPCs, corporate networks, VPNs, partner networks, or Kubernetes pod ranges.</p>
+<p>For data workloads, leave room for growth. Spark, EKS, EMR, Redshift, Glue ENIs, RDS, Lambda in VPC, and interface endpoints can consume more IPs than expected. Small subnets become a silent scaling limit.</p>
+<div class="hi">Key insight: treat CIDR like schema design. It is cheap to plan up front and expensive to refactor once workloads, route tables, and dependencies exist.</div>
+<div class="warn">Production gotcha: each subnet reserves AWS-managed IP addresses, and elastic services can fail launches when free IPs run out. The symptom may look like a compute failure, not a network design failure.</div>
+<table>
+  <tr><th>CIDR size</th><th>Approx addresses</th><th>Good fit</th><th>Risk</th></tr>
+  <tr><td>/24</td><td>256</td><td>Small isolated subnet</td><td>Too small for bursty compute</td></tr>
+  <tr><td>/22</td><td>1,024</td><td>Moderate app or endpoint subnet</td><td>Can still tighten quickly</td></tr>
+  <tr><td>/20</td><td>4,096</td><td>Large workload tier</td><td>Requires good allocation discipline</td></tr>
+  <tr><td>/16</td><td>65,536</td><td>Primary VPC allocation</td><td>Can waste address space if unmanaged</td></tr>
+</table>
+<pre><code># Example VPC CIDR allocation model
+10.40.0.0/16   production data VPC
+10.40.0.0/20   public ingress subnets
+10.40.16.0/20  private compute subnets
+10.40.32.0/20  private database subnets
+10.40.48.0/22  VPC endpoint subnets
+10.40.64.0/18  reserved for future growth</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Multi-AZ Subnet Design for Data Workloads</h2>
+<p>A production VPC should distribute subnets across at least two Availability Zones, and usually three for stronger resilience. Data workloads have different subnet needs: public ingress, private application compute, private data stores, endpoint subnets, and sometimes isolated subnets with no internet route.</p>
+<p>Senior design is about failure containment. A NAT gateway, route table, or AZ issue should not take down every data job. Partition workloads so that critical services can keep running when one AZ degrades.</p>
+<div class="hi">Key insight: subnet tiers should represent traffic intent. Public means internet reachable. Private means outbound-only through controlled egress. Isolated means no internet path at all.</div>
+<div class="warn">Production gotcha: putting databases in public subnets and relying only on security groups is a weak pattern. The subnet route table should also enforce the intended exposure model.</div>
+<table>
+  <tr><th>Subnet tier</th><th>Route pattern</th><th>Typical services</th></tr>
+  <tr><td>Public</td><td>Default route to Internet Gateway</td><td>ALB, bastion, NAT Gateway</td></tr>
+  <tr><td>Private compute</td><td>Default route to NAT or egress firewall</td><td>EC2, ECS, EKS, Airflow, EMR nodes</td></tr>
+  <tr><td>Private data</td><td>No direct internet route</td><td>RDS, Redshift, OpenSearch, MSK</td></tr>
+  <tr><td>Endpoint</td><td>Private connectivity to AWS services</td><td>Interface endpoints, PrivateLink</td></tr>
+</table>
+<pre><code># Three-AZ private subnet pattern
+private-compute-a  10.40.16.0/22
+private-compute-b  10.40.20.0/22
+private-compute-c  10.40.24.0/22
+
+private-data-a     10.40.32.0/23
+private-data-b     10.40.34.0/23
+private-data-c     10.40.36.0/23</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Route Tables, IGW, NAT, and Egress Control</h2>
+<p>Route tables decide where packets go. An Internet Gateway enables public internet routing for resources with public IPs. A NAT Gateway lets private subnet resources initiate outbound internet traffic while blocking unsolicited inbound connections.</p>
+<p>Data teams often underestimate egress design. Package downloads, API calls, container pulls, external SaaS integrations, and public AWS service calls can all leave through NAT. Without endpoints or egress governance, NAT becomes expensive and hard to audit.</p>
+<div class="hi">Key insight: the clean pattern is private compute plus explicit egress paths. Use VPC endpoints for AWS service traffic, NAT only where public internet access is truly needed.</div>
+<div class="warn">Production gotcha: one shared NAT Gateway can become a single-AZ dependency. For high availability, deploy NAT Gateways per AZ and route each private subnet to its local NAT.</div>
+<table>
+  <tr><th>Component</th><th>Purpose</th><th>Design note</th></tr>
+  <tr><td>Internet Gateway</td><td>Public internet access</td><td>Used by public subnets</td></tr>
+  <tr><td>NAT Gateway</td><td>Private outbound internet</td><td>Charges for hourly use and data processed</td></tr>
+  <tr><td>Route table</td><td>Traffic steering</td><td>Associate intentionally per subnet tier</td></tr>
+  <tr><td>Egress firewall</td><td>Central inspection</td><td>Useful for regulated environments</td></tr>
+</table>
+<pre><code># Private subnet route table example
+Destination     Target
+10.40.0.0/16    local
+0.0.0.0/0       nat-0123456789abcdef0
+pl-63a5400a     vpce-s3-gateway-endpoint</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Security Groups vs Network ACLs</h2>
+<p>Security groups are stateful instance-level firewalls. Network ACLs are stateless subnet-level filters. Most production security design starts with security groups because they are easier to reason about and can reference other security groups. NACLs are better used for broad subnet guardrails, not fine-grained application policy.</p>
+<p>For data platforms, security groups should model trusted flows: Airflow workers to RDS, Spark nodes to S3 endpoints, Lambda to private APIs, BI tools to Redshift. Avoid broad rules like <code>0.0.0.0/0</code> unless the exposure is intentional and controlled elsewhere.</p>
+<div class="hi">Key insight: security groups describe application relationships. NACLs describe subnet boundaries. Mixing those roles creates brittle networks.</div>
+<div class="warn">Production gotcha: NACLs are stateless. If you allow inbound traffic but forget ephemeral outbound return ports, connections fail in confusing ways.</div>
+<table>
+  <tr><th>Feature</th><th>Security Group</th><th>Network ACL</th></tr>
+  <tr><td>State</td><td>Stateful</td><td>Stateless</td></tr>
+  <tr><td>Scope</td><td>ENI/resource level</td><td>Subnet level</td></tr>
+  <tr><td>Rules</td><td>Allow only</td><td>Allow and deny</td></tr>
+  <tr><td>Best use</td><td>Workload access control</td><td>Coarse subnet guardrail</td></tr>
+</table>
+<pre><code># Example intent, not full CloudFormation
+SecurityGroup: airflow-workers
+  outbound:
+    - tcp 5432 to sg-postgres
+    - tcp 443 to vpce-s3
+    - tcp 443 to vpce-secretsmanager
+
+SecurityGroup: postgres
+  inbound:
+    - tcp 5432 from sg-airflow-workers</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">VPC Peering vs Transit Gateway</h2>
+<p>VPC peering connects two VPCs directly. Transit Gateway acts as a regional hub that connects many VPCs and hybrid networks through a central routing layer. The difference matters once you have multiple accounts, shared services, separate environments, or on-prem connectivity.</p>
+<p>Peering is simple and often cheaper for a small number of VPCs. It does not provide transitive routing. Transit Gateway is the stronger enterprise pattern when many VPCs need consistent connectivity, segmentation, and route control.</p>
+<div class="hi">Key insight: peering is a point-to-point cable. Transit Gateway is a managed network hub. Choose based on topology, growth, and governance.</div>
+<div class="warn">Production gotcha: overlapping CIDRs break both patterns. No clever route table can make two identical address ranges routable without translation or redesign.</div>
+<table>
+  <tr><th>Decision point</th><th>VPC Peering</th><th>Transit Gateway</th></tr>
+  <tr><td>Topology</td><td>One-to-one</td><td>Hub-and-spoke</td></tr>
+  <tr><td>Transitive routing</td><td>No</td><td>Yes, through TGW route tables</td></tr>
+  <tr><td>Scale</td><td>Good for few VPCs</td><td>Better for many VPCs/accounts</td></tr>
+  <tr><td>Segmentation</td><td>Route-table based, limited</td><td>Multiple TGW route tables</td></tr>
+  <tr><td>Common use</td><td>Two workloads need direct access</td><td>Enterprise shared network core</td></tr>
+</table>
+<pre><code># Peering mental model
+VPC-A &lt;------ direct peering ------&gt; VPC-B
+VPC-B &lt;------ direct peering ------&gt; VPC-C
+# VPC-A cannot automatically route through VPC-B to VPC-C
+
+# Transit Gateway mental model
+VPC-A ----\
+VPC-B ----- Transit Gateway ---- VPN / Direct Connect
+VPC-C ----/</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Gateway vs Interface Endpoints</h2>
+<p>VPC endpoints keep traffic to AWS services on private AWS networking instead of sending it through the public internet path. Gateway endpoints support services such as S3 and DynamoDB through route table entries. Interface endpoints use AWS PrivateLink and create elastic network interfaces in your subnets.</p>
+<p>For data engineering, S3 endpoints are almost mandatory in private VPC designs. Without them, private compute that reads and writes S3 usually goes through NAT, which adds cost and creates an unnecessary dependency.</p>
+<div class="hi">Key insight: VPC endpoints are both a security feature and a cost-control feature. They reduce public exposure and can remove heavy NAT data processing charges.</div>
+<div class="warn">Production gotcha: interface endpoints consume private IPs and have hourly plus data processing costs. Endpoint sprawl can become expensive if every VPC creates every endpoint independently.</div>
+<table>
+  <tr><th>Feature</th><th>Gateway Endpoint</th><th>Interface Endpoint</th></tr>
+  <tr><td>Common services</td><td>S3, DynamoDB</td><td>Secrets Manager, KMS, STS, ECR, CloudWatch, many others</td></tr>
+  <tr><td>Implementation</td><td>Route table target</td><td>ENIs with private IPs</td></tr>
+  <tr><td>Security policy</td><td>Endpoint policy</td><td>Endpoint policy plus security group</td></tr>
+  <tr><td>Cost model</td><td>Usually no hourly charge</td><td>Hourly and data processing charge</td></tr>
+  <tr><td>Data platform use</td><td>Private S3 data lake access</td><td>Private access to control-plane APIs</td></tr>
+</table>
+<pre><code># Example S3 gateway endpoint policy idea
+{
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::company-data-lake",
+        "arn:aws:s3:::company-data-lake/*"
+      ]
+    }
+  ]
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">VPC Flow Logs and Network Observability</h2>
+<p>VPC Flow Logs capture metadata about IP traffic going to and from network interfaces, subnets, or VPCs. They do not capture packet payloads. For senior operators, Flow Logs are essential for answering questions such as: was traffic rejected, where did it go, which service is producing egress, and why is a data job timing out?</p>
+<p>Flow Logs can be delivered to CloudWatch Logs, S3, or Kinesis Data Firehose. For data teams, S3 delivery is especially useful because logs can be queried with Athena, joined with asset inventory, and retained according to compliance policy.</p>
+<div class="hi">Key insight: Flow Logs turn VPC behavior into queryable data. This is where data engineering and network operations overlap nicely.</div>
+<div class="warn">Production gotcha: Flow Logs show accepted or rejected flow metadata, not full application errors. A successful TCP connection can still fail because of IAM, TLS, DNS, database auth, or application protocol issues.</div>
+<table>
+  <tr><th>Field</th><th>Why it matters</th></tr>
+  <tr><td>srcaddr / dstaddr</td><td>Identifies communicating hosts</td></tr>
+  <tr><td>srcport / dstport</td><td>Shows service-level intent</td></tr>
+  <tr><td>action</td><td>ACCEPT or REJECT</td></tr>
+  <tr><td>bytes</td><td>Useful for egress and volume analysis</td></tr>
+  <tr><td>interface-id</td><td>Maps traffic back to ENIs and resources</td></tr>
+</table>
+<pre><code>-- Athena-style investigation against VPC Flow Logs in S3
+SELECT srcaddr, dstaddr, dstport, action, count(*) AS flows, sum(bytes) AS total_bytes
+FROM vpc_flow_logs
+WHERE date = '2026-04-25'
+  AND dstport IN (443, 5432, 9092)
+GROUP BY srcaddr, dstaddr, dstport, action
+ORDER BY total_bytes DESC;</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Private Data Services and AWS Integration</h2>
+<p>Many managed AWS services integrate with VPCs differently. RDS, Redshift, MSK, OpenSearch, and ElastiCache live directly inside VPC subnets. Lambda can attach to VPC subnets through ENIs. Glue jobs can use connections to reach private stores. S3 does not live inside your VPC, so private access is normally handled through endpoints.</p>
+<p>This distinction matters when debugging. A Redshift cluster subnet issue is different from an S3 endpoint policy issue. A Glue job failing to reach an on-prem database may involve route propagation, security groups, DNS, and firewall rules outside AWS.</p>
+<div class="hi">Key insight: not every AWS service is inside your VPC, even if your workload uses it privately. Know whether the service is VPC-native, VPC-attached, or accessed through an endpoint.</div>
+<div class="warn">Production gotcha: putting Lambda in a VPC removes its default internet path. If it needs public APIs, it needs NAT. If it needs AWS APIs privately, it needs the right interface endpoints.</div>
+<table>
+  <tr><th>Service</th><th>VPC relationship</th><th>Common design concern</th></tr>
+  <tr><td>RDS</td><td>Runs in VPC subnets</td><td>Subnet group, SG, Multi-AZ</td></tr>
+  <tr><td>Redshift</td><td>Runs in VPC subnets</td><td>BI access, private endpoint, enhanced routing</td></tr>
+  <tr><td>S3</td><td>Regional service outside VPC</td><td>Gateway endpoint and bucket policy</td></tr>
+  <tr><td>Lambda</td><td>Can attach to VPC</td><td>ENI scaling, NAT, endpoint access</td></tr>
+  <tr><td>Glue</td><td>Uses connections/ENIs for private access</td><td>Subnet IP capacity and routes</td></tr>
+</table>
+<pre><code># Bucket policy condition forcing access through a specific VPC endpoint
+{
+  "Effect": "Deny",
+  "Principal": "*",
+  "Action": "s3:*",
+  "Resource": ["arn:aws:s3:::company-data-lake", "arn:aws:s3:::company-data-lake/*"],
+  "Condition": {
+    "StringNotEquals": {
+      "aws:sourceVpce": "vpce-0123456789abcdef0"
+    }
+  }
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">DNS, Private Hosted Zones, and Name Resolution</h2>
+<p>DNS is often the hidden dependency in VPC designs. AWS provides VPC DNS resolution, Route 53 private hosted zones, and private DNS names for interface endpoints. In hybrid environments, DNS forwarding between AWS and on-prem resolvers becomes a core part of the architecture.</p>
+<p>Data pipelines frequently use hostnames rather than raw IPs: database endpoints, Kafka brokers, internal APIs, vendor allowlist endpoints, and service discovery records. A route may be correct while DNS still resolves to the wrong address.</p>
+<div class="hi">Key insight: network reachability has two halves: name resolution and routing. Debug both, always.</div>
+<div class="warn">Production gotcha: enabling private DNS on an interface endpoint can override public service names inside the VPC. That is usually desired, but it can surprise teams testing from different networks.</div>
+<table>
+  <tr><th>DNS feature</th><th>Purpose</th><th>Data platform example</th></tr>
+  <tr><td>VPC DNS resolver</td><td>Default resolver in the VPC</td><td>Resolve RDS endpoints</td></tr>
+  <tr><td>Private hosted zone</td><td>Private records visible to associated VPCs</td><td><code>warehouse.internal</code></td></tr>
+  <tr><td>Resolver inbound endpoint</td><td>On-prem resolves AWS private names</td><td>Corporate BI to private Redshift</td></tr>
+  <tr><td>Resolver outbound endpoint</td><td>AWS resolves on-prem names</td><td>Glue to on-prem Oracle</td></tr>
+</table>
+<pre><code># Useful DNS checks from an EC2 troubleshooting host
+nslookup mydb.cluster-abc.us-east-1.rds.amazonaws.com
+nslookup secretsmanager.us-east-1.amazonaws.com
+curl -v https://secretsmanager.us-east-1.amazonaws.com</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">Hybrid Connectivity and On-Prem Patterns</h2>
+<p>Real enterprise data platforms rarely live only in AWS. They connect to corporate data centers, vendor networks, legacy Oracle systems, mainframe exports, SFTP servers, observability platforms, and identity providers. The major AWS patterns are Site-to-Site VPN, Direct Connect, Transit Gateway, and centralized inspection VPCs.</p>
+<p>For data engineering, hybrid networking affects throughput, reliability, and blast radius. A nightly load from an on-prem database may depend on firewall windows, DNS forwarding, route propagation, and bandwidth limits. The correct architecture separates control-plane access from bulk data movement where possible.</p>
+<div class="hi">Key insight: hybrid design should classify traffic by criticality and volume. Metadata calls, admin access, and bulk replication do not deserve the same network path.</div>
+<div class="warn">Production gotcha: VPN is encrypted and fast to set up, but it may not be predictable enough for large recurring data transfers. Direct Connect is usually the stronger long-term pattern for heavy enterprise data movement.</div>
+<table>
+  <tr><th>Pattern</th><th>Best fit</th><th>Tradeoff</th></tr>
+  <tr><td>Site-to-Site VPN</td><td>Fast setup, moderate traffic</td><td>Internet path variability</td></tr>
+  <tr><td>Direct Connect</td><td>Predictable enterprise connectivity</td><td>Longer provisioning and circuit cost</td></tr>
+  <tr><td>Transit Gateway</td><td>Many VPCs and hybrid routes</td><td>Central dependency and data processing cost</td></tr>
+  <tr><td>Inspection VPC</td><td>Central firewall and governance</td><td>More routing complexity</td></tr>
+</table>
+<pre><code># Hybrid mental model for data workloads
+On-prem Oracle ---- Direct Connect ---- Transit Gateway ---- Data VPC ---- Glue / EC2 / Airflow
+Corporate DNS ----- Resolver endpoints --------------------- Private hosted zones
+Security tools ---- Inspection VPC ------------------------- Central egress controls</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">Production Failure Modes and Design Review Checklist</h2>
+<p>A mature VPC review looks beyond whether resources can ping each other. It checks CIDR growth, subnet IP headroom, AZ independence, endpoint coverage, route table intent, DNS behavior, log retention, and cost exposure. The goal is to catch structural issues before they become outages.</p>
+<p>For senior data engineers, the most useful habit is to map each data path end-to-end: source, DNS, route, firewall/security group, endpoint, IAM, encryption, destination, and observability. Most production incidents happen where teams assumed one of those layers was already handled.</p>
+<div class="hi">Key insight: the best VPC design is boring under load. It has predictable routes, enough IPs, private service access, queryable logs, and no mystery egress.</div>
+<div class="warn">Production gotcha: network problems often look like application problems. Timeouts, throttling, dependency errors, and worker failures may all trace back to routing, DNS, endpoint, NAT, or subnet capacity.</div>
+<table>
+  <tr><th>Review area</th><th>Question to ask</th></tr>
+  <tr><td>CIDR</td><td>Will this overlap with future VPCs, on-prem, partners, or Kubernetes?</td></tr>
+  <tr><td>Subnets</td><td>Do private compute and data subnets have enough IP headroom?</td></tr>
+  <tr><td>AZ design</td><td>Can one AZ fail without breaking the whole platform?</td></tr>
+  <tr><td>Endpoints</td><td>Does AWS service traffic avoid NAT where practical?</td></tr>
+  <tr><td>Security</td><td>Are SG rules based on workload relationships, not broad CIDRs?</td></tr>
+  <tr><td>Observability</td><td>Are Flow Logs stored where they can be queried and retained?</td></tr>
+</table>
+<pre><code># Practical VPC validation checklist
+[ ] CIDR range documented and non-overlapping
+[ ] Public, private compute, private data, and endpoint subnets separated
+[ ] Route tables named by intent and associated explicitly
+[ ] NAT Gateway deployed per AZ where high availability is required
+[ ] S3 and DynamoDB gateway endpoints configured where needed
+[ ] Interface endpoints created for private AWS API access
+[ ] Flow Logs delivered to S3 or CloudWatch with retention policy
+[ ] DNS resolution tested from inside each subnet tier
+[ ] Security group references used instead of broad CIDR rules where possible</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: How would you design a VPC for a production data platform running Airflow, Spark, RDS, and S3-based data lake workloads?</div>
+  <div class="qa-a">A: I would use a non-overlapping VPC CIDR with room for growth, spread public, private compute, private data, and endpoint subnets across at least three AZs, place Airflow and Spark workers in private compute subnets, put RDS in private data subnets, add an S3 gateway endpoint, add interface endpoints for services like Secrets Manager, KMS, STS, ECR, and CloudWatch, and use Flow Logs for observability. NAT would be limited to true internet egress.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose Transit Gateway instead of VPC peering?</div>
+  <div class="qa-a">A: I would choose Transit Gateway when the environment has many VPCs, multiple accounts, shared services, hybrid connectivity, or segmentation needs. Peering is fine for simple one-to-one connectivity, but it does not support transitive routing and becomes hard to manage as the topology grows.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why are VPC endpoints important for data engineering workloads?</div>
+  <div class="qa-a">A: They keep AWS service traffic private, reduce dependency on NAT, improve security posture, and can lower data processing costs. S3 gateway endpoints are especially important because data platforms often move large volumes to and from S3.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between a security group and a network ACL?</div>
+  <div class="qa-a">A: A security group is a stateful firewall attached to ENIs and resources. A NACL is a stateless subnet-level control with allow and deny rules. I use security groups for workload relationships and NACLs for broad subnet guardrails only when needed.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you troubleshoot a private Glue job that cannot connect to an on-prem database?</div>
+  <div class="qa-a">A: I would verify DNS resolution first, then subnet route tables, Transit Gateway or VPN route propagation, security groups, NACLs, on-prem firewall rules, and database listener access. I would also check VPC Flow Logs for rejected traffic and confirm the Glue job subnet has enough free IP capacity.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are common VPC design mistakes that hurt data platforms?</div>
+  <div class="qa-a">A: Common mistakes include overlapping or too-small CIDRs, public databases, one shared NAT Gateway as a hidden AZ dependency, no S3 endpoint, broad security group rules, no Flow Logs, weak DNS design, and route tables that do not clearly match subnet intent.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">VPC</div>
+    <div class="cd">Private AWS network boundary containing subnets, routes, gateways, and security controls.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">CIDR</div>
+    <div class="cd">IP address allocation for the VPC or subnet; must avoid overlap with connected networks.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Public subnet</div>
+    <div class="cd">Subnet with a route to an Internet Gateway; used for ALB, bastion, or NAT Gateway.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Private subnet</div>
+    <div class="cd">Subnet without direct internet ingress; often routes outbound traffic through NAT or endpoints.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Isolated subnet</div>
+    <div class="cd">Subnet with no internet route; common for databases and tightly controlled services.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">IGW</div>
+    <div class="cd">Internet Gateway; enables internet routing for public subnets and public IP resources.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">NAT Gateway</div>
+    <div class="cd">Allows private subnet resources to initiate outbound internet connections.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Security Group</div>
+    <div class="cd">Stateful resource-level firewall; best for workload-to-workload access control.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Network ACL</div>
+    <div class="cd">Stateless subnet-level filter; supports allow and deny rules.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">VPC Peering</div>
+    <div class="cd">Direct private connection between two VPCs; no transitive routing.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Transit Gateway</div>
+    <div class="cd">Managed hub for many VPCs, VPNs, and Direct Connect attachments.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Gateway Endpoint</div>
+    <div class="cd">Route-table endpoint for services such as S3 and DynamoDB.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Interface Endpoint</div>
+    <div class="cd">PrivateLink endpoint using ENIs for private access to supported AWS services.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Flow Logs</div>
+    <div class="cd">Metadata logs for network flows; useful for rejected traffic, egress analysis, and troubleshooting.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Private DNS</div>
+    <div class="cd">Endpoint or hosted-zone DNS behavior that resolves service names to private addresses.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Route Table</div>
+    <div class="cd">Subnet-associated routing rules that determine next hop for traffic.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
