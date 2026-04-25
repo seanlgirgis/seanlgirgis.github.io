@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQL - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/postgresql.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / PostgreSQL - Master Engineering Reference
+</div>
+
+<h1>PostgreSQL</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 45-55 min read</p>
+
+<div class="tag-row">
+  <span class="tag">PostgreSQL</span>
+  <span class="tag">ACID</span>
+  <span class="tag">Indexing</span>
+  <span class="tag">Query Planning</span>
+  <span class="tag">Partitioning</span>
+  <span class="tag">Replication</span>
+  <span class="tag">JSONB</span>
+  <span class="tag">Data Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_postgresql.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">PostgreSQL in the Data Stack</a></li>
+    <li><a href="#s2">ACID and Pipeline Reliability</a></li>
+    <li><a href="#s3">Schema Design for Analytics Workloads</a></li>
+    <li><a href="#s4">Indexing Strategy</a></li>
+    <li><a href="#s5">EXPLAIN ANALYZE and Query Planning</a></li>
+    <li><a href="#s6">Partitioning at Scale</a></li>
+    <li><a href="#s7">Vacuum, Autovacuum, and Bloat</a></li>
+    <li><a href="#s8">Transactions, Locking, and Isolation</a></li>
+    <li><a href="#s9">Connection Pooling with PgBouncer</a></li>
+    <li><a href="#s10">Replication and Change Data Capture</a></li>
+    <li><a href="#s11">Data Engineering Patterns</a></li>
+    <li><a href="#s12">JSONB and Semi-Structured Data</a></li>
+    <li><a href="#s13">When PostgreSQL Is the Wrong Choice</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">PostgreSQL in the Data Stack</h2>
+<p>PostgreSQL is a relational database engine with strong transactional guarantees, mature SQL, rich indexing, extensions, and practical operational behavior. In a data engineering stack, it often acts as an operational database, metadata store, orchestration backend, lightweight warehouse, feature store backing table, or source system for downstream lakehouse ingestion.</p>
+<p>The senior engineering question is not whether PostgreSQL is powerful. It is where it belongs. PostgreSQL is excellent for highly consistent row-oriented workloads, moderate analytics, metadata management, enrichment tables, and source-of-truth records. It is not a replacement for a distributed warehouse when scans reach multi-terabyte scale or when compute and storage need to scale independently.</p>
+<div class="hi">Key insight: PostgreSQL is often the control plane of a data platform: job state, pipeline metadata, reference data, audit tables, ingestion watermarks, and business entities.</div>
+<div class="warn">Production gotcha: teams frequently overload PostgreSQL with warehouse-style scans, dashboard fan-out, and unbounded ad hoc queries. The result is not a bad database; it is the wrong workload placement.</div>
+<table>
+  <tr><th>Role</th><th>Good Fit</th><th>Risk</th></tr>
+  <tr><td>OLTP source</td><td>Orders, users, transactions, workflow state</td><td>Long analytics queries blocking hot paths</td></tr>
+  <tr><td>Pipeline metadata</td><td>Watermarks, run history, idempotency keys</td><td>Missing indexes on status and timestamp fields</td></tr>
+  <tr><td>Serving layer</td><td>API reads, dimensional lookup, curated marts</td><td>Too many concurrent connections without pooling</td></tr>
+  <tr><td>Mini warehouse</td><td>Small to medium reporting datasets</td><td>Large columnar scans better suited for Parquet, DuckDB, BigQuery, Redshift, or Snowflake</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">ACID and Pipeline Reliability</h2>
+<p>ACID is the reason PostgreSQL remains valuable in data pipelines. Atomicity keeps partial writes from corrupting state. Consistency protects constraints and rules. Isolation controls how concurrent jobs see each other. Durability ensures committed work survives crashes.</p>
+<p>For data engineering, ACID is not academic. It directly affects exactly-once style ingestion, idempotent reprocessing, checkpoint updates, audit integrity, and safe recovery after a failed job.</p>
+<div class="hi">Key insight: ACID lets a pipeline update data and its processing watermark in one transaction. Either both commit, or neither commits.</div>
+<div class="warn">Production gotcha: writing output rows in one step and updating the watermark in another can create silent data loss after a crash. Always couple the data mutation and checkpoint when correctness matters.</div>
+<pre><code>BEGIN;
+
+INSERT INTO fact_orders(order_id, customer_id, amount, updated_at)
+SELECT order_id, customer_id, amount, updated_at
+FROM staging_orders
+WHERE batch_id = :batch_id
+ON CONFLICT (order_id) DO UPDATE
+SET amount = EXCLUDED.amount,
+    updated_at = EXCLUDED.updated_at;
+
+UPDATE pipeline_watermark
+SET last_successful_batch_id = :batch_id,
+    updated_at = now()
+WHERE pipeline_name = 'orders_ingest';
+
+COMMIT;</code></pre>
+<table>
+  <tr><th>ACID Property</th><th>Pipeline Meaning</th><th>Example</th></tr>
+  <tr><td>Atomicity</td><td>All-or-nothing batch</td><td>Rows and watermark commit together</td></tr>
+  <tr><td>Consistency</td><td>Rules remain valid</td><td>Foreign keys and unique keys prevent bad state</td></tr>
+  <tr><td>Isolation</td><td>Concurrent jobs do not corrupt each other</td><td>Workers claim rows using locks</td></tr>
+  <tr><td>Durability</td><td>Committed data survives failure</td><td>Crash after commit does not lose state</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Schema Design for Analytics Workloads</h2>
+<p>PostgreSQL performs best when schema design matches access patterns. For operational tables, normalize enough to protect correctness. For read-heavy data products, selective denormalization can reduce join pressure. For telemetry and event workloads, use append-friendly tables, narrow indexes, range partitioning, and retention policies.</p>
+<p>Senior data engineers should treat schema as a performance contract. Column types, nullability, constraints, primary keys, and timestamps shape every query plan downstream.</p>
+<div class="hi">Key insight: a good PostgreSQL schema makes common queries boring: predictable filters, stable join keys, and clear time boundaries.</div>
+<div class="warn">Production gotcha: using text for everything feels flexible but destroys type safety, statistics quality, join performance, and index usefulness.</div>
+<pre><code>CREATE TABLE pipeline_run (
+    run_id          bigserial PRIMARY KEY,
+    pipeline_name   text NOT NULL,
+    status          text NOT NULL CHECK (status IN ('running', 'success', 'failed')),
+    source_system   text NOT NULL,
+    started_at      timestamptz NOT NULL DEFAULT now(),
+    finished_at     timestamptz,
+    rows_read       bigint NOT NULL DEFAULT 0,
+    rows_written    bigint NOT NULL DEFAULT 0,
+    error_message   text
+);
+
+CREATE INDEX idx_pipeline_run_lookup
+ON pipeline_run (pipeline_name, status, started_at DESC);</code></pre>
+<table>
+  <tr><th>Design Choice</th><th>Use When</th><th>Tradeoff</th></tr>
+  <tr><td>Normalized model</td><td>OLTP correctness, shared entities</td><td>More joins</td></tr>
+  <tr><td>Denormalized mart</td><td>Serving dashboards or APIs</td><td>More ETL logic and duplication</td></tr>
+  <tr><td>Append-only events</td><td>Audit, telemetry, CDC landing</td><td>Needs retention and partition cleanup</td></tr>
+  <tr><td>Mutable fact table</td><td>Latest-state serving</td><td>Vacuum and bloat management matter</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Indexing Strategy</h2>
+<p>Indexes are not magic. They are extra data structures that speed reads and slow writes. PostgreSQL's default B-tree index is excellent for equality, range, ordering, and prefix access. Composite indexes help when predicates follow the left-to-right order. Partial indexes target hot subsets. Covering indexes use <code>INCLUDE</code> columns to avoid heap reads for selected queries.</p>
+<div class="hi">Key insight: design indexes from real query predicates, join columns, sort order, and cardinality. Do not index columns just because they appear important.</div>
+<div class="warn">Production gotcha: low-selectivity indexes, unused indexes, and overlapping indexes can make ingestion slower while giving little read benefit.</div>
+<table>
+  <tr><th>Index Type</th><th>Best For</th><th>Example</th></tr>
+  <tr><td>B-tree</td><td>Equality, range, order by</td><td><code>customer_id = 42</code>, <code>created_at &gt; now() - interval '1 day'</code></td></tr>
+  <tr><td>Composite</td><td>Multi-column filters</td><td><code>(tenant_id, status, created_at)</code></td></tr>
+  <tr><td>Partial</td><td>Frequently queried subset</td><td>Only failed or active rows</td></tr>
+  <tr><td>Covering</td><td>Index-only reads</td><td><code>INCLUDE (amount, status)</code></td></tr>
+  <tr><td>GIN</td><td>JSONB, arrays, full-text search</td><td><code>metadata @&gt; '{"source":"crm"}'</code></td></tr>
+</table>
+<pre><code>-- Composite index for tenant-scoped recent failures
+CREATE INDEX idx_job_failure_tenant_recent
+ON job_event (tenant_id, status, created_at DESC)
+WHERE status = 'failed';
+
+-- Covering index for a hot API lookup
+CREATE INDEX idx_order_lookup_covering
+ON orders (customer_id, order_date DESC)
+INCLUDE (order_status, total_amount);</code></pre>
+<p>Composite index order matters. If an index is on <code>(tenant_id, status, created_at)</code>, it works well for queries filtering by <code>tenant_id</code>, then <code>status</code>, then time. It is usually weaker for queries filtering only by <code>status</code>.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">EXPLAIN ANALYZE and Query Planning</h2>
+<p><code>EXPLAIN</code> shows the plan PostgreSQL expects to use. <code>EXPLAIN ANALYZE</code> actually runs the query and reports real timing and row counts. Senior engineers use it to compare estimated rows to actual rows, identify sequential scans, expensive joins, bad statistics, sort spills, and missing indexes.</p>
+<div class="hi">Key insight: the fastest way to debug PostgreSQL performance is to compare estimated rows versus actual rows. Big gaps often mean stale statistics, skew, bad predicates, or poor indexing.</div>
+<div class="warn">Production gotcha: <code>EXPLAIN ANALYZE</code> executes the query. Do not casually run it on destructive statements or massive production queries without guardrails.</div>
+<pre><code>EXPLAIN (ANALYZE, BUFFERS)
+SELECT customer_id, count(*) AS failed_jobs
+FROM job_event
+WHERE status = 'failed'
+  AND created_at &gt;= now() - interval '7 days'
+GROUP BY customer_id
+ORDER BY failed_jobs DESC
+LIMIT 20;</code></pre>
+<table>
+  <tr><th>Plan Signal</th><th>What It Suggests</th><th>Action</th></tr>
+  <tr><td>Seq Scan on huge table</td><td>No useful index or low selectivity</td><td>Add targeted index or rewrite predicate</td></tr>
+  <tr><td>Actual rows far above estimate</td><td>Bad stats or skew</td><td><code>ANALYZE</code>, extended stats, better predicates</td></tr>
+  <tr><td>Sort Method: external merge</td><td>Sort spilled to disk</td><td>Index order, increase work memory carefully, reduce rows</td></tr>
+  <tr><td>Nested loop with huge outer rows</td><td>Join strategy mismatch</td><td>Improve join indexes or stats</td></tr>
+  <tr><td>High shared read blocks</td><td>Disk-heavy query</td><td>Improve locality, indexes, cache, or partition pruning</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Partitioning at Scale</h2>
+<p>Partitioning splits one logical table into smaller physical partitions. PostgreSQL supports range, list, and hash partitioning. For data engineering, range partitioning by time is the most common pattern for events, telemetry, audit logs, and CDC landing tables.</p>
+<p>The goal is not only faster reads. Partitioning also makes retention, archiving, vacuum, and bulk load operations safer. Dropping an old partition is far cheaper than deleting billions of old rows.</p>
+<div class="hi">Key insight: partitioning is an operational tool as much as a query optimization tool.</div>
+<div class="warn">Production gotcha: partitioning without predicates that match the partition key will not prune partitions. You pay complexity without getting much speed.</div>
+<table>
+  <tr><th>Partition Type</th><th>Best Use</th><th>Example</th></tr>
+  <tr><td>Range</td><td>Time-series and retention windows</td><td>Monthly partitions by <code>event_time</code></td></tr>
+  <tr><td>List</td><td>Known categories or regions</td><td>Partition by <code>region</code></td></tr>
+  <tr><td>Hash</td><td>Even distribution for high-volume keys</td><td>Partition by <code>tenant_id</code></td></tr>
+</table>
+<pre><code>CREATE TABLE telemetry_event (
+    event_id     bigserial,
+    endpoint_id  bigint NOT NULL,
+    metric_name  text NOT NULL,
+    value        numeric NOT NULL,
+    event_time   timestamptz NOT NULL
+) PARTITION BY RANGE (event_time);
+
+CREATE TABLE telemetry_event_2026_04
+PARTITION OF telemetry_event
+FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');
+
+CREATE INDEX idx_telemetry_2026_04_endpoint_time
+ON telemetry_event_2026_04 (endpoint_id, event_time DESC);</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Vacuum, Autovacuum, and Bloat</h2>
+<p>PostgreSQL uses MVCC, which means updates and deletes create old row versions that must later be cleaned. Vacuum removes dead tuples so space can be reused. Autovacuum performs this automatically, but high-churn tables often need tuning.</p>
+<p>In data pipelines, bloat appears when tables receive frequent upserts, deletes, or queue-style status updates. Symptoms include growing table size, slower scans, weaker cache efficiency, and worse index performance.</p>
+<div class="hi">Key insight: upsert-heavy data engineering workloads need vacuum strategy. MVCC gives concurrency, but dead row cleanup is the bill you eventually pay.</div>
+<div class="warn">Production gotcha: disabling autovacuum to reduce load is usually self-harm. Tune it; do not turn it off unless you have a controlled maintenance alternative.</div>
+<pre><code>-- Inspect dead tuples and vacuum activity
+SELECT relname,
+       n_live_tup,
+       n_dead_tup,
+       last_vacuum,
+       last_autovacuum,
+       last_analyze,
+       last_autoanalyze
+FROM pg_stat_user_tables
+ORDER BY n_dead_tup DESC
+LIMIT 20;
+
+-- Table-specific tuning for a high-churn table
+ALTER TABLE job_queue SET (
+  autovacuum_vacuum_scale_factor = 0.02,
+  autovacuum_analyze_scale_factor = 0.02,
+  autovacuum_vacuum_cost_limit = 2000
+);</code></pre>
+<table>
+  <tr><th>Operation</th><th>Purpose</th><th>Risk</th></tr>
+  <tr><td>VACUUM</td><td>Reclaims dead tuples for reuse</td><td>Does not always shrink file on disk</td></tr>
+  <tr><td>ANALYZE</td><td>Refreshes planner statistics</td><td>Stale stats create bad plans</td></tr>
+  <tr><td>VACUUM FULL</td><td>Rewrites table and shrinks disk</td><td>Requires heavy lock; risky on production hot tables</td></tr>
+  <tr><td>REINDEX</td><td>Rebuilds bloated indexes</td><td>Plan for locking or use concurrent options where supported</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Transactions, Locking, and Isolation</h2>
+<p>PostgreSQL concurrency is built on MVCC and locks. Readers usually do not block writers, and writers usually do not block readers, but conflicting writes still block each other. Isolation levels control what a transaction can see while other transactions are changing data.</p>
+<div class="hi">Key insight: many reliable worker patterns in PostgreSQL come from combining transactions with <code>FOR UPDATE SKIP LOCKED</code>.</div>
+<div class="warn">Production gotcha: long-running transactions prevent vacuum cleanup and can create table bloat across the system. Dashboards and idle sessions can become hidden villains.</div>
+<pre><code>BEGIN;
+
+WITH next_job AS (
+  SELECT job_id
+  FROM job_queue
+  WHERE status = 'ready'
+  ORDER BY priority DESC, created_at
+  FOR UPDATE SKIP LOCKED
+  LIMIT 1
+)
+UPDATE job_queue q
+SET status = 'running', started_at = now()
+FROM next_job
+WHERE q.job_id = next_job.job_id
+RETURNING q.*;
+
+COMMIT;</code></pre>
+<table>
+  <tr><th>Isolation Level</th><th>Behavior</th><th>Use Case</th></tr>
+  <tr><td>Read Committed</td><td>Each statement sees committed data at statement start</td><td>Default OLTP and many ETL operations</td></tr>
+  <tr><td>Repeatable Read</td><td>Transaction sees a stable snapshot</td><td>Consistent multi-query reads</td></tr>
+  <tr><td>Serializable</td><td>Strongest isolation with conflict detection</td><td>High correctness workflows, with retry logic</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Connection Pooling with PgBouncer</h2>
+<p>PostgreSQL uses one backend process per connection. Too many direct application connections increase memory use, context switching, and operational instability. PgBouncer sits between clients and PostgreSQL to reuse a smaller number of database connections.</p>
+<p>For data platforms, pooling matters because Airflow tasks, Spark jobs, API services, notebooks, BI tools, and batch scripts can all connect at once. Without pooling, connection storms become a real outage pattern.</p>
+<div class="hi">Key insight: PgBouncer protects PostgreSQL from connection fan-out. It does not make slow queries fast, but it keeps connection management from becoming the bottleneck.</div>
+<div class="warn">Production gotcha: transaction pooling can break session-level behavior such as temp tables, session variables, prepared statements, and some migration tooling assumptions.</div>
+<table>
+  <tr><th>Pool Mode</th><th>Behavior</th><th>Best For</th></tr>
+  <tr><td>Session</td><td>Client keeps server connection for entire session</td><td>Compatibility, legacy apps</td></tr>
+  <tr><td>Transaction</td><td>Server connection returned after transaction</td><td>High-scale web APIs and short transactions</td></tr>
+  <tr><td>Statement</td><td>Connection returned after each statement</td><td>Rare; limited compatibility</td></tr>
+</table>
+<pre><code>[databases]
+appdb = host=postgres.internal port=5432 dbname=appdb
+
+[pgbouncer]
+listen_port = 6432
+listen_addr = 0.0.0.0
+pool_mode = transaction
+max_client_conn = 1000
+default_pool_size = 50
+reserve_pool_size = 10</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">Replication and Change Data Capture</h2>
+<p>PostgreSQL supports physical streaming replication and logical replication. Physical replication copies the database at the storage/WAL level and is commonly used for read replicas and high availability. Logical replication publishes row-level changes and is useful for selective replication, migrations, and CDC pipelines.</p>
+<p>Data engineers often consume PostgreSQL changes through WAL-based CDC tools such as Debezium, managed database streams, or cloud migration services. The goal is to move committed changes into Kafka, S3, data lakes, warehouses, or search systems without repeatedly full-scanning source tables.</p>
+<div class="hi">Key insight: CDC turns PostgreSQL from a polling source into an event source, but it also introduces replication slot, schema evolution, ordering, and replay responsibilities.</div>
+<div class="warn">Production gotcha: inactive logical replication slots retain WAL. If a CDC consumer stops, disk can fill until PostgreSQL is in trouble.</div>
+<table>
+  <tr><th>Approach</th><th>Use For</th><th>Tradeoff</th></tr>
+  <tr><td>Streaming replication</td><td>HA and read replicas</td><td>Replica is physical and usually same major version</td></tr>
+  <tr><td>Logical replication</td><td>Selective table replication</td><td>Requires replica identity and schema handling</td></tr>
+  <tr><td>CDC tool</td><td>Kafka or lake ingestion</td><td>Needs offset, replay, and dead-letter strategy</td></tr>
+  <tr><td>Batch extract</td><td>Simple low-volume pipelines</td><td>Can miss deletes unless designed carefully</td></tr>
+</table>
+<pre><code>-- Publication for logical replication
+CREATE PUBLICATION app_changes
+FOR TABLE customers, orders, order_items;
+
+-- Monitor replication slots
+SELECT slot_name,
+       plugin,
+       slot_type,
+       active,
+       restart_lsn,
+       confirmed_flush_lsn
+FROM pg_replication_slots;</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">Data Engineering Patterns</h2>
+<p>PostgreSQL is extremely useful for common data engineering patterns: staging tables, merge/upsert, deduplication, data quality checks, audit trails, orchestration metadata, idempotency, slowly changing dimensions, and incremental extraction.</p>
+<div class="hi">Key insight: PostgreSQL is often where correctness logic lives before data is promoted to a lake, warehouse, or serving system.</div>
+<div class="warn">Production gotcha: complex CTE chains can become hard to optimize and debug. Use temporary tables or staged materialization when explain plans become unstable.</div>
+<h3>Upsert with ON CONFLICT</h3>
+<pre><code>INSERT INTO dim_customer(customer_id, email, full_name, updated_at)
+SELECT customer_id, email, full_name, updated_at
+FROM staging_customer
+ON CONFLICT (customer_id) DO UPDATE
+SET email = EXCLUDED.email,
+    full_name = EXCLUDED.full_name,
+    updated_at = EXCLUDED.updated_at
+WHERE dim_customer.updated_at &lt; EXCLUDED.updated_at;</code></pre>
+<h3>Window Function for Latest Record</h3>
+<pre><code>WITH ranked AS (
+  SELECT *,
+         row_number() OVER (
+           PARTITION BY customer_id
+           ORDER BY updated_at DESC
+         ) AS rn
+  FROM customer_events
+)
+SELECT *
+FROM ranked
+WHERE rn = 1;</code></pre>
+<table>
+  <tr><th>Pattern</th><th>PostgreSQL Feature</th><th>Data Engineering Value</th></tr>
+  <tr><td>Idempotent load</td><td>Unique key plus <code>ON CONFLICT</code></td><td>Safe retries</td></tr>
+  <tr><td>Incremental extract</td><td>Watermark table</td><td>Controlled source reads</td></tr>
+  <tr><td>Deduplication</td><td>Window functions</td><td>Deterministic latest-row logic</td></tr>
+  <tr><td>Data quality</td><td>Constraints and checks</td><td>Bad data rejected early</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">JSONB and Semi-Structured Data</h2>
+<p><code>JSONB</code> stores binary JSON and allows indexing and querying nested fields. It is useful when source payloads evolve, when attributes are sparse, or when you need to keep raw event context beside structured columns.</p>
+<p>The best pattern is hybrid: put high-value, frequently filtered fields in typed columns, and keep flexible details in <code>JSONB</code>. This preserves performance and schema discipline while allowing controlled flexibility.</p>
+<div class="hi">Key insight: JSONB is powerful for edge flexibility, not an excuse to avoid modeling the core business entities.</div>
+<div class="warn">Production gotcha: burying join keys, timestamps, and status fields inside JSONB makes queries harder to index, validate, and govern.</div>
+<pre><code>CREATE TABLE raw_event (
+    event_id      bigserial PRIMARY KEY,
+    source_system text NOT NULL,
+    event_type    text NOT NULL,
+    event_time    timestamptz NOT NULL,
+    payload       jsonb NOT NULL
+);
+
+CREATE INDEX idx_raw_event_payload_gin
+ON raw_event USING gin (payload);
+
+SELECT event_id, payload -&gt;&gt; 'customerId' AS customer_id
+FROM raw_event
+WHERE payload @&gt; '{"priority":"high"}';</code></pre>
+<table>
+  <tr><th>Choice</th><th>Use When</th><th>Risk</th></tr>
+  <tr><td>Typed columns</td><td>Stable fields, joins, filters</td><td>Migration needed when schema changes</td></tr>
+  <tr><td>JSONB</td><td>Sparse or changing attributes</td><td>Harder governance and validation</td></tr>
+  <tr><td>Raw JSON landing</td><td>Audit and replay</td><td>Needs downstream curation</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s13">When PostgreSQL Is the Wrong Choice</h2>
+<p>PostgreSQL is excellent, but forcing every workload into it creates pain. It is usually the wrong primary engine for massive distributed analytics, ultra-high-write time-series ingestion without partition and retention planning, unbounded full-text search at search-engine scale, graph traversal at deep relationship scale, and globally distributed low-latency writes across regions.</p>
+<div class="hi">Key insight: senior architecture is not loyalty to one database. It is matching workload shape to engine strengths.</div>
+<div class="warn">Production gotcha: PostgreSQL can survive many wrong workloads for a while, which makes the failure slow, expensive, and politically difficult to unwind later.</div>
+<table>
+  <tr><th>Workload</th><th>Better Fit</th><th>Why</th></tr>
+  <tr><td>Large columnar analytics</td><td>Snowflake, BigQuery, Redshift, DuckDB, Spark</td><td>Columnar storage and distributed scans</td></tr>
+  <tr><td>Search relevance</td><td>Elasticsearch, OpenSearch, Solr</td><td>Text scoring, inverted indexes, search operations</td></tr>
+  <tr><td>High-volume metrics</td><td>TimescaleDB, InfluxDB, ClickHouse</td><td>Time-series compression and retention patterns</td></tr>
+  <tr><td>Massive graph traversal</td><td>Neo4j, Neptune</td><td>Relationship traversal optimized model</td></tr>
+  <tr><td>Global active-active writes</td><td>DynamoDB, Spanner-like systems, CockroachDB</td><td>Distributed write architecture</td></tr>
+</table>
+<p>PostgreSQL still pairs well with these systems. It can hold metadata, governance state, business entities, orchestration state, and serving tables while specialized systems handle scale-specific workloads.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why does ACID matter in a data pipeline?</div>
+  <div class="qa-a">A: Because pipelines fail in the middle. ACID lets you commit output rows, audit records, and watermarks together. Without that, a crash can create duplicates, skipped data, or a false success marker.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you decide which PostgreSQL indexes to create?</div>
+  <div class="qa-a">A: Start from real query patterns: filters, joins, sort order, and cardinality. Use B-tree for common equality and range access, composite indexes for left-to-right predicates, partial indexes for hot subsets, and covering indexes when index-only reads matter.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What do you look for in EXPLAIN ANALYZE?</div>
+  <div class="qa-a">A: I compare estimated rows to actual rows, look for unexpected sequential scans, expensive joins, disk sorts, high buffer reads, and whether indexes are actually used. Bad estimates usually point to stale stats, skew, or predicates the planner cannot use well.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you partition a PostgreSQL table?</div>
+  <div class="qa-a">A: I partition when data naturally separates by time, tenant, region, or hash key and when queries or retention use that boundary. For event and telemetry tables, time range partitioning makes pruning, archiving, and dropping old data much safer.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What problem does PgBouncer solve?</div>
+  <div class="qa-a">A: It reduces connection pressure. PostgreSQL does not like thousands of direct concurrent connections. PgBouncer lets many clients reuse fewer server connections, especially for short transactions from APIs, tasks, and services.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When should PostgreSQL not be used as the main analytics engine?</div>
+  <div class="qa-a">A: When the workload is dominated by huge scans, distributed joins, columnar compression needs, or compute-storage separation. PostgreSQL can serve curated marts and metadata well, but large-scale analytics usually belongs in a warehouse, lakehouse, or columnar engine.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row"><div class="ct">ACID</div><div class="cd">Atomicity, consistency, isolation, durability; core to reliable transactional pipelines.</div></div>
+  <div class="cheat-row"><div class="ct">MVCC</div><div class="cd">Multi-version concurrency control; enables concurrent reads and writes but creates dead tuples.</div></div>
+  <div class="cheat-row"><div class="ct">ON CONFLICT</div><div class="cd">PostgreSQL upsert mechanism for idempotent inserts and updates.</div></div>
+  <div class="cheat-row"><div class="ct">EXPLAIN</div><div class="cd">Shows planned query execution without running the query.</div></div>
+  <div class="cheat-row"><div class="ct">EXPLAIN ANALYZE</div><div class="cd">Runs the query and reports actual execution timing and row counts.</div></div>
+  <div class="cheat-row"><div class="ct">B-tree</div><div class="cd">Default index type for equality, range predicates, joins, and ordered retrieval.</div></div>
+  <div class="cheat-row"><div class="ct">Partial index</div><div class="cd">Index only rows matching a predicate, such as active or failed records.</div></div>
+  <div class="cheat-row"><div class="ct">INCLUDE</div><div class="cd">Adds non-key columns to an index for covering/index-only query patterns.</div></div>
+  <div class="cheat-row"><div class="ct">GIN</div><div class="cd">Index type commonly used for JSONB, arrays, and full-text search.</div></div>
+  <div class="cheat-row"><div class="ct">VACUUM</div><div class="cd">Cleans dead tuples so space can be reused after updates and deletes.</div></div>
+  <div class="cheat-row"><div class="ct">ANALYZE</div><div class="cd">Refreshes planner statistics so PostgreSQL can choose better query plans.</div></div>
+  <div class="cheat-row"><div class="ct">SKIP LOCKED</div><div class="cd">Useful for concurrent worker queues where each worker claims different rows.</div></div>
+  <div class="cheat-row"><div class="ct">PgBouncer</div><div class="cd">Connection pooler that protects PostgreSQL from connection storms.</div></div>
+  <div class="cheat-row"><div class="ct">Logical repl</div><div class="cd">Publishes row-level changes for selective replication and CDC patterns.</div></div>
+  <div class="cheat-row"><div class="ct">JSONB</div><div class="cd">Binary JSON storage with query and indexing support for semi-structured attributes.</div></div>
+  <div class="cheat-row"><div class="ct">Partitioning</div><div class="cd">Splits a table into physical partitions for pruning, retention, and manageability.</div></div>
+</div>
+
+</div>
+</body>
+</html>
