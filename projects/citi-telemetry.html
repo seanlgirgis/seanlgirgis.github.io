@@ -79,6 +79,8 @@ tr:nth-child(even) td { background:#f8fafc; }
     <span class="tag">Streamlit</span>
     <span class="tag">Financial Services</span>
     <span class="tag">65K+ Endpoints</span>
+    <span class="tag">Oracle DB</span>
+    <span class="tag">openpyxl</span>
   </div>
 
   <div class="audio-box">
@@ -144,7 +146,7 @@ tr:nth-child(even) td { background:#f8fafc; }
 
   <table>
     <tr><th>Source</th><th>Type</th><th>What It Provided</th></tr>
-    <tr><td><strong>BMC TrueSight</strong></td><td>Performance monitoring platform</td><td>P95 time-series for CPU, Memory, Disk, and Network across all 65–70K monitored endpoints</td></tr>
+    <tr><td><strong>BMC TrueSight</strong></td><td>Performance monitoring platform (Oracle DB backend)</td><td>P95 time-series for CPU, Memory, Disk, and Network across all 65–70K monitored endpoints — extracted directly via Oracle DB queries</td></tr>
     <tr><td><strong>CMDB</strong> (SQL Server)</td><td>Change Management Database</td><td>Asset inventory: system name, owner, region, department, tier, classification, environment</td></tr>
     <tr><td><strong>AppDynamics</strong></td><td>Application performance monitoring</td><td>Supplementary server metadata: ownership, location, departmental assignment, application context not always present in CMDB</td></tr>
   </table>
@@ -209,11 +211,11 @@ headroom_pct   = (CEILING_PCT - adjusted_util) / CEILING_PCT</code></pre>
 
   <!-- S6 -->
   <h2 id="s6">Pipeline Architecture</h2>
-  <p>The pipeline was built entirely in Python, with Pandas handling the transformation and join work, NumPy providing the vectorized calculations for safety and ceiling factors across 65K+ rows, and SQLite as the persistence layer. The pipeline ran monthly, triggered when the BMC TrueSight export for the period was ready.</p>
+  <p>The pipeline was built entirely in Python, with Pandas handling the transformation and join work, NumPy providing the vectorized calculations for safety and ceiling factors across 65K+ rows, and SQLite as the persistence layer. Telemetry data was extracted directly from Oracle databases that backed BMC TrueSight, rather than relying on manual exports. CMDB data was queried from SQL Server. Excel report output was generated programmatically using openpyxl, producing the same structured workbooks the enterprise teams expected without any manual formatting step. The pipeline ran monthly, triggered when the BMC TrueSight data for the period was ready.</p>
 
   <pre><code># Pipeline flow (high level)
 1. INGEST
-   ├── Load BMC TrueSight P95 export (CSV/structured format)
+   ├── Extract BMC TrueSight P95 data from Oracle DB (cx_Oracle / SQLAlchemy)
    ├── Query CMDB via SQL Server for asset reference data
    └── Load AppDynamics server metadata export
 
@@ -445,7 +447,9 @@ ORDER BY cpu_adjusted DESC;</code></pre>
     <div class="cheat-row"><span class="ct">Ceiling threshold</span><span class="cd">90% — operational maximum; adjusted utilization above = near capacity</span></div>
     <div class="cheat-row"><span class="ct">Output: savings</span><span class="cd">Under-utilized endpoints → downsize, consolidate, promote to virtual/cloud</span></div>
     <div class="cheat-row"><span class="ct">Output: risk</span><span class="cd">Near-capacity endpoints → proactive notification to owning teams with lead time</span></div>
-    <div class="cheat-row"><span class="ct">Tech stack</span><span class="cd">Python · Pandas · NumPy · SQLite · Streamlit · SQL Server (CMDB reads)</span></div>
+    <div class="cheat-row"><span class="ct">Tech stack</span><span class="cd">Python · Pandas · NumPy · SQLite · Streamlit · openpyxl · Oracle DB · SQL Server</span></div>
+    <div class="cheat-row"><span class="ct">Oracle DB</span><span class="cd">TrueSight telemetry extracted directly from Oracle — pipeline queries source DB, no manual export</span></div>
+    <div class="cheat-row"><span class="ct">openpyxl</span><span class="cd">Excel report generation — structured workbooks produced programmatically, no manual formatting</span></div>
     <div class="cheat-row"><span class="ct">SQLite design</span><span class="cd">Monthly databases (per-period detail) + master database (multi-month progression)</span></div>
     <div class="cheat-row"><span class="ct">Streamlit</span><span class="cd">Internal team dashboard — browse, filter, drill down, month-over-month trends</span></div>
     <div class="cheat-row"><span class="ct">Manual process</span><span class="cd">5–10 business days every month — Excel, manual enrichment joins, human calculation</span></div>
