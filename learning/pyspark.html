@@ -67,16 +67,15 @@ tr:nth-child(even) td { background:#f8fafc; }
 </div>
 
 <h1>PySpark for Data Engineers</h1>
-<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 42-50 min read</p>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
 
 <div class="tag-row">
   <span class="tag">PySpark</span>
-  <span class="tag">Apache Spark</span>
+  <span class="tag">Spark SQL</span>
   <span class="tag">Data Engineering</span>
   <span class="tag">Parquet</span>
-  <span class="tag">S3</span>
-  <span class="tag">EMR</span>
   <span class="tag">AWS Glue</span>
+  <span class="tag">EMR</span>
   <span class="tag">Databricks</span>
 </div>
 
@@ -91,423 +90,205 @@ tr:nth-child(even) td { background:#f8fafc; }
 <div class="toc">
   <h2>Contents</h2>
   <ol>
-    <li><a href="#s1">Where PySpark Fits in Data Engineering</a></li>
-    <li><a href="#s2">Spark Architecture: Driver, Executors, Cluster Manager</a></li>
-    <li><a href="#s3">RDDs vs DataFrames vs Datasets</a></li>
-    <li><a href="#s4">Lazy Evaluation, Transformations, and Actions</a></li>
-    <li><a href="#s5">Partitions, Parallelism, Repartition, and Coalesce</a></li>
-    <li><a href="#s6">Shuffles: The Expensive Boundary</a></li>
-    <li><a href="#s7">Joins: Broadcast, Sort-Merge, and Strategy Control</a></li>
-    <li><a href="#s8">Data Skew and Salting</a></li>
-    <li><a href="#s9">Adaptive Query Execution</a></li>
-    <li><a href="#s10">UDFs, Built-In Functions, and Python Overhead</a></li>
-    <li><a href="#s11">Parquet on S3: Pruning, Pushdown, and Schema Evolution</a></li>
-    <li><a href="#s12">EMR vs Glue vs Databricks</a></li>
-    <li><a href="#s13">Performance Tuning and OOM Failures</a></li>
-    <li><a href="#s14">Production Patterns for Reliable Spark Pipelines</a></li>
+    <li><a href="#s1">Architecture &amp; Execution Model</a></li>
+    <li><a href="#s2">Lazy Evaluation &amp; DAG</a></li>
+    <li><a href="#s3">Partitioning &amp; Coalesce</a></li>
+    <li><a href="#s4">Shuffles</a></li>
+    <li><a href="#s5">Joins &amp; Broadcast</a></li>
+    <li><a href="#s6">Data Skew</a></li>
+    <li><a href="#s7">UDFs vs Built-ins</a></li>
+    <li><a href="#s8">Platform Choice (Glue / EMR / Databricks)</a></li>
+    <li><a href="#s9">Performance Tuning</a></li>
     <li><a href="#qa">Interview Q&amp;A</a></li>
     <li><a href="#cheat">Quick Reference</a></li>
   </ol>
 </div>
 
-<h2 id="s1">Where PySpark Fits in Data Engineering</h2>
-<p>PySpark is the Python API for Apache Spark, a distributed compute engine designed for large-scale batch processing, SQL analytics, machine learning feature preparation, and streaming workloads. For a senior data engineer, PySpark is less about writing Python loops and more about expressing data transformations that Spark can optimize and execute across many machines.</p>
-<p>The practical value is that PySpark lets you process data too large or too slow for a single-node Pandas job while keeping the development experience close to Python. The tradeoff is that you must think in distributed systems terms: partitions, shuffles, executor memory, serialization, file layout, and cluster-level failure behavior.</p>
-<div class="hi">PySpark is best treated as a distributed SQL and DataFrame engine with a Python control plane, not as normal Python running faster.</div>
-<div class="warn">A common production failure is porting Pandas-style row-by-row thinking into Spark. If the code depends on Python loops, repeated collects, or custom UDFs for basic logic, Spark loses most of its advantage.</div>
-<table>
-  <tr><th>Use PySpark When</th><th>Prefer Something Else When</th></tr>
-  <tr><td>Data is hundreds of GBs to TBs and needs distributed compute.</td><td>The job is a few MBs or simple enough for SQL, Pandas, DuckDB, or Athena.</td></tr>
-  <tr><td>You need joins, aggregations, feature prep, deduplication, or file compaction at scale.</td><td>You need low-latency request-response serving.</td></tr>
-  <tr><td>You need repeatable pipelines on S3, HDFS, Delta, Iceberg, or Hive tables.</td><td>You need millisecond operational transactions.</td></tr>
-  <tr><td>You need to integrate with EMR, Glue, Databricks, Airflow, or lakehouse tables.</td><td>You only need ad-hoc reporting over already optimized data.</td></tr>
-</table>
+<h2 id="s1">Architecture &amp; Execution Model</h2>
+<p>PySpark is the Python API for Apache Spark, but the engine doing the heavy lifting is still Spark on the JVM. The driver builds the logical plan, coordinates jobs, and requests resources from a cluster manager. Executors run tasks against partitions, cache data, perform shuffles, and return results or metadata back to the driver.</p>
+<p>For data engineers, the important split is control plane versus data plane. Python code defines the work, but distributed execution happens across executor JVMs. The fastest PySpark jobs keep data inside Spark SQL expressions and avoid pulling large data back into Python or the driver.</p>
+<div class="hi">Key insight: the driver is the brain, executors are the workers, and partitions are the units of parallel work. Most production failures come from confusing those boundaries.</div>
+<div class="warn">Gotcha: <code>collect()</code>, large <code>toPandas()</code>, or driver-side loops over data can turn a distributed job into a single-machine memory problem.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s2">Spark Architecture: Driver, Executors, Cluster Manager</h2>
-<p>A Spark application has a driver process and a set of executor processes. The driver runs the main application, builds the logical plan, requests resources, coordinates tasks, and tracks job progress. Executors run tasks against partitions of data and keep cached data in memory or disk. The cluster manager, such as YARN, Kubernetes, standalone Spark, EMR, Glue, or Databricks infrastructure, allocates resources.</p>
-<p>The driver does not process every row. It plans and coordinates. Executors do the distributed work. When engineers accidentally pull data back to the driver using <code>collect()</code>, <code>toPandas()</code>, or oversized broadcast variables, the driver becomes the bottleneck and can crash even when the cluster has plenty of executor capacity.</p>
-<div class="hi">The driver is the brain; executors are the workers. Good Spark code sends computation to the data instead of dragging data back to the driver.</div>
-<div class="warn">Driver OOM is often caused by control-plane mistakes: collecting large datasets, creating huge task graphs, listing millions of files, or broadcasting a dimension table that is not actually small.</div>
-<table>
-  <tr><th>Component</th><th>Role</th><th>Failure Impact</th></tr>
-  <tr><td>Driver</td><td>Builds plans, schedules jobs, manages metadata, receives action results.</td><td>Application fails if the driver dies.</td></tr>
-  <tr><td>Executor</td><td>Runs tasks, stores shuffle data, caches partitions.</td><td>Tasks can retry; cached or shuffle data may be recomputed.</td></tr>
-  <tr><td>Cluster manager</td><td>Allocates CPU, memory, and containers or pods.</td><td>Resource shortage causes pending jobs, executor loss, or preemption.</td></tr>
-  <tr><td>DAG scheduler</td><td>Splits logical work into stages separated by shuffle boundaries.</td><td>Poor plans produce many stages and high shuffle cost.</td></tr>
-</table>
-<pre><code>from pyspark.sql import SparkSession
-
-spark = (
-    SparkSession.builder
-    .appName("daily-curated-orders")
-    .config("spark.sql.adaptive.enabled", "true")
-    .config("spark.sql.shuffle.partitions", "400")
-    .getOrCreate()
-)
-
-print(spark.sparkContext.applicationId)</code></pre>
-<a href="#top" class="back-top">&uarr; Back to top</a>
-
-<h2 id="s3">RDDs vs DataFrames vs Datasets</h2>
-<p>Spark started with RDDs, which are distributed collections of objects. RDDs give low-level control, but the optimizer sees them as opaque code. DataFrames represent structured data with schema, columns, expressions, and relational operations. That structure lets Spark use Catalyst optimization and Tungsten execution improvements.</p>
-<p>For data engineering, DataFrames usually win. They are easier to optimize, easier to explain, easier to push down into data sources, and better aligned with SQL, Parquet, Glue Catalog, Hive Metastore, Delta, and Iceberg. Datasets are strongly typed in Scala and Java, but PySpark users mostly work with DataFrames because Python does not get the same compile-time type benefits.</p>
-<div class="hi">Senior PySpark code should look more like relational algebra than Python object manipulation: select, filter, join, groupBy, window, write.</div>
-<div class="warn">RDDs still exist, but reaching for them in a modern data pipeline is usually a smell unless you need a very specific low-level operation that DataFrames cannot express.</div>
-<table>
-  <tr><th>API</th><th>Best For</th><th>Tradeoff</th></tr>
-  <tr><td>RDD</td><td>Low-level distributed transformations over arbitrary objects.</td><td>Limited optimizer visibility; more manual tuning.</td></tr>
-  <tr><td>DataFrame</td><td>Structured ETL, SQL-like transformations, lakehouse pipelines.</td><td>Requires thinking in columns and expressions.</td></tr>
-  <tr><td>Dataset</td><td>Typed JVM workloads in Scala or Java.</td><td>Not the main ergonomic path in PySpark.</td></tr>
-</table>
-<pre><code>from pyspark.sql import functions as F
-
-curated = (
-    spark.read.parquet("s3://lake/raw/orders/dt=2026-04-25/")
-    .filter(F.col("status") == "COMPLETE")
-    .groupBy("customer_id")
-    .agg(
-        F.count("*").alias("order_count"),
-        F.sum("order_total").alias("gross_revenue")
-    )
-)</code></pre>
-<a href="#top" class="back-top">&uarr; Back to top</a>
-
-<h2 id="s4">Lazy Evaluation, Transformations, and Actions</h2>
-<p>Spark is lazy. Transformations such as <code>select</code>, <code>filter</code>, <code>withColumn</code>, <code>join</code>, and <code>groupBy</code> build a logical plan but do not execute immediately. Actions such as <code>count</code>, <code>show</code>, <code>collect</code>, <code>write</code>, and <code>foreachBatch</code> trigger execution.</p>
-<p>This matters because Spark can optimize the full plan before running it. It can push filters down, remove unused columns, combine operations, reorder some work, and choose physical strategies. But lazy evaluation can also surprise engineers during debugging because an error may appear many lines after the transformation that caused it.</p>
-<div class="hi">A PySpark pipeline is a recipe until an action runs. Optimization happens because Spark can inspect the whole recipe before cooking.</div>
-<div class="warn">Do not sprinkle <code>count()</code>, <code>show()</code>, or <code>cache()</code> everywhere for debugging in production code. Each action can trigger a full job and multiply cost.</div>
-<table>
-  <tr><th>Operation Type</th><th>Examples</th><th>Runs Immediately?</th></tr>
-  <tr><td>Narrow transformation</td><td><code>select</code>, <code>filter</code>, <code>withColumn</code></td><td>No</td></tr>
-  <tr><td>Wide transformation</td><td><code>groupBy</code>, <code>distinct</code>, many joins</td><td>No, but creates shuffle boundary</td></tr>
-  <tr><td>Action</td><td><code>write</code>, <code>count</code>, <code>collect</code>, <code>show</code></td><td>Yes</td></tr>
-</table>
-<pre><code># Builds a plan only
-bad_orders = orders.filter("order_total &lt; 0").select("order_id", "order_total")
-
-# Triggers execution
-bad_orders.write.mode("overwrite").parquet("s3://lake/quality/bad_orders/dt=2026-04-25/")</code></pre>
-<a href="#top" class="back-top">&uarr; Back to top</a>
-
-<h2 id="s5">Partitions, Parallelism, Repartition, and Coalesce</h2>
-<p>Partitions are Spark's unit of parallelism. Each task usually processes one partition. Too few partitions underuse the cluster. Too many partitions create scheduling overhead, tiny files, and excessive task metadata. The right number depends on data size, file layout, executor cores, and the cost of the transformation.</p>
-<p><code>repartition()</code> performs a full shuffle to increase or rebalance partitions. <code>coalesce()</code> usually reduces partitions without a full shuffle, making it cheaper but less able to fix skew. Use <code>repartition</code> before large joins or writes when distribution matters. Use <code>coalesce</code> to reduce output files after the heavy work is done.</p>
-<div class="hi">Partition count is not a cosmetic setting. It controls parallelism, memory pressure, shuffle behavior, and the number of output files.</div>
-<div class="warn">A frequent lakehouse problem is the small files trap: a job succeeds but writes thousands of tiny Parquet files, making Athena, Glue, Spark, and Redshift Spectrum slower and more expensive later.</div>
-<table>
-  <tr><th>Method</th><th>Use Case</th><th>Cost</th></tr>
-  <tr><td><code>repartition(n)</code></td><td>Increase partitions or rebalance data before expensive work.</td><td>Full shuffle.</td></tr>
-  <tr><td><code>repartition("key")</code></td><td>Cluster same keys together before joins or writes.</td><td>Full shuffle.</td></tr>
-  <tr><td><code>coalesce(n)</code></td><td>Reduce partitions before final output.</td><td>Usually avoids full shuffle.</td></tr>
-  <tr><td><code>partitionBy()</code></td><td>Write Hive-style directory partitions.</td><td>Affects physical file layout.</td></tr>
-</table>
-<pre><code>daily = spark.read.parquet("s3://lake/processed/events/dt=2026-04-25/")
-
-# Rebalance before a large aggregation
-agg = daily.repartition(400, "customer_id").groupBy("customer_id").count()
-
-# Reduce file count for the final write
-agg.coalesce(64).write.mode("overwrite").parquet("s3://lake/curated/customer_event_counts/dt=2026-04-25/")</code></pre>
-<a href="#top" class="back-top">&uarr; Back to top</a>
-
-<h2 id="s6">Shuffles: The Expensive Boundary</h2>
-<p>A shuffle moves data across executors so records with the same key land together. Shuffles are triggered by operations such as <code>groupBy</code>, <code>distinct</code>, <code>orderBy</code>, many joins, window functions, and repartitioning. They are expensive because they use network, disk spill, serialization, and many intermediate files.</p>
-<p>Most Spark performance tuning starts with reducing shuffle volume. Filter early, project only needed columns, avoid unnecessary distincts, pre-aggregate before joins when possible, and use broadcast joins for genuinely small dimensions. In the Spark UI, shuffle read/write size, spill metrics, and stage duration are the first clues.</p>
-<div class="hi">A shuffle is the moment Spark stops doing local partition work and starts redistributing data across the cluster.</div>
-<div class="warn">A job can look fine in development and collapse in production when a shuffle grows from GBs to TBs. The failure mode is often executor OOM, disk spill storms, or a few slow straggler tasks.</div>
-<table>
-  <tr><th>Operation</th><th>Shuffle Risk</th><th>Mitigation</th></tr>
-  <tr><td><code>groupBy</code></td><td>High for high-cardinality keys.</td><td>Filter/project first; aggregate in stages.</td></tr>
-  <tr><td><code>join</code></td><td>High unless broadcast applies.</td><td>Broadcast small side; align partitioning; handle skew.</td></tr>
-  <tr><td><code>distinct</code></td><td>High because duplicates must meet.</td><td>Deduplicate only required columns.</td></tr>
-  <tr><td><code>orderBy</code></td><td>High global sort.</td><td>Avoid unless business output truly needs ordering.</td></tr>
-</table>
-<pre><code># Avoid carrying unused columns into a shuffle
-small_projection = events.select("customer_id", "event_type", "event_ts")
-
-counts = (
-    small_projection
-    .filter("event_ts &gt;= timestamp'2026-04-25 00:00:00'")
-    .groupBy("customer_id", "event_type")
+<h2 id="s2">Lazy Evaluation &amp; DAG</h2>
+<p>Spark transformations are lazy. A chain of <code>select</code>, <code>filter</code>, <code>join</code>, and <code>withColumn</code> calls builds a plan but does not execute until an action such as <code>count</code>, <code>write</code>, <code>show</code>, or <code>collect</code> is called. This lets Catalyst optimize the full query instead of executing line by line.</p>
+<p>The DAG scheduler breaks the optimized plan into stages. Narrow dependencies, such as filters and projections, can run in the same stage. Wide dependencies, such as joins and aggregations, usually create shuffle boundaries and new stages.</p>
+<pre><code>df = (
+    spark.read.parquet("s3://lake/raw/events/")
+    .filter("event_date &gt;= '2026-04-01'")
+    .select("user_id", "event_type", "event_ts")
+    .groupBy("event_type")
     .count()
-)</code></pre>
-<a href="#top" class="back-top">&uarr; Back to top</a>
-
-<h2 id="s7">Joins: Broadcast, Sort-Merge, and Strategy Control</h2>
-<p>Join strategy has a huge effect on PySpark performance. A broadcast hash join sends a small table to every executor so the large table can be scanned locally. A sort-merge join shuffles and sorts both sides by the join key. Sort-merge is scalable for large tables but expensive. Broadcast is fast when the dimension table is truly small, but dangerous when it exceeds memory expectations.</p>
-<p>Spark can choose a strategy automatically using statistics and configuration such as <code>spark.sql.autoBroadcastJoinThreshold</code>. In production, statistics can be missing, stale, or misleading. Senior engineers inspect the physical plan and use hints only when they understand the data size and failure mode.</p>
-<div class="hi">Broadcast joins remove the large-table shuffle by replicating the small side. Sort-merge joins scale to large joins but pay the shuffle-and-sort bill.</div>
-<div class="warn">Forcing broadcast on a table that is not small can crash executors. Forcing sort-merge on a tiny dimension can waste minutes shuffling data that could have stayed local.</div>
-<table>
-  <tr><th>Join Strategy</th><th>Best When</th><th>Risk</th></tr>
-  <tr><td>Broadcast hash join</td><td>One side is small enough to fit safely in executor memory.</td><td>Executor OOM if underestimated.</td></tr>
-  <tr><td>Sort-merge join</td><td>Both sides are large and join keys are sortable.</td><td>Large shuffle and sort cost.</td></tr>
-  <tr><td>Shuffle hash join</td><td>One side per partition is small after shuffle.</td><td>Memory pressure by partition.</td></tr>
-  <tr><td>Bucketed join</td><td>Tables are pre-bucketed compatibly.</td><td>Operational complexity and strict layout requirements.</td></tr>
-</table>
-<pre><code>from pyspark.sql import functions as F
-
-customers = spark.read.parquet("s3://lake/dim/customers/")
-orders = spark.read.parquet("s3://lake/fact/orders/dt=2026-04-25/")
-
-joined = orders.join(F.broadcast(customers), "customer_id", "left")
-joined.explain("formatted")</code></pre>
-<a href="#top" class="back-top">&uarr; Back to top</a>
-
-<h2 id="s8">Data Skew and Salting</h2>
-<p>Data skew happens when a few keys contain far more records than other keys. Spark may create hundreds of normal tasks and a few monster tasks that run forever. In the Spark UI, skew appears as long-tail tasks, huge shuffle read for a small number of tasks, and stages where most tasks finish quickly but a few stragglers dominate runtime.</p>
-<p>Salting is one remedy. You add a synthetic random bucket to spread a hot key across multiple partitions, then join or aggregate with the salted key. This is powerful but should be targeted. Salting every key blindly can increase data volume and complexity without solving the actual hotspot.</p>
-<div class="hi">Skew is not a cluster-size problem first. It is a data distribution problem. Adding more executors may not help if one key creates one huge task.</div>
-<div class="warn">Salting changes the shape of the computation. If you salt an aggregation, you often need a second aggregation to combine salted partial results back to the true key.</div>
-<pre><code>from pyspark.sql import functions as F
-
-salt_buckets = 16
-
-# Salt the large fact side for known hot customer IDs
-orders_salted = orders.withColumn(
-    "salt",
-    F.when(F.col("customer_id").isin("UNKNOWN", "GUEST"),
-           (F.rand() * salt_buckets).cast("int"))
-     .otherwise(F.lit(0))
 )
 
-# Expand the small dimension side for those hot keys
-salts = spark.range(salt_buckets).withColumnRenamed("id", "salt")
-customers_salted = customers.crossJoin(salts)
-
-fixed_join = orders_salted.join(customers_salted, ["customer_id", "salt"], "left")</code></pre>
-<table>
-  <tr><th>Skew Signal</th><th>What It Means</th><th>Response</th></tr>
-  <tr><td>One task runs much longer</td><td>A partition has too much data.</td><td>Identify hot keys and repartition or salt.</td></tr>
-  <tr><td>Huge shuffle read in few tasks</td><td>Some keys dominate shuffle output.</td><td>Enable AQE skew join handling; consider salting.</td></tr>
-  <tr><td>Executor OOM on specific stage</td><td>Large partition or broadcast pressure.</td><td>Reduce partition size or change join strategy.</td></tr>
-</table>
+df.explain("formatted")   # plan inspection, still no data movement
+df.write.mode("overwrite").parquet("s3://lake/curated/event_counts/")</code></pre>
+<div class="hi">Key insight: read the plan before tuning. <code>explain("formatted")</code> often reveals unnecessary scans, shuffles, broadcasts, and Python execution.</div>
+<div class="warn">Gotcha: adding many debug actions during development can run the same expensive lineage repeatedly unless the intermediate data is cached or checkpointed intentionally.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s9">Adaptive Query Execution</h2>
-<p>Adaptive Query Execution, or AQE, lets Spark adjust the physical plan at runtime using actual shuffle statistics. It can coalesce small shuffle partitions, convert sort-merge joins to broadcast joins when runtime size is small enough, and split skewed partitions for certain joins. In Spark 3, AQE is one of the biggest practical improvements for production SQL and DataFrame jobs.</p>
-<p>AQE is not magic. It cannot fix poor file layout, broken business logic, Python UDF overhead, or massive data expansion. It works best when the query is expressed with DataFrame or SQL operations that Spark understands.</p>
-<div class="hi">AQE helps Spark correct bad guesses after it sees real runtime data sizes.</div>
-<div class="warn">Do not use AQE as an excuse to ignore data modeling. A badly partitioned lake, missing statistics, and explosive joins can still overwhelm the cluster.</div>
-<pre><code>spark.conf.set("spark.sql.adaptive.enabled", "true")
-spark.conf.set("spark.sql.adaptive.coalescePartitions.enabled", "true")
-spark.conf.set("spark.sql.adaptive.skewJoin.enabled", "true")
-spark.conf.set("spark.sql.adaptive.autoBroadcastJoinThreshold", "64MB")</code></pre>
+<h2 id="s3">Partitioning &amp; Coalesce</h2>
+<p>Partitions determine parallelism. Too few partitions underuse the cluster; too many small partitions create task scheduling overhead and tiny output files. Spark reads from file splits, shuffle settings, and explicit repartitioning to decide how work is divided.</p>
+<p><code>repartition(n)</code> performs a full shuffle and can increase or decrease partition count. <code>coalesce(n)</code> avoids a full shuffle and is usually used to reduce partitions before writing, especially after heavy filtering. The tradeoff is that coalesce can create uneven partitions if the upstream data is already imbalanced.</p>
 <table>
-  <tr><th>AQE Feature</th><th>Benefit</th><th>Watch For</th></tr>
-  <tr><td>Coalesce shuffle partitions</td><td>Reduces tiny post-shuffle tasks.</td><td>Too much coalescing can reduce parallelism.</td></tr>
-  <tr><td>Dynamic join conversion</td><td>Can switch to broadcast at runtime.</td><td>Broadcast still needs memory headroom.</td></tr>
-  <tr><td>Skew join handling</td><td>Splits large skewed shuffle partitions.</td><td>Only applies to supported patterns.</td></tr>
+  <tr><th>Operation</th><th>Best use</th><th>Tradeoff</th></tr>
+  <tr><td><code>repartition</code></td><td>Redistribute data evenly by count or key</td><td>Full shuffle cost</td></tr>
+  <tr><td><code>coalesce</code></td><td>Reduce partition count before output</td><td>May preserve skew</td></tr>
+  <tr><td>File partitioning</td><td>Prune reads by date, region, tenant</td><td>Bad keys create small files</td></tr>
 </table>
+<div class="hi">Key insight: partitioning is both a compute decision and a storage decision. The output layout affects every Athena, Glue, EMR, and downstream Spark read after it.</div>
+<div class="warn">Gotcha: forcing a single output file with <code>coalesce(1)</code> is convenient for demos and painful in production. It serializes the write path and often creates a bottleneck.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s10">UDFs, Built-In Functions, and Python Overhead</h2>
-<p>PySpark has a Python API, but Spark's execution engine is JVM-based. Built-in SQL functions are optimized, code-generated, and visible to Catalyst. Standard Python UDFs force data to cross the Python-JVM boundary and often prevent important optimizations. Pandas UDFs can improve throughput through Arrow vectorization, but they still add serialization and operational complexity.</p>
-<p>The senior rule is simple: use built-in functions first, SQL expressions second, Pandas UDFs only when needed, and normal Python UDFs as a last resort. Many UDFs exist only because the engineer did not know the matching Spark function.</p>
-<div class="hi">The fastest PySpark code is often the code that lets Spark stay inside its optimized expression engine.</div>
-<div class="warn">A Python UDF can silently disable predicate pushdown, column pruning, code generation, and other optimizations. It may pass tests and then become the slowest part of the production job.</div>
-<table>
-  <tr><th>Approach</th><th>Performance</th><th>Optimizer Visibility</th></tr>
-  <tr><td>Built-in functions</td><td>Best</td><td>High</td></tr>
-  <tr><td>SQL expressions</td><td>Best</td><td>High</td></tr>
-  <tr><td>Pandas UDF</td><td>Medium to good</td><td>Limited</td></tr>
-  <tr><td>Python UDF</td><td>Often poor</td><td>Low</td></tr>
-</table>
-<pre><code>from pyspark.sql import functions as F
-
-# Prefer this
-clean = raw.withColumn("email_domain", F.lower(F.regexp_extract("email", "@(.+)$", 1)))
-
-# Avoid this for simple parsing
-# clean = raw.withColumn("email_domain", my_python_udf("email"))</code></pre>
+<h2 id="s4">Shuffles</h2>
+<p>A shuffle moves data across the network so records with the same key can land together. Joins, groupBy, distinct, orderBy, window operations, and repartitioning commonly trigger shuffles. Shuffles are expensive because they involve serialization, disk spill, network transfer, and new stage boundaries.</p>
+<p>The goal is not to eliminate every shuffle; analytical workloads need them. The goal is to make shuffles intentional, reduce the data volume before they happen, and avoid repeated shuffles on the same keys.</p>
+<div class="hi">Key insight: filter early, project only needed columns, and aggregate before joining when the business logic allows it. Less data entering the shuffle is the cleanest optimization.</div>
+<div class="warn">Gotcha: <code>orderBy</code> on a large dataset can create a global sort. Use partition-aware sorting or avoid global ordering unless the final consumer truly needs it.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s11">Parquet on S3: Pruning, Pushdown, and Schema Evolution</h2>
-<p>Most AWS data engineering PySpark work eventually lands on S3 in Parquet, often registered in Glue Data Catalog and queried by Athena, EMR, Glue, Databricks, or Redshift Spectrum. Parquet is columnar, compressed, splittable, and stores metadata that helps engines skip data. This is why Parquet is usually a better lake format than CSV for analytics.</p>
-<p>Partition pruning skips entire directory partitions such as <code>dt=2026-04-25</code>. Predicate pushdown skips row groups inside files when Parquet statistics prove they cannot match a filter. Column pruning reads only needed columns. Together, these reduce scan cost and runtime.</p>
-<div class="hi">Good S3 data layout is a performance feature. Spark tuning cannot fully compensate for bad file sizes, bad partition keys, and inconsistent schemas.</div>
-<div class="warn">Partitioning by a high-cardinality field such as user ID can create millions of directories and tiny files. Partition by common filter dimensions such as date, region, tenant, or source only when they match query patterns.</div>
+<h2 id="s5">Joins &amp; Broadcast</h2>
+<p>Spark commonly uses sort-merge joins for large tables and broadcast hash joins when one side is small enough to ship to every executor. Broadcast joins avoid shuffling the large table and can be a huge win for dimension lookups, reference data, and small mapping tables.</p>
+<p>The risk is memory. A table that looks small by row count may be large after deserialization, wide columns, or poor statistics. Use broadcast hints when you know the data shape, but do not treat them as magic.</p>
 <table>
-  <tr><th>Design Choice</th><th>Good Pattern</th><th>Bad Pattern</th></tr>
-  <tr><td>Format</td><td>Parquet for analytics and ETL outputs.</td><td>CSV for large recurring analytical scans.</td></tr>
-  <tr><td>Partitioning</td><td>Date or low/medium-cardinality query filters.</td><td>High-cardinality keys with tiny partitions.</td></tr>
-  <tr><td>File size</td><td>Usually hundreds of MBs per file for large tables.</td><td>Thousands of 1 MB files.</td></tr>
-  <tr><td>Schema evolution</td><td>Add nullable columns carefully and test readers.</td><td>Change types in place without migration.</td></tr>
+  <tr><th>Join strategy</th><th>Use when</th><th>Watch for</th></tr>
+  <tr><td>Broadcast hash</td><td>One side is genuinely small</td><td>Executor memory pressure</td></tr>
+  <tr><td>Sort-merge</td><td>Both sides are large</td><td>Shuffle and sort cost</td></tr>
+  <tr><td>Bucketed join</td><td>Stable large tables share join keys</td><td>Operational complexity</td></tr>
 </table>
-<pre><code>curated.write \
-    .mode("overwrite") \
-    .format("parquet") \
-    .partitionBy("dt", "region") \
-    .option("compression", "snappy") \
-    .save("s3://lake/curated/orders/")
-
-filtered = (
-    spark.read.parquet("s3://lake/curated/orders/")
-    .where("dt = '2026-04-25' and region = 'us-east-1'")
-    .select("order_id", "customer_id", "order_total")
-)</code></pre>
+<div class="hi">Key insight: joins are where data modeling meets compute cost. A better dimension table, fewer columns, or earlier aggregation can beat cluster resizing.</div>
+<div class="warn">Gotcha: stale table statistics can make Spark choose the wrong join. Refresh stats or inspect the physical plan when a join suddenly slows down.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s12">EMR vs Glue vs Databricks</h2>
-<p>PySpark can run on several managed platforms. AWS EMR gives strong control over cluster configuration, Spark versions, bootstrap actions, networking, and cost model. AWS Glue gives a serverless job abstraction with Glue Catalog integration, job bookmarks, crawlers, and managed workers. Databricks gives an integrated lakehouse platform with strong notebooks, Delta Lake, job orchestration, governance, and runtime optimizations.</p>
-<p>The right platform depends on team maturity, operational needs, governance, workload shape, and cost control. For heavy custom Spark engineering, EMR or Databricks often gives more control. For scheduled AWS-native ETL with minimal infrastructure management, Glue is attractive. For collaborative analytics and lakehouse operations, Databricks is often the most productive.</p>
-<div class="hi">The PySpark code may look similar across platforms, but the operational model is very different: cluster ownership, startup time, debugging, dependency packaging, permissions, and cost visibility all change.</div>
-<div class="warn">Platform migration is rarely just a runtime change. Job bookmarks, cluster libraries, metastore behavior, IAM permissions, secrets, logging, and table formats can all differ.</div>
-<table>
-  <tr><th>Platform</th><th>Strength</th><th>Watch For</th></tr>
-  <tr><td>EMR</td><td>Flexible AWS-managed Spark clusters; strong control.</td><td>More cluster operations and tuning responsibility.</td></tr>
-  <tr><td>Glue</td><td>Serverless ETL, Catalog integration, simple scheduling.</td><td>Runtime constraints, startup latency, worker sizing quirks.</td></tr>
-  <tr><td>Databricks</td><td>Productive lakehouse platform, Delta ecosystem, collaborative workflows.</td><td>Vendor cost model and platform-specific features.</td></tr>
-</table>
-<pre><code># Glue-style job parameters often come from runtime args
-# EMR-style jobs often use spark-submit
-# Databricks jobs often define parameters in workflow tasks
-
-spark-submit \
-  --deploy-mode cluster \
-  --conf spark.sql.adaptive.enabled=true \
-  jobs/curate_orders.py \
-  --run-date 2026-04-25</code></pre>
+<h2 id="s6">Data Skew</h2>
+<p>Data skew happens when a few keys contain far more records than the rest. Spark may launch hundreds of tasks, but one or two giant tasks keep running while everything else finishes. In the Spark UI, skew usually shows up as a long tail of task durations, large shuffle reads, or repeated spill on specific tasks.</p>
+<p>Common fixes include salting hot keys, pre-aggregating before joins, splitting hot keys into a separate path, or enabling Adaptive Query Execution where available. The right fix depends on whether skew is predictable, temporary, or part of the business domain.</p>
+<div class="hi">Key insight: skew is not just a Spark setting problem. It is usually a data distribution problem, and the durable fix often lives in keys, layout, or pipeline design.</div>
+<div class="warn">Gotcha: increasing executors rarely fixes a single hot key. More workers do not help if one partition owns most of the data.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s13">Performance Tuning and OOM Failures</h2>
-<p>Performance tuning starts with evidence: Spark UI stages, task time distribution, shuffle read/write, spill, input size, executor logs, and physical plans. Randomly increasing memory may hide symptoms while raising cost. A better sequence is to identify whether the bottleneck is input scan, shuffle, skew, join strategy, serialization, output file layout, or Python execution.</p>
-<p>Common memory failures split into driver OOM and executor OOM. Driver OOM usually means too much metadata or result data returned to the driver. Executor OOM usually means partitions are too large, joins are too heavy, broadcast is oversized, skew is severe, or UDFs create excessive memory pressure.</p>
-<div class="hi">Tune the shape of the work before tuning the size of the cluster. Better plans usually beat bigger clusters.</div>
-<div class="warn">Increasing <code>spark.sql.shuffle.partitions</code> can reduce per-task memory pressure but create overhead. Decreasing it can reduce overhead but create huge partitions. There is no universal magic number.</div>
-<table>
-  <tr><th>Symptom</th><th>Likely Cause</th><th>Fix Direction</th></tr>
-  <tr><td>Driver OOM</td><td><code>collect()</code>, <code>toPandas()</code>, huge file listing, huge plan.</td><td>Limit driver data; write results; reduce metadata explosion.</td></tr>
-  <tr><td>Executor OOM</td><td>Large partitions, bad join, skew, oversized broadcast.</td><td>Repartition, reduce shuffle volume, handle skew, change join strategy.</td></tr>
-  <tr><td>Disk spill high</td><td>Insufficient memory for shuffle or sort.</td><td>Reduce data before shuffle; adjust partitions and memory overhead.</td></tr>
-  <tr><td>Many tiny output files</td><td>Too many partitions at write time.</td><td>Coalesce or optimize file compaction strategy.</td></tr>
-</table>
-<pre><code>spark.conf.set("spark.sql.shuffle.partitions", "400")
-spark.conf.set("spark.sql.files.maxPartitionBytes", "134217728")
-spark.conf.set("spark.executor.memoryOverhead", "2048")
-
-# Always inspect the plan for major jobs
-result.explain("formatted")</code></pre>
+<h2 id="s7">UDFs vs Built-ins</h2>
+<p>Built-in Spark SQL functions run inside Catalyst and Tungsten optimization paths. They benefit from predicate pushdown, column pruning, whole-stage code generation, and better planning. Python UDFs often force data to cross the JVM-Python boundary, which adds serialization cost and blocks many optimizer tricks.</p>
+<p>Use built-ins first, SQL expressions second, pandas UDFs when vectorization is a clear fit, and plain Python UDFs as the last resort. If a rule is business-critical and reused often, consider expressing it as Spark SQL, a tested library function, or a platform-native transformation rather than scattering UDFs through pipelines.</p>
+<div class="hi">Key insight: a readable built-in expression is usually faster, more portable, and easier for Spark to optimize than a Python UDF.</div>
+<div class="warn">Gotcha: UDFs can hide expensive logic from the optimizer. They also complicate debugging because the plan says little about what the Python function really does.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
-<h2 id="s14">Production Patterns for Reliable Spark Pipelines</h2>
-<p>Production PySpark is about repeatable outputs, observable failures, and safe reruns. Use immutable raw zones, deterministic run dates, explicit input paths, schema validation, row-count checks, data-quality checks, and idempotent writes. Avoid jobs that depend on hidden global state or the accidental current contents of a directory.</p>
-<p>On AWS, PySpark commonly sits in a broader stack: S3 for storage, Glue Catalog for metadata, Athena for validation, EMR or Glue for execution, Airflow or Step Functions for orchestration, CloudWatch for logs, and IAM/KMS for security. The pipeline is only as reliable as the weakest boundary between these services.</p>
-<div class="hi">A Spark job should be restartable. If rerunning the same run date produces different or duplicated output, the pipeline is not production-safe yet.</div>
-<div class="warn">Writing directly into a final S3 prefix without a staging or commit pattern can expose partial data to downstream readers if the job fails midway.</div>
-<pre><code># Safer pattern: write to a run-specific staging path, validate, then promote
-run_date = "2026-04-25"
-staging = f"s3://lake/_staging/orders_curated/run_date={run_date}/"
-final = f"s3://lake/curated/orders/dt={run_date}/"
-
-curated.write.mode("overwrite").parquet(staging)
-
-# After validation, promote using table format commit semantics,
-# object copy, or a controlled metadata update depending on platform.</code></pre>
+<h2 id="s8">Platform Choice (Glue / EMR / Databricks)</h2>
+<p>Glue is attractive for serverless ETL, AWS-native catalogs, job bookmarks, and pipelines that live close to S3. EMR gives more control over cluster shape, Spark versions, bootstrap actions, and long-running or specialized workloads. Databricks adds a managed lakehouse experience, strong notebooks, Delta Lake integration, collaborative workflows, and higher-level performance features.</p>
+<p>The best platform is the one that matches operating model, not just runtime. Teams that need minimal infrastructure often start with Glue. Teams that need deep control or cost tuning may prefer EMR. Teams that value collaboration, lakehouse conventions, and managed Spark productivity often justify Databricks.</p>
 <table>
-  <tr><th>Production Concern</th><th>Recommended Pattern</th></tr>
-  <tr><td>Reruns</td><td>Parameterize by run date and write idempotently.</td></tr>
-  <tr><td>Schema drift</td><td>Validate schema before writing curated data.</td></tr>
-  <tr><td>Partial output</td><td>Use staging paths or table formats with commit semantics.</td></tr>
-  <tr><td>Observability</td><td>Emit counts, input paths, output paths, duration, and quality metrics.</td></tr>
-  <tr><td>Security</td><td>Use least-privilege IAM, encrypted buckets, and KMS-aware roles.</td></tr>
+  <tr><th>Platform</th><th>Strength</th><th>Typical concern</th></tr>
+  <tr><td>Glue</td><td>Serverless AWS ETL and catalog integration</td><td>Less runtime control</td></tr>
+  <tr><td>EMR</td><td>Configurable Spark clusters on AWS</td><td>More operational ownership</td></tr>
+  <tr><td>Databricks</td><td>Managed lakehouse and productivity layer</td><td>Cost governance</td></tr>
 </table>
+<div class="hi">Key insight: platform choice should follow workload shape, team skill, governance needs, and cost visibility. Spark code portability helps, but operational behavior still differs.</div>
+<div class="warn">Gotcha: do not assume the same job cost profile across Glue, EMR, and Databricks. Startup time, autoscaling, storage layout, and idle clusters can dominate the bill.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Performance Tuning</h2>
+<p>Start with the physical plan and Spark UI before changing random settings. Look at scan volume, shuffle read and write, spill, task skew, executor memory, file counts, and stage boundaries. Most wins come from data reduction, better joins, sane partitioning, and avoiding Python execution in the hot path.</p>
+<p>Key settings such as <code>spark.sql.shuffle.partitions</code>, broadcast thresholds, executor memory, and Adaptive Query Execution matter, but they should follow evidence. Tuning without understanding the bottleneck creates brittle jobs that pass small tests and fail at month-end scale.</p>
+<table>
+  <tr><th>Symptom</th><th>Likely cause</th><th>First check</th></tr>
+  <tr><td>Long final task</td><td>Skew or single output</td><td>Stage task timeline</td></tr>
+  <tr><td>High spill</td><td>Memory pressure or wide shuffle</td><td>Shuffle read and spill metrics</td></tr>
+  <tr><td>Slow S3 read</td><td>Too many files or no pruning</td><td>Input file count and partitions</td></tr>
+  <tr><td>Driver OOM</td><td>Collecting data to driver</td><td>Actions and result size</td></tr>
+</table>
+<div class="hi">Key insight: optimize the pipeline shape before resizing the cluster. Better plans usually beat bigger machines.</div>
+<div class="warn">Gotcha: small files are a performance tax across Spark, Glue, Athena, and lakehouse tables. Compact intentionally and choose partition keys carefully.</div>
 <a href="#top" class="back-top">&uarr; Back to top</a>
 
 <h2 id="qa">Interview Q&amp;A</h2>
 <div class="qa">
-  <div class="qa-q">Q: How would you explain the difference between a transformation and an action in Spark?</div>
-  <div class="qa-a">A: A transformation builds the logical plan and is lazy; an action triggers execution. For example, <code>filter</code> and <code>join</code> only describe work, while <code>count</code> or <code>write</code> starts a Spark job. This matters because Spark optimizes the whole lineage before execution.</div>
+  <div class="qa-q">Q: Explain the difference between driver memory problems and executor memory problems.</div>
+  <div class="qa-a">A: Driver memory problems usually come from collecting too much data, building huge query plans, or managing too many tasks and metadata objects. Executor memory problems happen while processing partitions, joins, aggregations, caching, or shuffle spill. The fix depends on where the data is accumulating, so I would inspect logs and Spark UI metrics before increasing memory.</div>
 </div>
 <div class="qa">
-  <div class="qa-q">Q: A PySpark job is slow and the Spark UI shows one task running much longer than all others. What do you check?</div>
-  <div class="qa-a">A: I suspect skew. I check task duration distribution, shuffle read size by task, partition sizes, and hot keys. Remedies include filtering early, changing partition strategy, enabling AQE skew handling, or salting specific hot keys.</div>
+  <div class="qa-q">Q: When would you use <code>repartition</code> versus <code>coalesce</code>?</div>
+  <div class="qa-a">A: I use <code>repartition</code> when I need a true redistribution, especially before key-based joins, aggregations, or output partitioning. I use <code>coalesce</code> when reducing partition count after filtering or before writing. The tradeoff is that repartition costs a shuffle, while coalesce can preserve uneven data distribution.</div>
 </div>
 <div class="qa">
-  <div class="qa-q">Q: When would you use a broadcast join, and when would you avoid it?</div>
-  <div class="qa-a">A: I use broadcast when one side is small enough to fit in executor memory and avoids shuffling the large side. I avoid it when table size is uncertain, stats are stale, the dimension can grow, or executor memory is already tight.</div>
+  <div class="qa-q">Q: How do you diagnose a slow Spark join?</div>
+  <div class="qa-a">A: I start with the physical plan to see whether Spark chose broadcast, sort-merge, or another strategy. Then I check shuffle size, skew, spilled bytes, and whether table statistics are current. If one side is small, a broadcast may help; if both sides are large, I look at filtering, projection, partitioning, and key distribution.</div>
 </div>
 <div class="qa">
   <div class="qa-q">Q: Why are Python UDFs often discouraged in PySpark pipelines?</div>
-  <div class="qa-a">A: Python UDFs force data across the JVM-Python boundary and reduce Catalyst optimizer visibility. Built-in functions usually perform better because Spark can optimize, code-generate, prune columns, and push predicates more effectively.</div>
+  <div class="qa-a">A: Python UDFs usually require data to cross between the JVM and Python runtimes, adding serialization overhead. They also hide logic from Catalyst, which limits optimization opportunities. Built-in functions, SQL expressions, and vectorized pandas UDFs are usually better choices when they fit the problem.</div>
 </div>
 <div class="qa">
-  <div class="qa-q">Q: How do you design Parquet data on S3 for efficient Spark and Athena reads?</div>
-  <div class="qa-a">A: I use columnar Parquet with compression, choose partitions based on common filters such as date or region, avoid high-cardinality partitions, target healthy file sizes, and validate schema evolution. The goal is partition pruning, predicate pushdown, and fewer small files.</div>
+  <div class="qa-q">Q: What is data skew, and why does it hurt distributed processing?</div>
+  <div class="qa-a">A: Data skew means work is unevenly distributed across partitions, often because a few keys dominate the dataset. Most tasks finish quickly, but one or two huge tasks hold the stage open. Fixes include salting hot keys, pre-aggregation, isolating hot keys, or using Adaptive Query Execution where available.</div>
 </div>
 <div class="qa">
-  <div class="qa-q">Q: How do you distinguish driver OOM from executor OOM?</div>
-  <div class="qa-a">A: Driver OOM usually comes from collecting data, converting to Pandas, huge metadata listing, or massive plans. Executor OOM usually comes from large partitions, shuffles, joins, skew, oversized broadcasts, or UDF memory pressure. The fix depends on where memory is being consumed.</div>
+  <div class="qa-q">Q: How would you choose between Glue, EMR, and Databricks for a PySpark workload?</div>
+  <div class="qa-a">A: Glue fits AWS-native serverless ETL with lower infrastructure ownership. EMR fits teams needing more cluster control, custom libraries, or specialized runtime tuning. Databricks fits collaborative lakehouse work, Delta-centric pipelines, and productivity-heavy environments, but it needs strong cost governance.</div>
 </div>
-<a href="#top" class="back-top">&uarr; Back to top</a>
 
 <h2 id="cheat">Quick Reference</h2>
 <div class="cheat">
   <div class="cheat-row">
     <div class="ct">Driver</div>
-    <div class="cd">Main process that builds plans, schedules jobs, and coordinates executors.</div>
+    <div class="cd">Coordinates the application, builds plans, schedules work, and holds driver-side results.</div>
   </div>
   <div class="cheat-row">
     <div class="ct">Executor</div>
-    <div class="cd">Worker process that runs tasks and stores cached or shuffle data.</div>
-  </div>
-  <div class="cheat-row">
-    <div class="ct">DAG</div>
-    <div class="cd">Directed acyclic graph of operations split into stages by shuffle boundaries.</div>
-  </div>
-  <div class="cheat-row">
-    <div class="ct">Transformation</div>
-    <div class="cd">Lazy operation such as select, filter, join, or groupBy that builds a plan.</div>
+    <div class="cd">Worker JVM process that runs tasks, stores cache blocks, and handles shuffle data.</div>
   </div>
   <div class="cheat-row">
     <div class="ct">Action</div>
-    <div class="cd">Operation such as count, show, collect, or write that triggers execution.</div>
+    <div class="cd">Triggers execution; examples include count, show, collect, write, and foreach.</div>
   </div>
   <div class="cheat-row">
-    <div class="ct">repartition()</div>
-    <div class="cd">Full-shuffle repartition used to increase or rebalance partitions.</div>
+    <div class="ct">Transformation</div>
+    <div class="cd">Builds lineage lazily; examples include select, filter, join, withColumn, and groupBy.</div>
   </div>
   <div class="cheat-row">
-    <div class="ct">coalesce()</div>
-    <div class="cd">Usually reduces partitions without a full shuffle; useful before final writes.</div>
+    <div class="ct">DAG</div>
+    <div class="cd">Directed graph of stages and dependencies created from the optimized Spark plan.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Narrow dep</div>
+    <div class="cd">Each output partition depends on limited input partitions; usually no shuffle.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Wide dep</div>
+    <div class="cd">Data must move across partitions; joins, aggregations, and distinct often create this.</div>
   </div>
   <div class="cheat-row">
     <div class="ct">Shuffle</div>
-    <div class="cd">Redistribution of data across executors for joins, aggregations, sorts, or repartitioning.</div>
+    <div class="cd">Network and disk-heavy redistribution of data across executors.</div>
   </div>
   <div class="cheat-row">
     <div class="ct">Broadcast join</div>
-    <div class="cd">Replicates a small table to executors to avoid shuffling the large table.</div>
+    <div class="cd">Ships a small table to each executor to avoid shuffling the large side.</div>
   </div>
   <div class="cheat-row">
     <div class="ct">Sort-merge join</div>
-    <div class="cd">Shuffles and sorts both sides by key; scalable but expensive for large joins.</div>
+    <div class="cd">Default large-table join pattern that sorts and shuffles both sides by join key.</div>
   </div>
   <div class="cheat-row">
     <div class="ct">AQE</div>
-    <div class="cd">Adaptive Query Execution; adjusts physical plans using runtime statistics.</div>
+    <div class="cd">Adaptive Query Execution can adjust joins, partitions, and skew handling at runtime.</div>
   </div>
   <div class="cheat-row">
-    <div class="ct">Skew</div>
-    <div class="cd">Uneven key distribution causing a small number of tasks to dominate runtime.</div>
+    <div class="ct">coalesce</div>
+    <div class="cd">Reduces partitions with minimal movement; useful before writes but may preserve skew.</div>
   </div>
   <div class="cheat-row">
-    <div class="ct">Salting</div>
-    <div class="cd">Adds synthetic buckets to spread hot keys across partitions.</div>
+    <div class="ct">repartition</div>
+    <div class="cd">Full redistribution used to change parallelism or partition by a key.</div>
   </div>
   <div class="cheat-row">
-    <div class="ct">Parquet</div>
-    <div class="cd">Columnar file format that supports compression, column pruning, and predicate pushdown.</div>
+    <div class="ct">explain</div>
+    <div class="cd">Shows logical and physical plans; use formatted mode for practical plan review.</div>
   </div>
   <div class="cheat-row">
-    <div class="ct">partitionBy()</div>
-    <div class="cd">Writes Hive-style partitioned directories such as dt=2026-04-25.</div>
-  </div>
-  <div class="cheat-row">
-    <div class="ct">explain()</div>
-    <div class="cd">Shows logical and physical plans; use formatted mode for readable debugging.</div>
+    <div class="ct">Small files</div>
+    <div class="cd">Too many tiny outputs increase metadata, planning, and read overhead across the lake.</div>
   </div>
 </div>
 
