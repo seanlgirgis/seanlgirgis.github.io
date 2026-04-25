@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EMR - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-emr.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS EMR - Master Engineering Reference
+</div>
+
+<h1>AWS EMR</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">EMR</span>
+  <span class="tag">Spark</span>
+  <span class="tag">Hadoop</span>
+  <span class="tag">S3</span>
+  <span class="tag">YARN</span>
+  <span class="tag">Glue Catalog</span>
+  <span class="tag">Spot</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-emr.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What EMR Is</a></li>
+    <li><a href="#s2">Cluster Anatomy</a></li>
+    <li><a href="#s3">EMR Variants</a></li>
+    <li><a href="#s4">Instance Fleets &amp; Spot Strategy</a></li>
+    <li><a href="#s5">Bootstrap Actions &amp; EMR Steps</a></li>
+    <li><a href="#s6">EMRFS &amp; Glue Data Catalog Integration</a></li>
+    <li><a href="#s7">Performance Tuning</a></li>
+    <li><a href="#s8">EMR vs Glue</a></li>
+    <li><a href="#s9">Cost Optimization</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What EMR Is &mdash; managed Hadoop/Spark on EC2</h2>
+<p>Amazon EMR is AWS managed infrastructure for running distributed data frameworks such as Apache Spark, Hadoop, Hive, Presto/Trino-style SQL engines, and related open-source tools. The value is not that EMR changes Spark semantics; the value is that AWS handles cluster provisioning, Hadoop configuration, scaling hooks, service integration, security plumbing, and release packaging.</p>
+<p>For data engineering, EMR is the control-heavy option between raw EC2 and fully serverless ETL. You choose instance families, storage layout, Spark configuration, bootstrap scripts, and lifecycle strategy. That control is useful when workloads are large, spiky, stateful, dependency-heavy, or too custom for a managed ETL box.</p>
+<div class="hi">Key insight: EMR is best understood as managed distributed compute, not as a single ETL product. Spark, S3, Hive Metastore/Glue Catalog, IAM, EC2, and YARN all matter.</div>
+<div class="warn">Production gotcha: EMR removes cluster assembly pain, but it does not remove distributed systems pain. Bad partitioning, bad joins, skew, tiny files, and under-sized executors still break jobs.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Cluster Anatomy &mdash; primary, core, task nodes</h2>
+<p>An EMR cluster has one primary node, one or more optional core nodes, and optional task nodes. The primary node coordinates the cluster and usually hosts services such as the YARN ResourceManager, Spark driver entry points, cluster monitoring, and job submission processes. It is the brain of the cluster, not the place where bulk parallel work should happen.</p>
+<p>Core nodes run executors and can also hold HDFS data. Task nodes run compute only; they do not store HDFS blocks, which makes them safer to add, remove, or run on Spot capacity. In modern S3-centric lake architectures, HDFS is often less central, but the core/task distinction still matters for fault tolerance and scaling behavior.</p>
+<table>
+  <tr><th>Node type</th><th>Main role</th><th>Scale behavior</th></tr>
+  <tr><td>Primary</td><td>Cluster coordination, drivers, YARN control plane</td><td>Do not casually interrupt</td></tr>
+  <tr><td>Core</td><td>Executors plus optional HDFS storage</td><td>Scale carefully if HDFS is used</td></tr>
+  <tr><td>Task</td><td>Executors only</td><td>Best target for elastic and Spot capacity</td></tr>
+</table>
+<div class="warn">If you store important data in HDFS on core nodes, losing or resizing those nodes is not the same as losing stateless compute. S3-backed EMRFS changes the risk model.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">EMR Variants &mdash; EC2 vs Serverless vs EKS</h2>
+<p>EMR on EC2 gives the most operational control: you pick instances, networking, scaling, bootstrap actions, and long-lived or transient cluster patterns. It fits heavy Spark jobs, custom dependencies, persistent clusters, mixed engines, and performance-sensitive work where tuning the cluster itself is part of the solution.</p>
+<p>EMR Serverless removes cluster management and scales workers around submitted jobs. It is attractive for intermittent Spark or Hive jobs, but first-job latency, capacity limits, worker sizing, and dependency packaging still need planning. EMR on EKS runs EMR-managed Spark on Kubernetes, which fits teams already standardizing on EKS, namespace isolation, and container-driven platform operations.</p>
+<table>
+  <tr><th>Variant</th><th>Best fit</th><th>Tradeoff</th></tr>
+  <tr><td>EMR on EC2</td><td>Maximum control, persistent clusters, custom engines</td><td>You manage cluster lifecycle and capacity</td></tr>
+  <tr><td>EMR Serverless</td><td>Intermittent Spark/Hive without cluster ops</td><td>Less infrastructure control; cold starts unless capacity is warm</td></tr>
+  <tr><td>EMR on EKS</td><td>Kubernetes-first platform teams</td><td>Requires EKS maturity and container governance</td></tr>
+</table>
+<div class="hi">Use the variant decision to match the operating model, not just the framework. The same Spark code can have very different cost, startup, isolation, and tuning behavior.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Instance Fleets &amp; Spot Strategy</h2>
+<p>Instance groups are simple: one instance type per node group. Instance fleets are more flexible: you define target capacity across multiple instance types and purchase options, allowing EMR to choose from several pools. For Spot-heavy clusters, fleets reduce the risk that one unavailable instance type blocks scaling or causes repeated interruptions.</p>
+<p>The safest Spot target is usually task nodes because they do not hold HDFS data. Core nodes can use Spot in some S3-first workloads, but the blast radius is higher if they store data or run important long-lived services. Primary nodes should usually stay On-Demand unless the cluster is disposable and interruption is acceptable.</p>
+<pre><code>Instance fleet strategy:
+- Primary: On-Demand, stable control plane
+- Core: On-Demand or mixed, depending on HDFS/S3 usage
+- Task: Spot-heavy, diversified across families and AZ capacity
+- Use capacity-optimized allocation where possible
+- Design Spark retries and checkpointing for executor loss</code></pre>
+<div class="warn">Spot savings are real, but a cheap cluster that constantly loses executors can cost more in retries, missed SLAs, and failed downstream pipelines.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Bootstrap Actions &amp; EMR Steps</h2>
+<p>Bootstrap actions are shell scripts that run when nodes start. They are useful for installing OS packages, Python libraries, monitoring agents, certificates, custom configuration, and small environment fixes before applications run. Keep them deterministic, fast, versioned, and observable; a flaky bootstrap script turns cluster launch into roulette.</p>
+<p>EMR steps are managed job submissions. A step might run a Spark application, Hive query, custom JAR, or command runner action. In production, steps make transient clusters cleaner: create the cluster, run the steps, emit logs, and terminate. Long-lived clusters can also use steps, but orchestration usually comes from Airflow, Step Functions, MWAA, or a platform scheduler.</p>
+<pre><code># Minimal EMR step shape
+spark-submit \
+  --deploy-mode cluster \
+  --conf spark.sql.adaptive.enabled=true \
+  --conf spark.executor.memory=8g \
+  s3://company-jobs/emr/daily_orders.py \
+  --run-date 2026-04-25</code></pre>
+<div class="hi">Bootstrap actions prepare the cluster. Steps submit work to the cluster. Mixing those responsibilities makes failures harder to debug.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">EMRFS &amp; Glue Data Catalog Integration</h2>
+<p>EMRFS lets EMR jobs treat Amazon S3 as a Hadoop-compatible file system. That is the common lake pattern: compute is transient, while durable data lives in S3 as Parquet, ORC, Delta, Iceberg, or raw files. This makes cluster termination safe because the data lake outlives the cluster.</p>
+<p>The AWS Glue Data Catalog can serve as the Hive-compatible metastore for EMR, Athena, Glue, and other AWS analytics services. That shared catalog is powerful because Spark tables, Athena queries, and crawler-managed metadata can point to the same logical datasets. Governance still needs discipline: table definitions, partitions, schema evolution, and Lake Formation permissions must be treated as production assets.</p>
+<div class="warn">S3 is object storage, not HDFS. Rename-heavy commit patterns, tiny files, inconsistent partition registration, and unsafe overwrite modes can hurt both correctness and performance.</div>
+<pre><code># Spark catalog pattern on EMR
+spark.sql.catalogImplementation=hive
+spark.hadoop.hive.metastore.client.factory.class=\
+com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Performance Tuning</h2>
+<p>Most EMR performance problems are Spark and data layout problems wearing an AWS hat. Start with file size, partitioning, join strategy, skew, executor sizing, shuffle volume, and query plan shape. Scaling the cluster before fixing a skewed join is just buying more machines to wait on the same slow reducer.</p>
+<p>Use Parquet or ORC for analytical workloads, target healthy file sizes, partition by fields that prune real workloads, and avoid high-cardinality partition explosions. Turn on Spark adaptive query execution where supported, broadcast truly small dimensions, and validate with Spark UI rather than guessing from wall-clock time alone.</p>
+<table>
+  <tr><th>Symptom</th><th>Likely cause</th><th>First check</th></tr>
+  <tr><td>One task runs forever</td><td>Data skew</td><td>Spark UI task duration distribution</td></tr>
+  <tr><td>Slow reads from S3</td><td>Tiny files or poor pruning</td><td>Input file count and partition filters</td></tr>
+  <tr><td>Executor OOM</td><td>Bad join or oversized partition</td><td>Shuffle read, spill, executor logs</td></tr>
+  <tr><td>High cost, low CPU</td><td>Over-provisioned cluster</td><td>YARN metrics and executor utilization</td></tr>
+</table>
+<div class="hi">Tune in this order: data layout, query plan, Spark configuration, then cluster size. Reversing the order is expensive theater.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">EMR vs Glue &mdash; decision guide</h2>
+<p>AWS Glue is a serverless data integration service; EMR is a managed big-data compute platform. Glue is often the better default for simpler ETL, catalog-driven jobs, small teams, and workflows where not managing infrastructure is worth paying for. EMR is stronger when you need deeper Spark control, non-Glue runtimes, custom dependencies, mixed engines, persistent clusters, or advanced cost shaping.</p>
+<p>The mistake is treating Glue and EMR as pure substitutes. In many mature AWS data platforms, Glue Catalog provides metadata, Glue jobs handle straightforward ETL, EMR runs heavier Spark or specialized workloads, and Athena handles interactive SQL over the same lake.</p>
+<table>
+  <tr><th>Question</th><th>Lean Glue</th><th>Lean EMR</th></tr>
+  <tr><td>Need custom cluster/runtime control?</td><td>No</td><td>Yes</td></tr>
+  <tr><td>Workload is simple scheduled ETL?</td><td>Yes</td><td>Maybe</td></tr>
+  <tr><td>Need Presto/Hive/Hadoop ecosystem?</td><td>Limited</td><td>Yes</td></tr>
+  <tr><td>Want serverless ops model?</td><td>Yes</td><td>Use EMR Serverless if Spark control still matters</td></tr>
+</table>
+<div class="warn">Do not choose Glue just because it is easier on day one. Choose it because its operational model, limits, dependency model, and runtime behavior fit the workload.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Cost Optimization</h2>
+<p>EMR cost comes from EC2 instances, EBS, EMR service charges, S3 requests and storage, logs, data transfer, and wasted retries. The biggest levers are transient clusters, right-sized executors, Spot task nodes, instance fleets, S3-first storage, auto-termination, and avoiding idle long-lived clusters.</p>
+<p>Serverless shifts the model from cluster-hours to worker capacity over job runtime, which is cleaner for intermittent work but not automatically cheaper. Persistent EC2 clusters can win for steady utilization, especially with reserved capacity or savings plans. The right answer depends on duty cycle, startup tolerance, dependency complexity, and SLA pressure.</p>
+<pre><code>Cost review checklist:
+1. Is the cluster idle between jobs?
+2. Are task nodes good Spot candidates?
+3. Are files too small, causing slow expensive scans?
+4. Are executors spilling or underutilized?
+5. Can auto-termination safely clean up?
+6. Would Serverless reduce idle time or add latency?</code></pre>
+<div class="hi">The cheapest EMR cluster is usually the one that exists only while useful work is running and reads well-laid-out data.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you choose EMR over AWS Glue for a Spark workload?</div>
+  <div class="qa-a">A: I would choose EMR when I need more runtime control, custom dependencies, non-standard Spark tuning, mixed big-data frameworks, persistent clusters, or aggressive Spot strategy. Glue is attractive for simpler serverless ETL, but EMR gives more control over cluster shape, executor behavior, bootstrap configuration, and cost model. For senior design, I would compare not just cost but also operational ownership, SLA, startup latency, and debugging needs.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Explain primary, core, and task nodes in an EMR cluster.</div>
+  <div class="qa-a">A: The primary node coordinates the cluster and runs control-plane services such as YARN ResourceManager and job submission entry points. Core nodes run compute and can store HDFS blocks. Task nodes run compute only, which makes them the safest place to use elastic or Spot capacity because losing them should not lose HDFS data.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What is the advantage of instance fleets over instance groups?</div>
+  <div class="qa-a">A: Instance groups are simpler but lock each node group to one instance type. Instance fleets can use multiple instance types and purchase options to meet target capacity, which improves Spot diversification and scaling success. In production, fleets are useful when capacity availability matters as much as raw hourly price.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you diagnose a slow Spark job on EMR?</div>
+  <div class="qa-a">A: I would start with Spark UI and logs, looking for skew, shuffle volume, spills, executor failures, and task duration outliers. Then I would inspect data layout: file sizes, partition pruning, compression, and join strategy. Only after that would I change cluster size, because hardware scaling does not fix a bad plan or skewed key.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What role does the Glue Data Catalog play with EMR?</div>
+  <div class="qa-a">A: The Glue Data Catalog can act as a Hive-compatible metastore for EMR Spark and Hive workloads. That lets EMR, Athena, Glue, and other analytics tools share table metadata over S3 data. The benefit is consistency, but schema governance, partitions, and permissions still need strong ownership.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What is a safe Spot strategy for EMR?</div>
+  <div class="qa-a">A: Keep the primary node On-Demand, be careful with core nodes if HDFS matters, and put most Spot exposure on task nodes. Use diversified instance fleets and capacity-aware allocation to reduce interruption risk. Spark retries, checkpointing, and idempotent outputs are part of the design, not afterthoughts.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">EMR</div>
+    <div class="cd">Managed AWS platform for Spark, Hadoop, Hive, and related distributed data frameworks.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Primary node</div>
+    <div class="cd">Cluster control node; coordinates resources, drivers, status, and management services.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Core node</div>
+    <div class="cd">Runs executors and may store HDFS blocks; scale carefully when HDFS matters.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Task node</div>
+    <div class="cd">Compute-only executor capacity; best candidate for Spot and elastic scale-out.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Instance fleet</div>
+    <div class="cd">Flexible capacity model using multiple instance types and purchase options.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Instance group</div>
+    <div class="cd">Simpler node group tied to one instance type and purchase model.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Bootstrap action</div>
+    <div class="cd">Script run on nodes at launch to install packages or configure the environment.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EMR step</div>
+    <div class="cd">Managed job submission unit, commonly Spark, Hive, custom JAR, or command runner.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EMRFS</div>
+    <div class="cd">Hadoop-compatible connector that lets EMR use S3 as durable lake storage.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Glue Catalog</div>
+    <div class="cd">Shared Hive-compatible metastore for EMR, Athena, Glue, and lake table metadata.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EMR Serverless</div>
+    <div class="cd">Runs Spark/Hive jobs without managing clusters; useful for intermittent workloads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EMR on EKS</div>
+    <div class="cd">Runs EMR-managed Spark jobs on Kubernetes for EKS-centered platforms.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">AQE</div>
+    <div class="cd">Spark adaptive query execution; helps adjust joins and partitions at runtime.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Auto-terminate</div>
+    <div class="cd">Stops idle clusters to prevent silent spend after jobs finish.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
