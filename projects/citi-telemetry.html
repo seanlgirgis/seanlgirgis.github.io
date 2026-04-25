@@ -81,6 +81,9 @@ tr:nth-child(even) td { background:#f8fafc; }
     <span class="tag">65K+ Endpoints</span>
     <span class="tag">Oracle DB</span>
     <span class="tag">openpyxl</span>
+    <span class="tag">SQLAlchemy</span>
+    <span class="tag">ETL</span>
+    <span class="tag">GitLab</span>
   </div>
 
   <div class="audio-box">
@@ -105,6 +108,7 @@ tr:nth-child(even) td { background:#f8fafc; }
       <li><a href="#s9">Two Output Directions</a></li>
       <li><a href="#s10">Streamlit Internal Dashboard</a></li>
       <li><a href="#s11">Impact: 5–10 Days → 1–2 Hours</a></li>
+      <li><a href="#s12a">Engineering Practices</a></li>
       <li><a href="#s12">Engineering Challenges</a></li>
       <li><a href="#s13">Lessons Learned</a></li>
       <li><a href="#qa">Interview Q&amp;A</a></li>
@@ -211,12 +215,18 @@ headroom_pct   = (CEILING_PCT - adjusted_util) / CEILING_PCT</code></pre>
 
   <!-- S6 -->
   <h2 id="s6">Pipeline Architecture</h2>
-  <p>The pipeline was built entirely in Python, with Pandas handling the transformation and join work, NumPy providing the vectorized calculations for safety and ceiling factors across 65K+ rows, and SQLite as the persistence layer. Telemetry data was extracted directly from Oracle databases that backed BMC TrueSight, rather than relying on manual exports. CMDB data was queried from SQL Server. Excel report output was generated programmatically using openpyxl, producing the same structured workbooks the enterprise teams expected without any manual formatting step. The pipeline ran monthly, triggered when the BMC TrueSight data for the period was ready.</p>
+  <p>The pipeline follows a classic ETL pattern — Extract from Oracle and SQL Server, Transform with Pandas and NumPy, Load into SQLite — extended with a validation gate before transformation and a publish step after load. Database connections were managed through SQLAlchemy, providing a consistent abstraction layer over both the Oracle backend (via cx_Oracle) for TrueSight extraction and the SQL Server CMDB (via pyodbc). Excel report output was generated programmatically using openpyxl. The pipeline was version-controlled in GitLab, with merge requests required for any changes to transformation logic or calculation parameters — ensuring all threshold changes were reviewed and traceable. The pipeline ran monthly, triggered when the BMC TrueSight data for the period was ready.</p>
 
   <pre><code># Pipeline flow (high level)
+0. VALIDATE (pre-run)
+   ├── Assert source row counts above minimum expected threshold
+   ├── Confirm all four KPI columns present in TrueSight extract
+   ├── Check for null endpoint identifiers (join key integrity)
+   └── Log extraction metadata: row count, timestamp, source version
+
 1. INGEST
-   ├── Extract BMC TrueSight P95 data from Oracle DB (cx_Oracle / SQLAlchemy)
-   ├── Query CMDB via SQL Server for asset reference data
+   ├── Extract TrueSight P95 data — SQLAlchemy + cx_Oracle → Oracle DB
+   ├── Query CMDB reference data — SQLAlchemy + pyodbc → SQL Server
    └── Load AppDynamics server metadata export
 
 2. NORMALIZE
@@ -235,13 +245,15 @@ headroom_pct   = (CEILING_PCT - adjusted_util) / CEILING_PCT</code></pre>
    ├── Derive headroom percentage and capacity flag per KPI
    └── Classify each endpoint: near_capacity / healthy / under_utilized
 
-5. LOAD → SQLite
-   ├── Monthly database: full dataset for this reporting period
-   └── Master database: upsert endpoint record for trend tracking
+5. LOAD → SQLite (idempotent)
+   ├── Monthly database: drop-and-recreate for this period (re-runnable)
+   └── Master database: upsert on (endpoint_id, report_month)
 
 6. PUBLISH
-   ├── Generate Excel reports (by region, by system type, by department)
+   ├── Generate Excel workbooks via openpyxl (by region, type, department)
    └── Streamlit dashboard refresh with new monthly data</code></pre>
+
+  <div class="hi">The pipeline is idempotent by design. If it fails mid-run or needs to be rerun with corrected source data, the monthly SQLite database is dropped and recreated from scratch. The master database uses upsert logic on <code>(endpoint_id, report_month)</code>, so re-running a month produces the same result rather than duplicating records. This was essential for a monthly production process where source data corrections sometimes arrived after the initial run.</div>
 
   <a href="#top" class="back-top">&#8593; Top</a>
 
@@ -377,6 +389,42 @@ ORDER BY cpu_adjusted DESC;</code></pre>
 
   <a href="#top" class="back-top">&#8593; Top</a>
 
+  <!-- S12a -->
+  <h2 id="s12a">Engineering Practices</h2>
+  <p>A monthly pipeline running against three enterprise data sources at 65K+ endpoint scale required the full range of production data engineering practices. These were not afterthoughts — they were built in from the start to make the pipeline reliable, maintainable, and trustworthy as a recurring process the business depended on.</p>
+
+  <table>
+    <tr><th>Practice</th><th>Implementation</th></tr>
+    <tr><td><strong>ETL Pattern</strong></td><td>Clear separation of Extract (Oracle/SQL Server via SQLAlchemy), Transform (Pandas/NumPy), and Load (SQLite) stages — each independently testable and re-runnable</td></tr>
+    <tr><td><strong>Data Validation</strong></td><td>Pre-transformation checks: row count thresholds, KPI column completeness, null join key detection. Pipeline halts on validation failure rather than processing corrupt input</td></tr>
+    <tr><td><strong>Idempotency</strong></td><td>Monthly databases are drop-and-recreate; master database uses upsert on (endpoint_id, report_month). Safe to rerun on corrected source data without duplication or manual cleanup</td></tr>
+    <tr><td><strong>Logging</strong></td><td>Structured logging at each pipeline stage: extraction row counts, join coverage rates, validation pass/fail, enrichment match percentages, execution time per stage. Execution metadata written to an audit table in SQLite</td></tr>
+    <tr><td><strong>Configuration management</strong></td><td>Database credentials, safety factor, ceiling threshold, and region/department mappings held in config files — not hardcoded. Threshold changes reviewed via GitLab merge request before deployment</td></tr>
+    <tr><td><strong>Version control</strong></td><td>GitLab repository for all pipeline code. Merge request workflow for transformation logic changes, calculation parameter updates, and schema changes — full audit trail of what changed and when</td></tr>
+    <tr><td><strong>Error handling</strong></td><td>Each stage wrapped in explicit error handling. Failures surface a descriptive message identifying the stage and cause rather than a generic exception. Partial failures do not silently produce incomplete output</td></tr>
+    <tr><td><strong>Enrichment coverage reporting</strong></td><td>Unmatched endpoints (no CMDB or AppDynamics join hit) are counted and reported separately. Coverage rate tracked month-over-month — degrading coverage is a signal that CMDB records are going stale</td></tr>
+  </table>
+
+  <pre><code># Data validation gate (pre-transform)
+def validate_extract(df: pd.DataFrame, source: str, min_rows: int) -> None:
+    """Halt pipeline if source data fails quality checks."""
+    if len(df) < min_rows:
+        raise DataValidationError(
+            f"{source}: {len(df)} rows — below minimum threshold {min_rows}"
+        )
+    required_cols = ["endpoint_id", "cpu_p95", "mem_p95", "disk_p95", "net_p95"]
+    missing = [c for c in required_cols if c not in df.columns]
+    if missing:
+        raise DataValidationError(f"{source}: missing columns {missing}")
+    null_keys = df["endpoint_id"].isna().sum()
+    if null_keys > 0:
+        raise DataValidationError(
+            f"{source}: {null_keys} records with null endpoint_id (join key)"
+        )
+    logger.info(f"{source} validated: {len(df):,} rows, all checks passed")</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
   <!-- S12 -->
   <h2 id="s12">Engineering Challenges</h2>
   <h3>Cross-System Identifier Normalization</h3>
@@ -447,9 +495,16 @@ ORDER BY cpu_adjusted DESC;</code></pre>
     <div class="cheat-row"><span class="ct">Ceiling threshold</span><span class="cd">90% — operational maximum; adjusted utilization above = near capacity</span></div>
     <div class="cheat-row"><span class="ct">Output: savings</span><span class="cd">Under-utilized endpoints → downsize, consolidate, promote to virtual/cloud</span></div>
     <div class="cheat-row"><span class="ct">Output: risk</span><span class="cd">Near-capacity endpoints → proactive notification to owning teams with lead time</span></div>
-    <div class="cheat-row"><span class="ct">Tech stack</span><span class="cd">Python · Pandas · NumPy · SQLite · Streamlit · openpyxl · Oracle DB · SQL Server</span></div>
-    <div class="cheat-row"><span class="ct">Oracle DB</span><span class="cd">TrueSight telemetry extracted directly from Oracle — pipeline queries source DB, no manual export</span></div>
-    <div class="cheat-row"><span class="ct">openpyxl</span><span class="cd">Excel report generation — structured workbooks produced programmatically, no manual formatting</span></div>
+    <div class="cheat-row"><span class="ct">Tech stack</span><span class="cd">Python · Pandas · NumPy · SQLAlchemy · cx_Oracle · pyodbc · SQLite · openpyxl · Streamlit</span></div>
+    <div class="cheat-row"><span class="ct">ETL pattern</span><span class="cd">Extract (Oracle/SQL Server via SQLAlchemy) → Transform (Pandas/NumPy) → Load (SQLite)</span></div>
+    <div class="cheat-row"><span class="ct">Oracle DB</span><span class="cd">TrueSight P95 extracted directly via SQLAlchemy + cx_Oracle — no manual export step</span></div>
+    <div class="cheat-row"><span class="ct">SQL Server</span><span class="cd">CMDB asset reference data queried via SQLAlchemy + pyodbc</span></div>
+    <div class="cheat-row"><span class="ct">openpyxl</span><span class="cd">Excel workbooks generated programmatically — same structure enterprise teams expected</span></div>
+    <div class="cheat-row"><span class="ct">GitLab</span><span class="cd">Version control + merge request workflow — all logic and threshold changes reviewed and traceable</span></div>
+    <div class="cheat-row"><span class="ct">Data validation</span><span class="cd">Row count thresholds, KPI column completeness, null join key checks — pipeline halts on failure</span></div>
+    <div class="cheat-row"><span class="ct">Idempotency</span><span class="cd">Monthly DB: drop-and-recreate. Master DB: upsert on (endpoint_id, report_month). Re-runnable safely</span></div>
+    <div class="cheat-row"><span class="ct">Logging</span><span class="cd">Structured per-stage logs: row counts, join coverage rate, enrichment match %, execution time</span></div>
+    <div class="cheat-row"><span class="ct">Config management</span><span class="cd">Credentials, safety factor, ceiling threshold in config files — not hardcoded</span></div>
     <div class="cheat-row"><span class="ct">SQLite design</span><span class="cd">Monthly databases (per-period detail) + master database (multi-month progression)</span></div>
     <div class="cheat-row"><span class="ct">Streamlit</span><span class="cd">Internal team dashboard — browse, filter, drill down, month-over-month trends</span></div>
     <div class="cheat-row"><span class="ct">Manual process</span><span class="cd">5–10 business days every month — Excel, manual enrichment joins, human calculation</span></div>
