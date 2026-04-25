@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Patterns for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/sql-patterns.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / SQL Patterns for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>SQL Patterns for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">SQL</span>
+  <span class="tag">Data Engineering</span>
+  <span class="tag">Window Functions</span>
+  <span class="tag">SCD Type 2</span>
+  <span class="tag">MERGE</span>
+  <span class="tag">Query Plans</span>
+  <span class="tag">Data Quality</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_sql-patterns.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Window Functions</a></li>
+    <li><a href="#s2">CTEs vs Subqueries vs Temp Tables</a></li>
+    <li><a href="#s3">Recursive CTEs</a></li>
+    <li><a href="#s4">Slowly Changing Dimensions</a></li>
+    <li><a href="#s5">MERGE &amp; Upsert</a></li>
+    <li><a href="#s6">Deduplication Patterns</a></li>
+    <li><a href="#s7">Anti-Joins &amp; Set Operations</a></li>
+    <li><a href="#s8">EXPLAIN Plan Reading</a></li>
+    <li><a href="#s9">Data Quality SQL</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Window Functions</h2>
+<p>Window functions compute across related rows without collapsing the result set. For data engineering, the workhorse functions are <code>ROW_NUMBER</code> for dedupe, <code>RANK</code> and <code>DENSE_RANK</code> for ordered groups, <code>LAG</code> and <code>LEAD</code> for change detection, and <code>FIRST_VALUE</code> for baseline comparison.</p>
+<p>The practical pattern is always the same: define the partition, define deterministic ordering, then filter or calculate from that window. Running totals and moving averages use explicit frames so the query says whether it means physical rows, value ranges, or all rows to the current point.</p>
+<pre><code>SELECT
+  customer_id,
+  event_ts,
+  amount,
+  SUM(amount) OVER (
+    PARTITION BY customer_id
+    ORDER BY event_ts
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS running_amount,
+  LAG(status) OVER (
+    PARTITION BY customer_id
+    ORDER BY event_ts
+  ) AS previous_status
+FROM fact_customer_events;</code></pre>
+<div class="hi">Key insight: a window function is often better than a self-join because it keeps row-level detail while exposing prior, next, first, last, or ranked context.</div>
+<div class="warn">Gotcha: if the <code>ORDER BY</code> is not deterministic, your rank, dedupe winner, or previous-row logic can change between runs.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">CTEs vs Subqueries vs Temp Tables</h2>
+<p>CTEs make complex SQL readable by naming intermediate logic. Subqueries are fine for compact filters or scalar lookups. Temp tables are stronger when the intermediate result is reused, inspected, indexed, or shared across multiple statements in a pipeline step.</p>
+<p>Performance depends on the engine. Some optimizers inline CTEs, while others may materialize them or treat them as optimization boundaries. In warehouse ELT, temp tables are useful when breaking one monster query into auditable stages with row counts and quality checks.</p>
+<table>
+  <tr><th>Pattern</th><th>Best Use</th><th>Tradeoff</th></tr>
+  <tr><td>CTE</td><td>Readable single statement</td><td>May hide repeated scans</td></tr>
+  <tr><td>Subquery</td><td>Small nested filter</td><td>Can become hard to debug</td></tr>
+  <tr><td>Temp table</td><td>Reusable staged result</td><td>Extra writes and cleanup</td></tr>
+  <tr><td>View</td><td>Shared semantic layer</td><td>May push complexity downstream</td></tr>
+</table>
+<div class="hi">Key insight: use CTEs for clarity, temp tables for operational checkpoints, and subqueries when the logic is truly local.</div>
+<div class="warn">Gotcha: repeating the same heavy CTE multiple times can force repeated work on engines that inline it.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Recursive CTEs</h2>
+<p>Recursive CTEs model relationships where each row points to another row: org charts, product assemblies, dependency trees, category hierarchies, and lineage chains. They have an anchor query for the starting rows and a recursive query that walks from parent to child or child to parent.</p>
+<p>For data engineering, the value is controlled expansion. You can flatten hierarchies, compute depth, build paths, and detect unreachable or cyclic records before they poison downstream dimensions.</p>
+<pre><code>WITH RECURSIVE org AS (
+  SELECT employee_id, manager_id, name, 0 AS depth
+  FROM dim_employee
+  WHERE manager_id IS NULL
+
+  UNION ALL
+
+  SELECT e.employee_id, e.manager_id, e.name, org.depth + 1
+  FROM dim_employee e
+  JOIN org ON e.manager_id = org.employee_id
+)
+SELECT * FROM org;</code></pre>
+<div class="hi">Key insight: recursive SQL is excellent for bounded hierarchy expansion, not for pretending a relational database is a graph engine.</div>
+<div class="warn">Gotcha: always design for cycle protection or max depth; one bad parent-child loop can turn a clean load into a runaway query.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Slowly Changing Dimensions</h2>
+<p>Slowly Changing Dimensions preserve how descriptive attributes change over time. Type 1 overwrites the old value, Type 2 creates a new history row with effective dates, and Type 3 stores limited previous values in additional columns.</p>
+<p>Type 2 is the senior data engineer default when reporting must answer, "What did we know at the time?" The table usually has a surrogate key, natural business key, effective start and end timestamps, current flag, and hash of tracked attributes.</p>
+<table>
+  <tr><th>SCD Type</th><th>Behavior</th><th>Use Case</th></tr>
+  <tr><td>Type 1</td><td>Overwrite</td><td>Corrections, no history needed</td></tr>
+  <tr><td>Type 2</td><td>New version row</td><td>Historical reporting and audits</td></tr>
+  <tr><td>Type 3</td><td>Current plus previous</td><td>Limited change comparison</td></tr>
+</table>
+<div class="hi">Key insight: facts should usually join to the dimension version valid at the fact event time, not just the current dimension row.</div>
+<div class="warn">Gotcha: a broken Type 2 load often creates overlapping effective ranges, which silently double-count facts in downstream joins.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">MERGE &amp; Upsert</h2>
+<p><code>MERGE</code> combines insert, update, and sometimes delete logic into one statement. It is the backbone of incremental loads, SCD processing, CDC application, and idempotent reprocessing when source batches can arrive late or be replayed.</p>
+<p>Upsert syntax varies by engine. PostgreSQL uses <code>INSERT ... ON CONFLICT</code>, many warehouses support <code>MERGE INTO</code>, and lakehouse engines may require special table formats to make row-level changes safe and performant.</p>
+<pre><code>MERGE INTO dim_customer t
+USING stg_customer s
+ON t.customer_id = s.customer_id AND t.is_current = true
+WHEN MATCHED AND t.attr_hash &lt;&gt; s.attr_hash THEN
+  UPDATE SET is_current = false, effective_end = s.load_ts
+WHEN NOT MATCHED THEN
+  INSERT (customer_id, name, attr_hash, effective_start, is_current)
+  VALUES (s.customer_id, s.name, s.attr_hash, s.load_ts, true);</code></pre>
+<div class="hi">Key insight: good upsert design starts with stable business keys, deterministic source ranking, and a clear idempotency rule.</div>
+<div class="warn">Gotcha: if your source has duplicate keys in the same batch, <code>MERGE</code> can fail or update the same target row unpredictably.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Deduplication Patterns</h2>
+<p>Deduplication is not just removing identical rows. Production dedupe means choosing the right surviving record using business rules: latest event, highest source priority, non-null payload, trusted vendor, or load timestamp.</p>
+<p>The standard pattern is <code>ROW_NUMBER()</code> over a business key and a deterministic sort, then keep row 1. For event streams, separate exact duplicate removal from entity-state resolution; they answer different questions.</p>
+<pre><code>WITH ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (
+      PARTITION BY order_id
+      ORDER BY event_ts DESC, source_priority ASC, ingest_ts DESC
+    ) AS rn
+  FROM stg_orders
+)
+SELECT *
+FROM ranked
+WHERE rn = 1;</code></pre>
+<div class="hi">Key insight: dedupe is a business rule expressed in SQL, not a cosmetic cleanup step.</div>
+<div class="warn">Gotcha: using <code>DISTINCT</code> for dedupe can hide source defects while keeping the wrong version of the record.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Anti-Joins &amp; Set Operations</h2>
+<p>Anti-joins find rows in one dataset that do not exist in another. The common forms are <code>LEFT JOIN ... IS NULL</code> and <code>NOT EXISTS</code>; both are useful for reconciliation, missing dimension detection, orphan fact checks, and incremental load filters.</p>
+<p>Set operations compare complete result sets. <code>UNION ALL</code> preserves duplicates and is faster, <code>UNION</code> removes duplicates, <code>INTERSECT</code> finds overlap, and <code>EXCEPT</code> finds differences. These are sharp tools for data validation when schemas align.</p>
+<table>
+  <tr><th>Operation</th><th>Meaning</th><th>Common DE Use</th></tr>
+  <tr><td>NOT EXISTS</td><td>A not in B</td><td>Find missing target rows</td></tr>
+  <tr><td>LEFT JOIN IS NULL</td><td>A not matched to B</td><td>Orphan detection</td></tr>
+  <tr><td>UNION ALL</td><td>Append all rows</td><td>Combine partitions or sources</td></tr>
+  <tr><td>EXCEPT</td><td>Rows in first only</td><td>Regression comparison</td></tr>
+</table>
+<div class="hi">Key insight: anti-joins are reconciliation primitives; use them before and after loads to prove what changed.</div>
+<div class="warn">Gotcha: <code>NOT IN</code> behaves badly with nulls; prefer <code>NOT EXISTS</code> when correctness matters.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">EXPLAIN Plan Reading</h2>
+<p>EXPLAIN plans show how the optimizer intends to access, join, sort, aggregate, and distribute data. A senior data engineer reads plans to spot full scans, bad join order, skewed hash joins, missing partition pruning, broadcast mistakes, and expensive sorts.</p>
+<p>The first pass is simple: look for the largest row estimates, the most expensive operators, and mismatches between estimated and actual rows. On distributed engines, also inspect data movement; shuffling terabytes to make a join work is usually the real bill.</p>
+<table>
+  <tr><th>Plan Signal</th><th>Likely Meaning</th><th>Action</th></tr>
+  <tr><td>Sequential scan</td><td>No useful index or pruning</td><td>Check filters and partitions</td></tr>
+  <tr><td>Hash join</td><td>Build/probe join</td><td>Watch memory and skew</td></tr>
+  <tr><td>Sort</td><td>Order required</td><td>Check keys and spill risk</td></tr>
+  <tr><td>Broadcast</td><td>Small table copied</td><td>Verify it is actually small</td></tr>
+</table>
+<div class="hi">Key insight: query tuning starts with row counts and data movement, not with rewriting syntax for style.</div>
+<div class="warn">Gotcha: stale statistics make the optimizer confidently choose a terrible plan.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Data Quality SQL</h2>
+<p>Data quality SQL turns assumptions into executable checks. Typical checks include uniqueness, required fields, accepted values, referential integrity, freshness, row-count thresholds, duplicate business keys, and numeric range validation.</p>
+<p>The best checks are close to the pipeline boundary and produce actionable rows, not just pass or fail flags. In modern stacks, these checks may run in dbt tests, warehouse SQL jobs, Airflow tasks, or custom validation tables before curated data is published.</p>
+<pre><code>SELECT 'missing_customer_id' AS check_name, COUNT(*) AS failed_rows
+FROM fact_orders
+WHERE customer_id IS NULL
+
+UNION ALL
+
+SELECT 'negative_amount', COUNT(*)
+FROM fact_orders
+WHERE amount &lt; 0
+
+UNION ALL
+
+SELECT 'duplicate_order_id', COUNT(*)
+FROM (
+  SELECT order_id
+  FROM fact_orders
+  GROUP BY order_id
+  HAVING COUNT(*) &gt; 1
+) d;</code></pre>
+<div class="hi">Key insight: quality checks should protect business contracts, not just satisfy technical neatness.</div>
+<div class="warn">Gotcha: checks without thresholds, owners, and failure handling become dashboard noise instead of pipeline protection.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you use a window function instead of a group by?</div>
+  <div class="qa-a">A: Use <code>GROUP BY</code> when you want to collapse rows into aggregates. Use a window function when you need aggregate or relative context while preserving each row. Common examples are dedupe, running totals, prior status comparison, and top-N per group.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What makes an SCD Type 2 implementation production-ready?</div>
+  <div class="qa-a">A: It needs stable business keys, surrogate keys, effective start and end timestamps, a current flag, and deterministic change detection. It should prevent overlapping ranges for the same business key. It also needs idempotent behavior so rerunning a batch does not create duplicate history.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you decide between a CTE and a temp table?</div>
+  <div class="qa-a">A: I use a CTE when the logic belongs inside one readable statement. I use a temp table when the intermediate result is reused, needs indexing, needs row-count validation, or should be inspected during a pipeline. For very large transforms, temp tables often make debugging and recovery easier.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Why can <code>NOT IN</code> be dangerous?</div>
+  <div class="qa-a">A: <code>NOT IN</code> interacts poorly with nulls because a null in the comparison set can make the result unknown. That can unexpectedly return no rows. <code>NOT EXISTS</code> is usually safer for anti-join logic.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What do you look for first in an EXPLAIN plan?</div>
+  <div class="qa-a">A: I look for row counts, scan type, join strategy, sorts, spills, and data movement. Then I compare estimated rows to actual rows when available. Big estimate errors usually point to stale stats, bad predicates, or missing distribution and partition design.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between deduping events and resolving entity state?</div>
+  <div class="qa-a">A: Event dedupe removes repeated copies of the same event. Entity-state resolution chooses the current or winning version of a business object across many events. Mixing the two can remove valid history or keep the wrong current record.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">ROW_NUMBER</div>
+    <div class="cd">Assigns a unique sequence per partition; primary dedupe tool.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">RANK</div>
+    <div class="cd">Ranks rows with gaps after ties; useful for leaderboards and top-N logic.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">DENSE_RANK</div>
+    <div class="cd">Ranks rows without gaps after ties; useful for grouped tiering.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">LAG / LEAD</div>
+    <div class="cd">Reads previous or next row values for change detection.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ROWS frame</div>
+    <div class="cd">Physical row-based window frame; best for moving row counts.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">RANGE frame</div>
+    <div class="cd">Value-based window frame; useful but can surprise with duplicate order values.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">CTE</div>
+    <div class="cd">Named query block for readability and staged logic inside one statement.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Temp table</div>
+    <div class="cd">Materialized intermediate result for reuse, inspection, indexing, or checkpoints.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Recursive CTE</div>
+    <div class="cd">Anchor plus recursive member for hierarchy traversal.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SCD Type 1</div>
+    <div class="cd">Overwrite dimension attributes; no historical tracking.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SCD Type 2</div>
+    <div class="cd">Create versioned dimension rows with effective dates and current flag.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">MERGE</div>
+    <div class="cd">Conditional insert, update, and delete pattern for incremental loads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">NOT EXISTS</div>
+    <div class="cd">Safe anti-join pattern for rows in one dataset missing from another.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EXCEPT</div>
+    <div class="cd">Returns rows present in the first query and absent from the second.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EXPLAIN</div>
+    <div class="cd">Shows query plan: scans, joins, sorts, estimates, and sometimes runtime metrics.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
