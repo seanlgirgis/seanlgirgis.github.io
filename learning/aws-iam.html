@@ -31,7 +31,6 @@ h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
 .tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
 .audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
 .audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
-.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
 .toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
 .toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
 .toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
@@ -63,11 +62,11 @@ tr:nth-child(even) td { background:#f8fafc; }
 <div class="doc">
 
   <div class="topnav">
-    <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS IAM - Master Engineering Reference
+    <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS IAM
   </div>
 
   <h1>AWS IAM</h1>
-  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-24 &middot; 20-30 min read</p>
+  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 30-40 min read</p>
 
   <div class="tag-row">
     <span class="tag">AWS</span>
@@ -76,6 +75,7 @@ tr:nth-child(even) td { background:#f8fafc; }
     <span class="tag">Roles</span>
     <span class="tag">Policies</span>
     <span class="tag">STS</span>
+    <span class="tag">Cross-Account</span>
     <span class="tag">Least Privilege</span>
   </div>
 
@@ -91,197 +91,560 @@ tr:nth-child(even) td { background:#f8fafc; }
     <h2>Contents</h2>
     <ol>
       <li><a href="#s1">What IAM Is</a></li>
-      <li><a href="#s2">Core Primitives: Users, Groups, Roles, Policies</a></li>
+      <li><a href="#s2">Core Primitives</a></li>
       <li><a href="#s3">Policy Document Anatomy</a></li>
-      <li><a href="#s4">Policy Types and Evaluation Logic</a></li>
-      <li><a href="#s5">Roles vs Users: The Critical Distinction</a></li>
-      <li><a href="#s6">How Services Get Permissions</a></li>
-      <li><a href="#s7">AssumeRole and STS</a></li>
-      <li><a href="#s8">Cross-Account Access</a></li>
-      <li><a href="#s9">IAM in a Data Engineering Stack</a></li>
+      <li><a href="#s4">Policy Types</a></li>
+      <li><a href="#s5">How IAM Evaluates a Request</a></li>
+      <li><a href="#s6">Roles vs Users</a></li>
+      <li><a href="#s7">How Services Get Permissions</a></li>
+      <li><a href="#s8">AssumeRole and STS</a></li>
+      <li><a href="#s9">Cross-Account Access</a></li>
       <li><a href="#s10">S3 Bucket Policies</a></li>
       <li><a href="#s11">Permission Boundaries</a></li>
-      <li><a href="#s12">Common Mistakes</a></li>
-      <li><a href="#s13">Least Privilege in Practice</a></li>
+      <li><a href="#s12">Service Control Policies</a></li>
+      <li><a href="#s13">IAM for Data Engineering</a></li>
+      <li><a href="#s14">Common Mistakes</a></li>
       <li><a href="#qa">Interview Q&amp;A</a></li>
       <li><a href="#cheat">Quick Reference</a></li>
     </ol>
   </div>
 
+  <!-- S1 -->
   <h2 id="s1">What IAM Is</h2>
-  <p>AWS IAM is the central authorization layer for AWS. Every API request from a user, role, or service is evaluated against IAM and related policy controls before access is allowed. IAM answers who is calling, how they are authenticated, and whether they are authorized for the requested action.</p>
-  <p>IAM is global at account scope, not region-specific. That means weak IAM design can create broad risk across all workloads in the account.</p>
-  <div class="hi">IAM is evaluated on every request. There is no permanent "trusted" session that bypasses policy checks.</div>
-  <div class="warn">Root credentials have full, irreversible account power. Enable MFA on root, create no root access keys, and never use root for daily operations.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <h2 id="s2">Core Primitives: Users, Groups, Roles, Policies</h2>
-  <p>IAM has four building blocks: users, groups, roles, and policies. Policies define permission logic. The others are attachment points and identity types.</p>
+  <p>AWS Identity and Access Management is the authorization and authentication layer that guards every AWS API call. When any principal &mdash; a human user, a Lambda function, a Glue job, or an ECS task &mdash; makes an API request, IAM intercepts that request, identifies who is calling, and decides whether the action is permitted on the target resource. There is no trusted session that bypasses this check. Every request is evaluated from first principles every time.</p>
+  <p>IAM is a global service scoped to the AWS account rather than to a region. A role you create is visible everywhere. A policy you attach takes effect everywhere. This means weak IAM design creates broad risk across all regions and workloads in the account simultaneously. It also means mistakes are account-wide, not contained.</p>
+  <p>The authorization model defaults to deny. Nothing is allowed unless a matching allow exists in an applicable policy, and any explicit deny in any layer wins regardless of other allows. This deny-first behavior is non-negotiable and governs every decision IAM makes.</p>
+  <div class="hi">IAM evaluates every API request. A "trusted" session, once established, does not skip policy evaluation &mdash; the attached role's policies are still checked on each call.</div>
+  <div class="warn">The root account has unrestricted, irreversible power over the entire account. Enable MFA immediately, create no root access keys, and never use root for daily work. Create an admin IAM user or use IAM Identity Center instead.</div>
   <table>
-    <tr><th>Primitive</th><th>Purpose</th><th>Credentials</th><th>Lifetime</th><th>Best Use</th></tr>
-    <tr><td>User</td><td>Human or legacy programmatic identity</td><td>Password or access keys</td><td>Long-term</td><td>Human console access only</td></tr>
-    <tr><td>Group</td><td>Permission management for many users</td><td>None directly</td><td>Persistent</td><td>Team-level policy assignment</td></tr>
-    <tr><td>Role</td><td>Temporary assumable identity</td><td>STS temp credentials</td><td>Minutes to hours</td><td>Services, workloads, cross-account access</td></tr>
-    <tr><td>Policy</td><td>Permission document</td><td>N/A</td><td>Versioned</td><td>Grant and restrict access precisely</td></tr>
+    <tr><th>Property</th><th>Detail</th></tr>
+    <tr><td>Scope</td><td>Global &mdash; not regional</td></tr>
+    <tr><td>Default stance</td><td>Implicit deny on all actions</td></tr>
+    <tr><td>Explicit deny</td><td>Overrides any allow, in any policy layer</td></tr>
+    <tr><td>Evaluation</td><td>Every API call, every time &mdash; no cached bypass</td></tr>
+    <tr><td>Root account</td><td>Unrestricted and cannot be restricted by SCP or permission boundary</td></tr>
   </table>
-  <div class="hi">For non-human workloads, roles are the default. Avoid static keys.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
+  <!-- S2 -->
+  <h2 id="s2">Core Primitives</h2>
+  <p>IAM has four building blocks: users, groups, roles, and policies. Policies contain the permission logic. Users, groups, and roles are attachment points &mdash; they carry policies into authorization decisions.</p>
+
+  <h3>Users</h3>
+  <p>An IAM user represents a long-lived identity with persistent credentials: a password for console access and optionally access keys for programmatic access. The problem with users is that their credentials are static. Leaked access keys remain valid until someone manually rotates or deletes them. For this reason, IAM users should be limited to human console access with MFA enforced. Workloads should never use IAM user access keys.</p>
+
+  <h3>Groups</h3>
+  <p>A group is a container for users, used for policy management at scale. Policies attached to the group apply to every member. Groups cannot be nested and cannot be used as principals in trust policies. They exist purely to simplify bulk permission assignment for teams.</p>
+
+  <h3>Roles</h3>
+  <p>A role is a temporary assumable identity. Unlike a user, a role has no permanent credentials. When a principal assumes a role, STS issues short-lived credentials &mdash; an access key, a secret key, and a session token &mdash; that expire automatically. This is the correct identity mechanism for all non-human workloads: EC2 instances, Lambda functions, ECS tasks, Glue jobs, CI/CD pipelines, and cross-account access patterns all use roles.</p>
+
+  <h3>Policies</h3>
+  <p>A policy is a JSON document that defines what actions are allowed or denied on what resources under what conditions. Policies are versioned, reusable, and can be attached to multiple identities. AWS provides hundreds of managed policies, but for production workloads you should author custom policies scoped precisely to the actions and resources your workload actually needs.</p>
+
+  <table>
+    <tr><th>Primitive</th><th>Credentials</th><th>Lifetime</th><th>Best Use</th></tr>
+    <tr><td>User</td><td>Password or access keys</td><td>Long-term, persistent</td><td>Human console access with MFA</td></tr>
+    <tr><td>Group</td><td>None directly</td><td>Persistent</td><td>Policy assignment for teams of users</td></tr>
+    <tr><td>Role</td><td>STS temporary credentials</td><td>Minutes to 12 hours</td><td>Services, workloads, cross-account, CI/CD</td></tr>
+    <tr><td>Policy</td><td>Not applicable</td><td>Versioned document</td><td>Define allowed and denied actions precisely</td></tr>
+  </table>
+  <div class="hi">For all non-human identities, the answer is always a role. Roles automatically rotate credentials through STS, so there is nothing to leak that stays valid long enough to matter.</div>
+  <div class="warn">Service accounts with static access keys are one of the most common AWS security findings. Every time you see a workload using an IAM user key, that is a role waiting to replace it.</div>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- S3 -->
   <h2 id="s3">Policy Document Anatomy</h2>
-  <p>An IAM policy is JSON containing one or more statements. Each statement uses Effect, Action, Resource, and optional Condition.</p>
+  <p>An IAM policy is a JSON document with a <code>Version</code> field and a <code>Statement</code> array. Each statement specifies the permission logic for one rule. The four core fields in a statement are <code>Effect</code>, <code>Action</code>, <code>Resource</code>, and optionally <code>Condition</code>.</p>
   <pre><code>{
   "Version": "2012-10-17",
   "Statement": [
+    {
+      "Sid": "AllowRawS3ReadWithMFA",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::my-data-lake-raw",
+        "arn:aws:s3:::my-data-lake-raw/*"
+      ],
+      "Condition": {
+        "Bool": { "aws:MultiFactorAuthPresent": "true" },
+        "StringEquals": { "aws:RequestedRegion": "us-east-1" }
+      }
+    }
+  ]
+}</code></pre>
+
+  <table>
+    <tr><th>Field</th><th>Values</th><th>Purpose</th></tr>
+    <tr><td><code>Effect</code></td><td>Allow or Deny</td><td>Grant or block the matched actions</td></tr>
+    <tr><td><code>Action</code></td><td>Service:Operation strings</td><td>Which API calls are in scope, e.g. <code>s3:GetObject</code>, <code>glue:StartJobRun</code></td></tr>
+    <tr><td><code>Resource</code></td><td>ARNs or <code>*</code></td><td>Which specific resources the statement applies to</td></tr>
+    <tr><td><code>Principal</code></td><td>AWS account, role, service</td><td>Used in resource-based policies to identify the allowed caller</td></tr>
+    <tr><td><code>Condition</code></td><td>Condition operators and keys</td><td>Add context constraints: MFA, source IP, VPC endpoint, tag values</td></tr>
+    <tr><td><code>Sid</code></td><td>String identifier</td><td>Optional label for the statement, useful for auditing and automation</td></tr>
+  </table>
+
+  <p>Action and Resource together define the blast radius of any statement. The narrower both are, the closer you are to least privilege. Conditions add a second enforcement layer &mdash; for example, requiring that the request arrive via a specific VPC endpoint, or that MFA was used in the calling session.</p>
+
+  <div class="warn"><code>"Action": "*"</code> combined with <code>"Resource": "*"</code> and <code>"Effect": "Allow"</code> is equivalent to full administrator access. Never ship that on a production role. AWS managed policy <code>AdministratorAccess</code> does exactly this, which is why it should only be attached to break-glass or ops roles.</div>
+  <div class="hi">Wildcards inside action strings are legal but dangerous: <code>s3:*</code> grants all S3 operations including delete and ACL changes. Prefer explicit action lists so every permission is intentional and reviewable.</div>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- S4 -->
+  <h2 id="s4">Policy Types</h2>
+  <p>There are five categories of IAM policy, and they interact. Understanding each one is essential for diagnosing access failures and designing a secure permission model.</p>
+
+  <h3>Identity-Based Policies</h3>
+  <p>Attached directly to users, groups, or roles. These are the most common policy type. They define what the principal is allowed or denied across any resource. AWS provides managed policies (read-only, admin, service-specific) and you can author inline or customer-managed policies.</p>
+
+  <h3>Resource-Based Policies</h3>
+  <p>Attached to the resource itself rather than the caller. S3 buckets, SQS queues, SNS topics, KMS keys, Lambda functions, and ECR repositories all support resource-based policies. They identify the allowed principals explicitly using a <code>Principal</code> field. Critical for cross-account access without assuming a role.</p>
+
+  <h3>Permission Boundaries</h3>
+  <p>An advanced guardrail attached to a user or role that caps the maximum permissions it can ever have. Even if the identity policy grants broad access, only actions within the permission boundary are effective. The boundary does not grant anything by itself &mdash; it only constrains. Used to safely delegate role creation to dev teams without risking privilege escalation.</p>
+
+  <h3>Service Control Policies (SCPs)</h3>
+  <p>Organization-level controls applied to accounts or OUs in AWS Organizations. SCPs define the maximum permissions available to all identities in the account, including admins. They do not grant permissions &mdash; they restrict what identity policies can grant. Extremely useful for enforcing compliance guardrails (no public S3 buckets, no root key creation, region lockdown) across an entire organization.</p>
+
+  <h3>Session Policies</h3>
+  <p>Passed inline during an <code>AssumeRole</code> call to further restrict the role's permissions for that specific session. Effective permissions are the intersection of the role policy and the session policy. Useful for granting a scoped-down version of a shared role to a specific workflow or caller.</p>
+
+  <table>
+    <tr><th>Policy Type</th><th>Attached To</th><th>Grants Permissions?</th><th>Restricts Permissions?</th></tr>
+    <tr><td>Identity-based</td><td>User, group, role</td><td>Yes</td><td>Yes (via Deny)</td></tr>
+    <tr><td>Resource-based</td><td>Resource (S3, SQS, KMS...)</td><td>Yes</td><td>Yes (via Deny)</td></tr>
+    <tr><td>Permission boundary</td><td>User or role</td><td>No</td><td>Yes &mdash; caps max permissions</td></tr>
+    <tr><td>SCP</td><td>AWS account or OU</td><td>No</td><td>Yes &mdash; org-wide ceiling</td></tr>
+    <tr><td>Session policy</td><td>AssumeRole call</td><td>No</td><td>Yes &mdash; scopes the session only</td></tr>
+  </table>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- S5 -->
+  <h2 id="s5">How IAM Evaluates a Request</h2>
+  <p>IAM evaluates all applicable policies in a specific order every time a request arrives. The first matching explicit deny stops evaluation immediately. If no deny is found, IAM looks for an allow. If no allow is found, the default implicit deny applies. Understanding this order is what lets you reason about why access is granted or refused.</p>
+
+  <pre><code>Evaluation order for each API request:
+
+1. Explicit Deny in any policy layer?         --> DENY (final, no override)
+2. SCP allows the action?                     --> Continue (if in an Organization)
+3. Resource-based policy allows the caller?   --> ALLOW (cross-account) or continue (same account)
+4. Permission boundary allows the action?     --> Continue or DENY
+5. Session policy allows the action?          --> Continue or DENY
+6. Identity-based policy allows the action?  --> ALLOW
+7. None of the above matched?                 --> Implicit DENY</code></pre>
+
+  <div class="warn">An explicit Deny in an SCP cannot be overridden even by an account administrator. This is intentional &mdash; SCPs are the organization's hard ceiling.</div>
+  <div class="hi">For cross-account access, both the identity-based policy on the caller <em>and</em> the resource-based policy on the target must independently allow the access. In same-account access, either is sufficient.</div>
+
+  <h3>Common Failure Scenarios</h3>
+  <table>
+    <tr><th>Symptom</th><th>Root Cause</th><th>Where to Look</th></tr>
+    <tr><td>AccessDenied on S3 from Glue</td><td>Missing bucket policy or KMS key policy</td><td>Glue service role, S3 bucket policy, KMS key policy</td></tr>
+    <tr><td>AccessDenied despite admin policy</td><td>SCP blocks the action org-wide</td><td>Organization SCPs on the account</td></tr>
+    <tr><td>Role can't call a service it should reach</td><td>Permission boundary caps the allow</td><td>Boundary policy attached to the role</td></tr>
+    <tr><td>AssumeRole fails with "not authorized"</td><td>Trust policy missing or wrong principal</td><td>Role trust policy, not its permission policy</td></tr>
+    <tr><td>Cross-account S3 access denied</td><td>Bucket policy doesn't grant the external account</td><td>Bucket policy Principal field and condition</td></tr>
+  </table>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- S6 -->
+  <h2 id="s6">Roles vs Users: The Critical Distinction</h2>
+  <p>The most important mental shift in AWS security is understanding why roles are almost always the right choice over users for anything that is not a human logging into the console. A user carries static credentials that can be extracted from environment files, leaked in logs, committed to source code, or left behind in containers. An IAM role issues credentials through STS that expire automatically, usually in one hour by default. If those credentials are exposed, the attacker has a shrinking window before they become worthless.</p>
+  <p>Beyond the credential lifetime advantage, roles are more operationally flexible. You can modify what a role can do at the policy level without touching the workload. You can attach the same role to many resources. You can implement cross-account access through role assumption without creating users in every account. You can rotate behavior by simply updating the policy, and the change takes effect on the next STS call.</p>
+  <div class="hi">Leaked STS credentials expire on their own. Leaked access keys stay valid until manually revoked. This single difference makes roles the correct default for every non-human identity in AWS.</div>
+  <div class="warn">If you find an IAM user access key in a codebase, treat it like a live security incident. Rotate it immediately, audit CloudTrail for recent usage, and replace the user with a role or IAM Identity Center.</div>
+
+  <table>
+    <tr><th>Dimension</th><th>IAM User</th><th>IAM Role</th></tr>
+    <tr><td>Credential type</td><td>Access key + secret (static)</td><td>STS temporary token (rotates)</td></tr>
+    <tr><td>Expiry</td><td>Never, until manually rotated</td><td>Configurable: 15 minutes to 12 hours</td></tr>
+    <tr><td>Best for</td><td>Human console access with MFA</td><td>All services, workloads, automation</td></tr>
+    <tr><td>Cross-account</td><td>Not designed for this pattern</td><td>Native: trust policy controls assumption</td></tr>
+    <tr><td>Credential management</td><td>Manual rotation required</td><td>Automatic via STS on each assume call</td></tr>
+  </table>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- S7 -->
+  <h2 id="s7">How Services Get Permissions</h2>
+  <p>Each AWS compute service has its own mechanism for attaching IAM credentials to a workload at runtime. The pattern is always the same: an IAM role is associated with the resource, and the service uses that role's temporary credentials when calling other AWS APIs. The workload code never sees long-term keys.</p>
+
+  <h3>EC2 Instance Profiles</h3>
+  <p>An instance profile is a container that holds an IAM role and attaches it to an EC2 instance. The EC2 metadata service (IMDS) at <code>169.254.169.254</code> exposes temporary credentials from that role. The AWS SDK automatically fetches and refreshes these credentials. You never configure keys in userdata or environment files. The instance profile is attached at launch time or can be swapped on a running instance.</p>
+  <pre><code># SDK auto-retrieves credentials from instance metadata:
+import boto3
+s3 = boto3.client('s3')          # no keys needed
+s3.get_object(Bucket='my-data-lake', Key='raw/data.parquet')</code></pre>
+
+  <h3>Lambda Execution Role</h3>
+  <p>Lambda functions assume an execution role on every invocation. The role must grant permissions to the services your function calls, as well as write access to CloudWatch Logs for the function's own log group. The SDK inside the function inherits these credentials automatically from the Lambda runtime environment.</p>
+  <pre><code># Minimal Lambda execution role policy
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+      "Resource": "arn:aws:logs:us-east-1:123456789012:log-group:/aws/lambda/my-function:*"
+    },
     {
       "Effect": "Allow",
       "Action": ["s3:GetObject"],
-      "Resource": ["arn:aws:s3:::my-data-bucket/raw/*"],
-      "Condition": {
-        "Bool": {"aws:MultiFactorAuthPresent": "true"}
-      }
+      "Resource": "arn:aws:s3:::my-data-lake/processed/*"
     }
   ]
 }</code></pre>
-  <p>Action and Resource scope determine blast radius. Conditions add context-aware limits such as source network, MFA, or region.</p>
-  <div class="warn">`Action: *` plus `Resource: *` with Allow is effectively admin access. Never ship that in production roles.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h2 id="s4">Policy Types and Evaluation Logic</h2>
-  <p>Identity-based policies attach to users, groups, and roles. Resource-based policies attach directly to resources like S3 buckets or SQS queues. Permission boundaries cap maximum rights for identities. SCPs apply organization-wide limits.</p>
-  <p>Effective access is the intersection of these layers. Explicit deny in any applicable layer overrides all allows.</p>
-  <div class="hi">Think of IAM as a deny-first engine: default deny, explicit deny precedence, and narrow allow paths.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
+  <h3>ECS Task Role vs Task Execution Role</h3>
+  <p>ECS uses two distinct roles that are often confused. The <strong>task execution role</strong> is used by the ECS agent to pull the container image from ECR, write logs to CloudWatch, and fetch secrets from Secrets Manager during task startup. This is infrastructure-level work. The <strong>task role</strong> is used by your application code running inside the container to call AWS services like S3, SQS, or DynamoDB at runtime. These must be separate roles with separate policies.</p>
 
-  <h2 id="s5">Roles vs Users: The Critical Distinction</h2>
-  <p>Users are long-lived identities with potential static credentials. Roles are temporary identities assumed by trusted principals and issued short-lived credentials through STS.</p>
-  <p>For services, role attachment is mandatory best practice: EC2 instance profile, Lambda execution role, ECS task role, Glue service role.</p>
-  <div class="hi">Leaked STS credentials expire. Leaked access keys persist until manually rotated.</div>
-  <div class="warn">Service accounts with access keys are a high-risk anti-pattern. Replace with roles.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
+  <table>
+    <tr><th>Role</th><th>Used By</th><th>Needs Access To</th></tr>
+    <tr><td>Task execution role</td><td>ECS agent (before container starts)</td><td>ECR pull, CloudWatch Logs, Secrets Manager, SSM Parameter Store</td></tr>
+    <tr><td>Task role</td><td>Application code inside the container</td><td>S3, SQS, DynamoDB, Bedrock, Glue &mdash; whatever the app calls</td></tr>
+  </table>
+  <div class="warn">Confusing the task role and task execution role is one of the most common ECS access failures. If your container starts but your app gets AccessDenied, you almost certainly set the permissions on the wrong role.</div>
 
-  <h2 id="s6">How Services Get Permissions</h2>
-  <p>EC2 obtains credentials from attached instance profiles via instance metadata. Lambda assumes its execution role on invocation. ECS separates task execution role from task role. Glue uses a dedicated service role for data plane actions.</p>
-  <p>These are runtime identity mechanisms, not hardcoded credential flows.</p>
-  <div class="warn">In ECS, execution role and task role are different. Mixing them causes access failures and confusing diagnostics.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <h2 id="s7">AssumeRole and STS</h2>
-  <p>AssumeRole calls STS to exchange current credentials for temporary credentials of a target role. Returned keys include an access key, secret, and session token with bounded session duration.</p>
-  <p>This is core to secure automation and federation. CI/CD, admin elevation, and workload identity switching rely on this path.</p>
-  <div class="hi">AssumeRole is the standard for temporary privileged access and federated identity in AWS.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <h2 id="s8">Cross-Account Access</h2>
-  <p>Cross-account design uses a role in Account B trusted by Account A principal(s). Trust policy controls who may assume. Permission policy controls what the role can do after assumption.</p>
-  <pre><code>{
+  <h3>Glue Service Role</h3>
+  <p>A Glue job assumes a service role that grants access to S3, the Glue Data Catalog, CloudWatch Logs, and any other services the ETL script touches. The trust policy on the role must allow <code>glue.amazonaws.com</code> to assume it. For jobs accessing encrypted S3 data, the role also needs KMS decrypt permissions on the relevant key.</p>
+  <pre><code># Glue service role trust policy
+{
   "Version": "2012-10-17",
   "Statement": [
     {
       "Effect": "Allow",
-      "Principal": {"AWS": "arn:aws:iam::111122223333:role/data-pipeline-role"},
-      "Action": "sts:AssumeRole",
-      "Condition": {
-        "StringEquals": {"sts:ExternalId": "vendor-shared-id"}
-      }
+      "Principal": { "Service": "glue.amazonaws.com" },
+      "Action": "sts:AssumeRole"
     }
   ]
 }</code></pre>
-  <div class="warn">Trust policy and permission policy are separate controls. Both must be correct.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h2 id="s9">IAM in a Data Engineering Stack</h2>
-  <p>Data platforms should isolate permissions per workload: crawler role, ETL role, trigger role, analytics role. Each role should target specific resources and actions only.</p>
-  <p>Use Access Analyzer for over-permission findings and CloudTrail for immutable IAM change auditing.</p>
-  <div class="hi">Defense in depth means narrowing IAM role scope and also constraining resource policies like S3 bucket policy.</div>
+  <!-- S8 -->
+  <h2 id="s8">AssumeRole and STS</h2>
+  <p>The AWS Security Token Service issues temporary credentials. The core operation is <code>sts:AssumeRole</code>: a caller presents their current identity, requests a specific role, and STS returns a fresh set of credentials scoped to that role. The returned credentials include an access key ID, a secret access key, and a session token, all of which expire at a configurable time between 15 minutes and 12 hours.</p>
+  <pre><code>import boto3
+
+sts = boto3.client('sts')
+response = sts.assume_role(
+    RoleArn='arn:aws:iam::987654321098:role/data-reader-role',
+    RoleSessionName='glue-etl-session',
+    DurationSeconds=3600,
+    ExternalId='my-vendor-external-id'   # optional, for third-party trust
+)
+
+creds = response['Credentials']
+# Use creds['AccessKeyId'], creds['SecretAccessKey'], creds['SessionToken']</code></pre>
+
+  <p>The session name is recorded in CloudTrail for every API call made with those credentials &mdash; this is how you trace a specific pipeline run through access logs. The external ID is an additional secret that prevents confused deputy attacks when a third party assumes your role.</p>
+
+  <h3>Common AssumeRole Patterns</h3>
+  <table>
+    <tr><th>Pattern</th><th>Who Assumes</th><th>Why</th></tr>
+    <tr><td>EC2 to other services</td><td>EC2 instance role (auto via IMDS)</td><td>Runtime access without keys</td></tr>
+    <tr><td>CI/CD to AWS</td><td>GitHub Actions via OIDC</td><td>Deploy role without long-term secrets</td></tr>
+    <tr><td>Cross-account data access</td><td>ETL in Account A assumes role in Account B</td><td>Isolated account boundaries</td></tr>
+    <tr><td>Elevated admin access</td><td>Ops engineer assumes break-glass role</td><td>MFA-required privileged session</td></tr>
+    <tr><td>Third-party integration</td><td>Vendor platform assumes your role</td><td>Controlled external access with ExternalId</td></tr>
+  </table>
+
+  <div class="hi">The session name you pass to <code>AssumeRole</code> appears in every CloudTrail log entry made during that session. Use meaningful names like <code>glue-daily-etl-2026-04-25</code> to make audit trails readable.</div>
+  <div class="warn">The caller must have <code>sts:AssumeRole</code> permission on the target role ARN in their own identity policy, <em>and</em> the target role's trust policy must list the caller as an allowed principal. Both sides must agree.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h2 id="s10">S3 Bucket Policies</h2>
-  <p>S3 bucket policies are resource-based and evaluated with identity policies. They are essential for encryption enforcement, source network controls, and cross-account sharing.</p>
+  <!-- S9 -->
+  <h2 id="s9">Cross-Account Access</h2>
+  <p>Cross-account access is one of the most common patterns in mature AWS organizations. The design separates workload accounts from data accounts, or dev/staging/prod into distinct accounts, and uses role assumption to let services in one account operate on resources in another.</p>
+  <p>The pattern requires two cooperating configurations. In Account B (the target), create a role with a trust policy that explicitly names the principal in Account A. In Account A, give the calling identity a policy that grants <code>sts:AssumeRole</code> on the Account B role's ARN. Both must be correct or the assumption fails.</p>
+
+  <pre><code><!-- Trust policy on the role in Account B (target account) -->
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::111122223333:role/glue-etl-role"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": { "sts:ExternalId": "data-platform-x9f2" }
+      }
+    }
+  ]
+}
+
+<!-- Permission policy on the same role in Account B -->
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::account-b-datalake",
+        "arn:aws:s3:::account-b-datalake/*"
+      ]
+    }
+  ]
+}</code></pre>
+
+  <div class="hi">Trust policy controls who can assume the role. Permission policy controls what the role can do after assumption. These are two separate JSON documents and both must be correct. A common mistake is granting the right actions in the permission policy but forgetting to add the caller principal to the trust policy.</div>
+  <div class="warn">The external ID prevents the confused deputy problem: a third-party SaaS should not be able to assume your role just because they know its ARN. The external ID acts as a shared secret that both sides must agree on.</div>
+
+  <h3>Cross-Account S3 via Resource Policy (No Role Assumption)</h3>
+  <p>For simpler patterns where a single bucket needs to be accessed by a role in another account, a bucket policy can grant access directly without role assumption. This works only if both the bucket policy and the caller's identity policy allow the operation.</p>
   <pre><code>{
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "DenyNonVPCEndpoint",
+      "Sid": "AllowCrossAccountRead",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::111122223333:role/glue-etl-role"
+      },
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::account-b-datalake",
+        "arn:aws:s3:::account-b-datalake/*"
+      ]
+    }
+  ]
+}</code></pre>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- S10 -->
+  <h2 id="s10">S3 Bucket Policies</h2>
+  <p>S3 bucket policies are resource-based IAM policies attached directly to a bucket. They evaluate alongside identity-based policies and are the primary mechanism for enforcing access controls on data lake buckets: encryption requirements, VPC endpoint restrictions, cross-account sharing, and explicit denial of public access or non-secure transport.</p>
+
+  <h3>Deny Non-TLS Access</h3>
+  <pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyInsecureTransport",
       "Effect": "Deny",
       "Principal": "*",
       "Action": "s3:*",
       "Resource": [
-        "arn:aws:s3:::my-secure-bucket",
-        "arn:aws:s3:::my-secure-bucket/*"
+        "arn:aws:s3:::my-data-lake",
+        "arn:aws:s3:::my-data-lake/*"
       ],
       "Condition": {
-        "StringNotEquals": {"aws:sourceVpce": "vpce-0123456789abcdef0"}
+        "Bool": { "aws:SecureTransport": "false" }
       }
     }
   ]
 }</code></pre>
-  <div class="warn">For access to succeed, policy layers must align. For cross-account, both sides must permit the path.</div>
+
+  <h3>Restrict to VPC Endpoint Only</h3>
+  <pre><code>{
+  "Sid": "DenyNonVPCEndpoint",
+  "Effect": "Deny",
+  "Principal": "*",
+  "Action": "s3:*",
+  "Resource": [
+    "arn:aws:s3:::my-private-datalake",
+    "arn:aws:s3:::my-private-datalake/*"
+  ],
+  "Condition": {
+    "StringNotEquals": {
+      "aws:sourceVpce": "vpce-0a1b2c3d4e5f67890"
+    }
+  }
+}</code></pre>
+
+  <h3>Enforce SSE-KMS Encryption on Put</h3>
+  <pre><code>{
+  "Sid": "DenyUnencryptedPut",
+  "Effect": "Deny",
+  "Principal": "*",
+  "Action": "s3:PutObject",
+  "Resource": "arn:aws:s3:::my-data-lake/*",
+  "Condition": {
+    "StringNotEquals": {
+      "s3:x-amz-server-side-encryption": "aws:kms"
+    }
+  }
+}</code></pre>
+
+  <div class="warn">For access to succeed on a cross-account request, the bucket policy must explicitly allow the external principal. An identity policy alone is not sufficient. Both sides must permit the path independently.</div>
+  <div class="hi">Stack multiple statements in one bucket policy. Deny non-TLS, deny unencrypted puts, and restrict to VPC endpoint can all coexist as separate statements in the same policy document.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
+  <!-- S11 -->
   <h2 id="s11">Permission Boundaries</h2>
-  <p>Permission boundaries cap what an identity can ever do. They do not grant permissions by themselves, but they constrain granted permissions from attached identity policies.</p>
-  <p>Use boundaries when delegating role creation to engineering teams to prevent privilege escalation.</p>
-  <div class="hi">Effective permissions are bounded intersection, not union.</div>
+  <p>A permission boundary is an advanced IAM feature that sets a hard ceiling on what an identity can do, regardless of what its attached policies say. It is attached to a user or role just like a managed policy, but instead of granting permissions, it constrains them. The effective permissions for any identity subject to a boundary are the intersection of the identity-based policy and the boundary &mdash; both must allow the action for it to succeed.</p>
+  <p>The most important use case is delegated role creation. If you allow a development team to create IAM roles for their services, they could escalate privileges by creating a role with administrator access and then assuming it. A permission boundary on all roles they create prevents this by capping the maximum permissions those roles can ever have, even if the team writes a broad policy document.</p>
+
+  <pre><code># Attach a boundary when creating a role via CLI
+aws iam create-role \
+  --role-name dev-team-service-role \
+  --assume-role-policy-document file://trust.json \
+  --permissions-boundary arn:aws:iam::123456789012:policy/dev-boundary-policy
+
+# Boundary policy: caps what the role can ever reach
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:*", "dynamodb:*", "logs:*", "sqs:*"],
+      "Resource": "*"
+    }
+  ]
+}</code></pre>
+
+  <div class="hi">The boundary alone grants nothing. If the identity policy allows S3 but the boundary does not, access is denied. If the boundary allows S3 but the identity policy does not, access is also denied. Both must independently allow an action.</div>
+  <div class="warn">Permission boundaries do not apply to the root account and are not the same as SCPs. SCPs restrict accounts; boundaries restrict individual users and roles. You often need both in a well-governed organization.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h2 id="s12">Common Mistakes</h2>
-  <div class="warn">Hardcoding credentials in code or env files instead of using roles.</div>
-  <div class="warn">Using wildcard admin policies for convenience in production.</div>
-  <div class="warn">Confusing ECS task role with task execution role during incident response.</div>
-  <div class="warn">Using root account for daily administrative work.</div>
-  <div class="warn">Failing to rotate and remove unused access keys.</div>
+  <!-- S12 -->
+  <h2 id="s12">Service Control Policies</h2>
+  <p>Service Control Policies live in AWS Organizations and apply to every principal in an account or organizational unit, including administrators. They do not grant permissions &mdash; they define the outer boundary of what any policy in the account can grant. Think of them as the organization's non-negotiable rules that individual accounts cannot override.</p>
+  <p>SCPs are invaluable for enforcing compliance requirements across a large AWS estate. You can deny specific high-risk actions (deleting CloudTrail, creating root access keys, disabling GuardDuty), restrict which regions accounts can use, or prevent specific instance types from being launched. These controls apply uniformly even if a workload account's admin tries to override them.</p>
+
+  <pre><code># SCP: Deny actions outside approved regions
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyNonApprovedRegions",
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:*",
+        "organizations:*",
+        "support:*",
+        "sts:*",
+        "cloudfront:*",
+        "route53:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": ["us-east-1", "us-west-2"]
+        }
+      }
+    }
+  ]
+}</code></pre>
+
+  <table>
+    <tr><th>SCP Use Case</th><th>Effect</th></tr>
+    <tr><td>Deny root key creation</td><td>No one in the account can create root access keys</td></tr>
+    <tr><td>Region lockdown</td><td>Resources only in approved regions</td></tr>
+    <tr><td>Deny CloudTrail disable</td><td>Audit trail cannot be turned off by anyone</td></tr>
+    <tr><td>Require MFA for sensitive actions</td><td>Certain operations require an MFA-authenticated session</td></tr>
+    <tr><td>Deny public S3 bucket ACLs</td><td>Block accidental data exposure at org level</td></tr>
+  </table>
+  <div class="warn">An explicit Deny in an SCP overrides everything, including the account's own admin user. This is by design. Use this power carefully &mdash; a badly written SCP can lock an account out of critical services.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h2 id="s13">Least Privilege in Practice</h2>
-  <p>Start broad only in controlled development, then reduce permissions based on real CloudTrail evidence. Use policy simulator for change validation before deployment.</p>
-  <p>Version IAM policy definitions in infrastructure as code to make changes reviewable and auditable.</p>
-  <div class="hi">Access Analyzer and Access Advisor together provide a practical loop to remove unused permissions safely.</div>
+  <!-- S13 -->
+  <h2 id="s13">IAM for Data Engineering</h2>
+  <p>Data engineering workloads tend to touch many AWS services simultaneously: S3 for storage, Glue for ETL, Athena for queries, Redshift for warehousing, SQS or Kinesis for streaming, Secrets Manager for database credentials, and CloudWatch for monitoring. The risk is natural sprawl &mdash; every job wants access to everything because it is easier to grant broad permissions than to carefully scope them per workload.</p>
+  <p>The correct architecture is role-per-workload. Each pipeline stage gets its own IAM role scoped to exactly the buckets, queues, tables, and secrets it touches. A Glue crawler role is different from an ETL job role. An ECS scheduler role is different from the task role of the job it triggers. Separation means a compromised role or a runaway script has limited blast radius.</p>
+
+  <h3>Recommended Role Separation for a Data Platform</h3>
+  <table>
+    <tr><th>Role</th><th>Trusted By</th><th>Needs Access To</th></tr>
+    <tr><td><code>glue-crawler-role</code></td><td>glue.amazonaws.com</td><td>S3 read (raw prefix), Glue Data Catalog write</td></tr>
+    <tr><td><code>glue-etl-role</code></td><td>glue.amazonaws.com</td><td>S3 read/write (raw &rarr; processed), KMS, CloudWatch Logs</td></tr>
+    <tr><td><code>lambda-trigger-role</code></td><td>lambda.amazonaws.com</td><td>Glue StartJobRun, SQS, CloudWatch Logs</td></tr>
+    <tr><td><code>ecs-task-role</code></td><td>ecs-tasks.amazonaws.com</td><td>S3 processed read, DynamoDB write, Secrets Manager</td></tr>
+    <tr><td><code>athena-query-role</code></td><td>User or federated identity</td><td>Athena, S3 query results bucket, Glue Data Catalog read</td></tr>
+    <tr><td><code>redshift-spectrum-role</code></td><td>redshift.amazonaws.com</td><td>S3 read (processed), Glue Data Catalog read</td></tr>
+  </table>
+
+  <h3>Auditing Tools</h3>
+  <p><strong>IAM Access Analyzer</strong> scans your policies and resource configurations to find over-permissive access &mdash; public S3 buckets, roles accessible from outside your organization, and policy statements that grant more than intended. Enable it in every account and review its findings regularly.</p>
+  <p><strong>IAM Access Advisor</strong> shows the last-accessed date for each service on any user or role. If a Glue role has not touched DynamoDB in six months, it probably does not need that permission. Use Access Advisor data to drive removal of unused permissions and prove least-privilege compliance to auditors.</p>
+  <p><strong>CloudTrail</strong> records every IAM and API action. Use CloudTrail Lake or Athena queries over CloudTrail S3 logs to answer: who assumed this role, what did they call, when, and from where. This is your forensics foundation.</p>
+
+  <div class="hi">Access Analyzer plus Access Advisor together give you a continuous least-privilege feedback loop: find what is over-permissive today and find what has not been used and can be removed safely.</div>
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
+  <!-- S14 -->
+  <h2 id="s14">Common Mistakes</h2>
+
+  <h3>Hardcoded credentials in application code</h3>
+  <div class="warn">Access keys committed to source control, baked into Docker images, or written into environment files are the most common cause of AWS credential exposure. Replace every static key with a role and remove the key immediately when found.</div>
+
+  <h3>Using AdministratorAccess on workload roles</h3>
+  <div class="warn"><code>AdministratorAccess</code> grants <code>Action: *</code> on <code>Resource: *</code>. It is appropriate only for break-glass or initial setup roles under strict controls. Using it on a Glue ETL role or an ECS task means a single exploit can do anything to your account.</div>
+
+  <h3>Confusing ECS task role with task execution role</h3>
+  <div class="warn">These are two separate IAM roles that serve different phases of the ECS lifecycle. Putting S3 and DynamoDB permissions on the execution role instead of the task role is a silent failure &mdash; the container starts fine, but application code gets AccessDenied at runtime.</div>
+
+  <h3>Forgetting the KMS key policy</h3>
+  <div class="warn">If a bucket uses SSE-KMS encryption, the calling role needs both S3 permissions <em>and</em> <code>kms:Decrypt</code> and <code>kms:GenerateDataKey</code> on the specific key. The KMS key policy must also allow the caller. Forgetting one of these layers is a very common cause of "S3 access denied" when IAM policies look correct.</div>
+
+  <h3>Over-relying on managed policies</h3>
+  <div class="warn">AWS managed policies like <code>AmazonS3FullAccess</code> grant permissions across all buckets and all actions. They are convenient during development but should be replaced with scoped customer-managed policies before production. Managed policies can also be updated by AWS, which may silently broaden permissions.</div>
+
+  <h3>Not versioning IAM policies as code</h3>
+  <div class="hi">Define all IAM roles and policies in Terraform or CloudFormation. This makes every permission change reviewable in a pull request, auditable in git history, and reproducible across environments. Ad-hoc console changes are invisible to code review and cannot be rolled back easily.</div>
+  <a href="#top" class="back-top">&uarr; Back to top</a>
+
+  <!-- Q&A -->
   <h2 id="qa">Interview Q&amp;A</h2>
+
   <div class="qa">
-    <div class="qa-q">What is the difference between an IAM role and an IAM user?</div>
-    <div class="qa-a">A user is typically long-lived identity; a role is temporary identity assumed through STS and preferred for workloads.</div>
+    <div class="qa-q">What is the difference between an IAM role and an IAM user, and when do you use each?</div>
+    <div class="qa-a">An IAM user is a long-lived identity with persistent credentials &mdash; a password and optionally static access keys. A role is a temporary assumable identity that issues short-lived STS credentials on each assumption, typically expiring in one hour. The key security difference is that leaked role credentials expire automatically, while leaked user access keys remain valid until someone manually rotates or deletes them. In practice, users should be limited to human console access with MFA enforced. Every non-human workload &mdash; EC2 instances, Lambda functions, ECS tasks, Glue jobs, GitHub Actions pipelines &mdash; should use a role. The only exception is legacy programmatic access that cannot be refactored, which should be treated as a known risk and tracked for eventual remediation.</div>
   </div>
+
   <div class="qa">
-    <div class="qa-q">If explicit Deny and explicit Allow both match, what happens?</div>
-    <div class="qa-a">Explicit deny wins immediately, regardless of where allow appears.</div>
+    <div class="qa-q">Both an explicit Allow and an explicit Deny match a request. What happens, and why does this matter?</div>
+    <div class="qa-a">The explicit Deny wins unconditionally, regardless of where the Allow comes from or how many Allows exist. IAM's evaluation engine checks for explicit denies first and stops immediately if one is found. This matters enormously in multi-layer policy stacks. An SCP can deny an action even if the account admin's identity policy allows it. A bucket policy can deny access even if the calling role's identity policy permits it. Understanding this order is what lets you write preventive controls &mdash; a Deny in an SCP is a true hard stop that no policy within the account can override, which is exactly how organizations enforce compliance guardrails.</div>
   </div>
+
   <div class="qa">
-    <div class="qa-q">A Glue job has S3 access denied. What do you check first?</div>
-    <div class="qa-a">Validate the runtime-assumed role, then evaluate identity policy, bucket policy, and KMS key policy together.</div>
+    <div class="qa-q">A Glue job is getting AccessDenied on S3. The Glue service role clearly has <code>s3:GetObject</code>. What do you check?</div>
+    <div class="qa-a">AccessDenied with a seemingly correct identity policy usually means another policy layer is blocking the request. Start by checking the S3 bucket policy &mdash; it may have a Deny statement for requests not coming through a VPC endpoint, or it may not explicitly allow the Glue role for cross-account access. Next check whether the bucket uses SSE-KMS encryption: the Glue role also needs <code>kms:Decrypt</code> and <code>kms:GenerateDataKey</code> on the key, and the KMS key policy must allow the Glue role as a caller. Then check whether an SCP in the organization denies the action in this account. Finally, use the IAM Policy Simulator to test the exact call path and look at the CloudTrail event for the denied request &mdash; the error message often identifies which policy layer caused the denial.</div>
   </div>
+
   <div class="qa">
-    <div class="qa-q">What is the difference between ECS task role and task execution role?</div>
-    <div class="qa-a">Task role is what application code can call; execution role is what ECS agent uses for image pull and logs.</div>
+    <div class="qa-q">What is the difference between the ECS task execution role and the ECS task role?</div>
+    <div class="qa-a">The task execution role is used by the ECS agent before your container ever starts. It handles pulling the container image from ECR, writing logs to CloudWatch, and retrieving secrets from Secrets Manager or SSM Parameter Store that are injected as environment variables at startup. The task role is used by your application code running inside the container at runtime when it calls other AWS services like S3, DynamoDB, or SQS. Confusing these two is one of the most common ECS permission mistakes. If you put your application's S3 and DynamoDB permissions on the execution role, the container will start successfully, but your application will get AccessDenied when it tries to make those API calls because application code draws credentials from the task role, not the execution role.</div>
   </div>
+
   <div class="qa">
-    <div class="qa-q">How do you securely grant GitHub Actions AWS deploy permissions?</div>
-    <div class="qa-a">Use OIDC federation with AssumeRole and tightly scoped trust and permission conditions.</div>
+    <div class="qa-q">How do you securely give GitHub Actions permission to deploy to AWS, without storing AWS keys in GitHub Secrets?</div>
+    <div class="qa-a">Use OIDC federation. GitHub Actions supports OpenID Connect, which allows a workflow to request a short-lived token from GitHub's OIDC provider and exchange it for temporary AWS credentials by assuming an IAM role. On the AWS side, you configure an IAM OIDC identity provider for <code>token.actions.githubusercontent.com</code> and create an IAM role whose trust policy allows <code>sts:AssumeRoleWithWebIdentity</code> from that provider. Critically, you add conditions to the trust policy scoping which repository, branch, and workflow can assume the role &mdash; for example, <code>StringLike: token.actions.githubusercontent.com:sub: repo:seanlgirgis/data-platform:ref:refs/heads/main</code>. This means there are no long-term keys to leak, the credentials expire after the workflow run, and only the specific branch you trust can deploy to production.</div>
   </div>
+
   <div class="qa">
-    <div class="qa-q">When would you use a permission boundary?</div>
-    <div class="qa-a">When delegating role creation to teams while preventing them from granting permissions outside allowed guardrails.</div>
+    <div class="qa-q">When would you use a permission boundary, and how is it different from an SCP?</div>
+    <div class="qa-a">Permission boundaries and SCPs both cap what permissions an identity can exercise, but they operate at different scopes. An SCP is an organization-level control that applies to every principal in an AWS account or OU &mdash; you use it to enforce org-wide policies like region restrictions, mandatory encryption, or preventing deletion of audit infrastructure. A permission boundary is attached to a specific IAM user or role and caps what that individual identity can do, regardless of what its identity policies say. The most important use case for permission boundaries is safe delegation: if you want to let a development team create IAM roles for their own services, you attach a permission boundary to every role they create, which prevents them from escalating privileges by creating a role with more permissions than they themselves have. Unlike an SCP, a permission boundary affects only the role it is attached to and has no effect on other identities in the account.</div>
   </div>
+
   <a href="#top" class="back-top">&uarr; Back to top</a>
 
+  <!-- Cheat Sheet -->
   <h2 id="cheat">Quick Reference</h2>
   <div class="cheat">
-    <div class="cheat-row"><div class="ct">User</div><div class="cd">Long-term identity for human console or legacy programmatic access.</div></div>
-    <div class="cheat-row"><div class="ct">Group</div><div class="cd">Collection of users for centralized policy assignment.</div></div>
-    <div class="cheat-row"><div class="ct">Role</div><div class="cd">Assumable identity with temporary STS credentials.</div></div>
-    <div class="cheat-row"><div class="ct">Policy</div><div class="cd">JSON permission logic with Effect, Action, Resource, and Condition.</div></div>
-    <div class="cheat-row"><div class="ct">Effect: Deny</div><div class="cd">Overrides any allow across all policy layers.</div></div>
-    <div class="cheat-row"><div class="ct">Instance Profile</div><div class="cd">Container that attaches an IAM role to an EC2 instance.</div></div>
-    <div class="cheat-row"><div class="ct">Task Role</div><div class="cd">IAM permissions used by ECS application code.</div></div>
-    <div class="cheat-row"><div class="ct">Task Exec Role</div><div class="cd">IAM permissions used by ECS agent for pull and log actions.</div></div>
-    <div class="cheat-row"><div class="ct">AssumeRole</div><div class="cd">STS operation that returns temporary credentials for a target role.</div></div>
-    <div class="cheat-row"><div class="ct">Trust Policy</div><div class="cd">Defines who can assume a role.</div></div>
-    <div class="cheat-row"><div class="ct">Permission Policy</div><div class="cd">Defines what actions the role can perform.</div></div>
-    <div class="cheat-row"><div class="ct">Permission Boundary</div><div class="cd">Caps maximum identity permissions; grants nothing by itself.</div></div>
-    <div class="cheat-row"><div class="ct">SCP</div><div class="cd">Organization-level guardrail limiting account and principal permissions.</div></div>
-    <div class="cheat-row"><div class="ct">Access Analyzer</div><div class="cd">Detects broad or external access exposure risks.</div></div>
-    <div class="cheat-row"><div class="ct">Access Advisor</div><div class="cd">Shows service last-access data to remove unused permissions.</div></div>
+    <div class="cheat-row"><div class="ct">IAM User</div><div class="cd">Long-lived identity with password or static access keys. Use only for human console access with MFA.</div></div>
+    <div class="cheat-row"><div class="ct">IAM Group</div><div class="cd">Collection of users for centralized policy assignment. Cannot be used as a principal in trust policies.</div></div>
+    <div class="cheat-row"><div class="ct">IAM Role</div><div class="cd">Temporary assumable identity. STS issues short-lived credentials. The default for all non-human workloads.</div></div>
+    <div class="cheat-row"><div class="ct">Trust Policy</div><div class="cd">Defines which principals can assume a role. A separate JSON document from the permission policy.</div></div>
+    <div class="cheat-row"><div class="ct">Permission Policy</div><div class="cd">JSON policy defining which actions the role can perform on which resources after assumption.</div></div>
+    <div class="cheat-row"><div class="ct">Effect: Deny</div><div class="cd">Overrides any Allow. Evaluated first in every policy layer. Cannot be overridden by another Allow.</div></div>
+    <div class="cheat-row"><div class="ct">Instance Profile</div><div class="cd">Container that attaches an IAM role to an EC2 instance. SDK fetches credentials from IMDS automatically.</div></div>
+    <div class="cheat-row"><div class="ct">Task Execution Role</div><div class="cd">ECS agent role for image pull, CloudWatch Logs write, and Secrets Manager fetch at task startup.</div></div>
+    <div class="cheat-row"><div class="ct">Task Role</div><div class="cd">IAM role used by application code running inside the ECS container at runtime.</div></div>
+    <div class="cheat-row"><div class="ct">AssumeRole</div><div class="cd">STS operation returning temporary access key, secret, and session token for a target role.</div></div>
+    <div class="cheat-row"><div class="ct">ExternalId</div><div class="cd">Shared secret added to AssumeRole calls to prevent confused deputy attacks from third-party services.</div></div>
+    <div class="cheat-row"><div class="ct">Permission Boundary</div><div class="cd">Caps maximum permissions for a specific user or role. Does not grant permissions on its own.</div></div>
+    <div class="cheat-row"><div class="ct">SCP</div><div class="cd">Organization-level guardrail. Restricts the maximum permissions in an entire AWS account or OU.</div></div>
+    <div class="cheat-row"><div class="ct">Session Policy</div><div class="cd">Policy passed inline during AssumeRole to scope permissions for that specific session only.</div></div>
+    <div class="cheat-row"><div class="ct">Resource Policy</div><div class="cd">Policy attached to a resource (S3 bucket, SQS queue, KMS key). Uses Principal field. Required for cross-account.</div></div>
+    <div class="cheat-row"><div class="ct">Access Analyzer</div><div class="cd">Scans for over-permissive access: public buckets, external trust, cross-account exposure.</div></div>
+    <div class="cheat-row"><div class="ct">Access Advisor</div><div class="cd">Shows last-accessed date per service on any role or user. Use to remove unused permissions.</div></div>
+    <div class="cheat-row"><div class="ct">OIDC Federation</div><div class="cd">Allows external identity providers (GitHub Actions, Kubernetes) to assume AWS roles without static keys.</div></div>
   </div>
 
 </div>
