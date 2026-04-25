@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastAPI - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/fastapi.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / FastAPI - Master Engineering Reference
+</div>
+
+<h1>FastAPI</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 32-40 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">FastAPI</span>
+  <span class="tag">ASGI</span>
+  <span class="tag">Pydantic</span>
+  <span class="tag">Data APIs</span>
+  <span class="tag">ML Serving</span>
+  <span class="tag">AWS ECS</span>
+  <span class="tag">Lambda</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_fastapi.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What FastAPI Is</a></li>
+    <li><a href="#s2">ASGI, Uvicorn, and Runtime Model</a></li>
+    <li><a href="#s3">Async vs Sync Endpoints</a></li>
+    <li><a href="#s4">Pydantic Request and Response Models</a></li>
+    <li><a href="#s5">Dependency Injection for Shared Resources</a></li>
+    <li><a href="#s6">Database Access and Connection Pooling</a></li>
+    <li><a href="#s7">FastAPI as a Data API Layer</a></li>
+    <li><a href="#s8">Background Tasks and Pipeline Triggers</a></li>
+    <li><a href="#s9">Middleware, CORS, and Cross-Cutting Concerns</a></li>
+    <li><a href="#s10">OAuth2, JWT, and API Security</a></li>
+    <li><a href="#s11">OpenAPI and Swagger for Data Contracts</a></li>
+    <li><a href="#s12">Deployment on ECS Fargate and Lambda</a></li>
+    <li><a href="#s13">Testing, Observability, and Performance</a></li>
+    <li><a href="#s14">When FastAPI Is the Right Choice</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What FastAPI Is</h2>
+<p>FastAPI is a modern Python web framework for building APIs on top of ASGI. For a Senior Data Engineer, the most important point is not that FastAPI is "fast" in a benchmark. The important point is that it gives you a clean way to expose data products: query APIs, metadata services, model prediction endpoints, pipeline trigger endpoints, and internal platform control planes.</p>
+<p>FastAPI sits in a useful middle ground. It is lighter than a full enterprise Java service stack, more structured than a simple Flask script, and much easier to document automatically than many older Python API patterns. That makes it a strong fit for data platform teams that need production APIs but still want Python-native development.</p>
+<div class="hi">FastAPI is best understood as a contract-first Python API layer: typed inputs, typed outputs, generated OpenAPI docs, and a deployment model that works well with containers and serverless.</div>
+<div class="warn">Do not confuse FastAPI with a data processing engine. It should orchestrate, validate, expose, and trigger work. Heavy ETL, Spark jobs, long model training, and warehouse-scale joins belong in the right backend system.</div>
+<table>
+  <tr>
+    <th>Use Case</th>
+    <th>FastAPI Role</th>
+    <th>Backend System</th>
+  </tr>
+  <tr>
+    <td>Serving ML predictions</td>
+    <td>Validate request, call model, return response</td>
+    <td>Loaded model, SageMaker, Bedrock, feature store</td>
+  </tr>
+  <tr>
+    <td>Data access API</td>
+    <td>Expose controlled query endpoints</td>
+    <td>PostgreSQL, Snowflake, Athena, OpenSearch</td>
+  </tr>
+  <tr>
+    <td>Pipeline trigger</td>
+    <td>Receive request and start workflow</td>
+    <td>Airflow, Step Functions, Glue, ECS task</td>
+  </tr>
+  <tr>
+    <td>Metadata service</td>
+    <td>Manage dataset, job, and lineage metadata</td>
+    <td>DynamoDB, PostgreSQL, OpenSearch</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">ASGI, Uvicorn, and Runtime Model</h2>
+<p>FastAPI runs on ASGI, which is the asynchronous server gateway interface used by modern Python web frameworks. In production, FastAPI is commonly served by Uvicorn directly or by Gunicorn managing multiple Uvicorn workers. This runtime model matters because it determines how your API handles concurrent requests, slow I/O, CPU-bound work, and graceful shutdown.</p>
+<p>In data engineering, many endpoints are I/O-heavy: reading from databases, calling AWS services, querying model endpoints, checking job status, or fetching metadata. ASGI helps because a worker can switch between waiting requests instead of blocking on one slow network call.</p>
+<div class="hi">ASGI helps most when your endpoint spends time waiting on I/O. It does not magically speed up CPU-heavy Python code or bad database queries.</div>
+<div class="warn">One Uvicorn worker is still one process. If a request burns CPU, blocks the event loop, or performs a huge in-memory Pandas operation, other requests can suffer.</div>
+<pre><code># Common local development
+uvicorn app.main:app --reload
+
+# Production-style multi-worker run
+gunicorn app.main:app \
+  -k uvicorn.workers.UvicornWorker \
+  --workers 4 \
+  --bind 0.0.0.0:8000
+</code></pre>
+<table>
+  <tr>
+    <th>Component</th>
+    <th>Purpose</th>
+    <th>Production Note</th>
+  </tr>
+  <tr>
+    <td>FastAPI</td>
+    <td>Application framework</td>
+    <td>Routes, dependencies, validation, docs</td>
+  </tr>
+  <tr>
+    <td>Starlette</td>
+    <td>ASGI foundation</td>
+    <td>Middleware, routing, requests, responses</td>
+  </tr>
+  <tr>
+    <td>Uvicorn</td>
+    <td>ASGI server</td>
+    <td>Good default server for containers</td>
+  </tr>
+  <tr>
+    <td>Gunicorn</td>
+    <td>Process manager</td>
+    <td>Useful for multiple workers on Linux</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Async vs Sync Endpoints</h2>
+<p>FastAPI supports both <code>async def</code> and regular <code>def</code> endpoints. The decision should be based on the libraries you call and the workload shape. Async endpoints are useful when the endpoint uses async-compatible I/O clients, such as async database drivers or async HTTP clients. Sync endpoints are fine when using blocking libraries, CPU-bound code, or libraries that do not support async.</p>
+<p>The expensive mistake is mixing them blindly. An <code>async def</code> endpoint that calls blocking database drivers or blocking HTTP clients can freeze the event loop. A sync endpoint that waits on many network calls may waste concurrency unless you scale workers or move to async clients.</p>
+<div class="hi">Use async when the full call chain is async. Use sync when the dependencies are blocking. The endpoint keyword alone does not make the workload scalable.</div>
+<div class="warn">Pandas, scikit-learn inference, boto3, many database drivers, and file reads can be blocking. Treat them carefully inside async routes.</div>
+<table>
+  <tr>
+    <th>Endpoint Type</th>
+    <th>Good For</th>
+    <th>Risk</th>
+  </tr>
+  <tr>
+    <td><code>async def</code></td>
+    <td>Async DB calls, async HTTP, many waiting requests</td>
+    <td>Blocking the event loop with sync libraries</td>
+  </tr>
+  <tr>
+    <td><code>def</code></td>
+    <td>Blocking SDKs, simple CRUD, CPU-light endpoints</td>
+    <td>Needing more workers or thread capacity</td>
+  </tr>
+  <tr>
+    <td>Background queue</td>
+    <td>Long jobs, ETL, model retraining</td>
+    <td>More infrastructure to operate</td>
+  </tr>
+</table>
+<pre><code>from fastapi import FastAPI
+import httpx
+
+app = FastAPI()
+
+@app.get("/status/{job_id}")
+async def get_status(job_id: str):
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        response = await client.get(f"https://workflow.internal/jobs/{job_id}")
+    return response.json()
+</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Pydantic Request and Response Models</h2>
+<p>Pydantic models are one of the biggest reasons FastAPI works well for data APIs. They define request and response contracts as Python types. FastAPI uses those models for validation, serialization, documentation, and OpenAPI schema generation.</p>
+<p>At scale, this matters because API contracts become data contracts. Bad input should fail before it reaches a warehouse query, feature lookup, or model endpoint. Response models also prevent accidental leakage of internal columns, debug fields, secrets, or large payloads.</p>
+<div class="hi">Pydantic turns API boundaries into typed contracts. That is valuable when multiple teams, jobs, notebooks, dashboards, and services depend on the same endpoint.</div>
+<div class="warn">Pydantic validation is not free. Very large payloads, deeply nested schemas, and huge response lists can add latency and memory pressure.</div>
+<pre><code>from pydantic import BaseModel, Field
+from typing import Literal
+
+class PredictionRequest(BaseModel):
+    customer_id: str = Field(min_length=1)
+    model_name: Literal["churn_v1", "churn_v2"]
+    features: dict[str, float]
+
+class PredictionResponse(BaseModel):
+    customer_id: str
+    model_name: str
+    score: float
+    decision: Literal["low", "medium", "high"]
+</code></pre>
+<table>
+  <tr>
+    <th>Model Type</th>
+    <th>Why It Matters</th>
+  </tr>
+  <tr>
+    <td>Request model</td>
+    <td>Rejects malformed input early</td>
+  </tr>
+  <tr>
+    <td>Response model</td>
+    <td>Controls output shape and hides internal fields</td>
+  </tr>
+  <tr>
+    <td>Enum or Literal</td>
+    <td>Prevents invalid modes or unsupported job names</td>
+  </tr>
+  <tr>
+    <td>Field constraints</td>
+    <td>Documents limits and enforces basic quality rules</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Dependency Injection for Shared Resources</h2>
+<p>FastAPI has a dependency injection pattern built around <code>Depends</code>. This is not just syntactic sugar. It is how you keep shared concerns out of route handlers: authentication, authorization, database sessions, configuration, tenant context, feature flags, request tracing, and reusable service classes.</p>
+<p>For data engineering APIs, dependency injection is especially useful because routes often need the same platform resources: a DB connection, an S3 client, a settings object, an auth principal, or a repository class. Keeping those behind dependencies makes testing and replacement easier.</p>
+<div class="hi">Dependencies are the seam between web code and platform code. That seam is where you keep routes thin and business logic testable.</div>
+<div class="warn">Do not create expensive resources per request unless that is intentional. Database engines, HTTP clients, and AWS clients should usually be reused or pooled.</div>
+<pre><code>from fastapi import Depends, FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Settings(BaseModel):
+    env: str = "prod"
+    max_rows: int = 1000
+
+def get_settings() -> Settings:
+    return Settings()
+
+@app.get("/datasets")
+def list_datasets(settings: Settings = Depends(get_settings)):
+    return {"env": settings.env, "max_rows": settings.max_rows}
+</code></pre>
+<h3>Common Dependency Layers</h3>
+<table>
+  <tr>
+    <th>Layer</th>
+    <th>Example</th>
+    <th>Reason</th>
+  </tr>
+  <tr>
+    <td>Config</td>
+    <td><code>get_settings()</code></td>
+    <td>Centralizes environment variables and limits</td>
+  </tr>
+  <tr>
+    <td>Auth</td>
+    <td><code>get_current_user()</code></td>
+    <td>Applies identity consistently</td>
+  </tr>
+  <tr>
+    <td>DB</td>
+    <td><code>get_session()</code></td>
+    <td>Controls transaction and connection lifecycle</td>
+  </tr>
+  <tr>
+    <td>Service</td>
+    <td><code>get_prediction_service()</code></td>
+    <td>Keeps routes thin and testable</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Database Access and Connection Pooling</h2>
+<p>Database-backed endpoints need careful connection management. In a small demo, opening a connection inside every request may work. In production, it can crush the database under burst traffic. FastAPI apps are often horizontally scaled, so total database connections equal workers times replicas times pool size. That number can get ugly fast.</p>
+<p>For PostgreSQL, a common pattern is SQLAlchemy with a configured pool, optionally behind PgBouncer. For async workloads, use async SQLAlchemy or asyncpg. For analytics warehouses like Snowflake or Athena, avoid treating the API like a free-form query console. Put guardrails around row limits, timeout limits, query shape, and user permissions.</p>
+<div class="hi">API concurrency and database concurrency are not the same thing. Your API may accept 500 requests, but your database may only tolerate 40 active queries.</div>
+<div class="warn">Connection leaks, unbounded result sets, and per-request engine creation are classic FastAPI production failures in data services.</div>
+<pre><code>from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine(
+    "postgresql+psycopg://app:secret@postgres:5432/appdb",
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,
+    pool_recycle=1800,
+)
+
+SessionLocal = sessionmaker(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+</code></pre>
+<table>
+  <tr>
+    <th>Concern</th>
+    <th>Practical Rule</th>
+  </tr>
+  <tr>
+    <td>Pool size</td>
+    <td>Size from database capacity, not API optimism</td>
+  </tr>
+  <tr>
+    <td>Timeouts</td>
+    <td>Set query and request timeouts explicitly</td>
+  </tr>
+  <tr>
+    <td>Result size</td>
+    <td>Always paginate or limit rows</td>
+  </tr>
+  <tr>
+    <td>Transactions</td>
+    <td>Keep short; avoid holding locks during remote calls</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">FastAPI as a Data API Layer</h2>
+<p>FastAPI works well as a data API layer when the API exposes curated operations, not raw database access. Good endpoints answer specific business or platform questions: "return this entity summary", "score this event", "start this pipeline", "show latest job status", or "return the approved aggregate for this dashboard."</p>
+<p>Data APIs should protect backend systems from unbounded queries. That means pagination, filters with indexes behind them, schema validation, caching where appropriate, and clear ownership of query logic. If an endpoint exposes arbitrary SQL, the API becomes a liability.</p>
+<div class="hi">A strong data API hides backend complexity while preserving contract clarity. Clients should not need to know whether data came from Postgres, Snowflake, Athena, OpenSearch, or a model endpoint.</div>
+<div class="warn">Do not let dashboards or notebooks turn a FastAPI service into an accidental warehouse proxy. Put limits on query cost, shape, and frequency.</div>
+<pre><code>from fastapi import Query
+
+@app.get("/metrics/endpoints/{endpoint_id}")
+def get_endpoint_metrics(
+    endpoint_id: str,
+    metric: str = Query(pattern="^(cpu|memory|latency)$"),
+    limit: int = Query(default=100, le=1000),
+):
+    return {
+        "endpoint_id": endpoint_id,
+        "metric": metric,
+        "limit": limit,
+        "rows": []
+    }
+</code></pre>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>Good API Shape</th>
+    <th>Bad API Shape</th>
+  </tr>
+  <tr>
+    <td>Metrics</td>
+    <td>Filtered endpoint with limits</td>
+    <td>Arbitrary SQL string from client</td>
+  </tr>
+  <tr>
+    <td>ML serving</td>
+    <td>Typed feature request</td>
+    <td>Unvalidated JSON blob</td>
+  </tr>
+  <tr>
+    <td>Pipeline ops</td>
+    <td>Trigger by approved job name</td>
+    <td>Shell command submitted by user</td>
+  </tr>
+  <tr>
+    <td>Search</td>
+    <td>Allowed filters and safe query DSL</td>
+    <td>Direct backend query passthrough</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Background Tasks and Pipeline Triggers</h2>
+<p>FastAPI includes <code>BackgroundTasks</code> for simple fire-and-forget work after returning a response. This is useful for lightweight side effects: sending notifications, writing audit rows, emitting metrics, or triggering a small webhook. It is not a replacement for a durable queue or workflow orchestrator.</p>
+<p>For real data pipelines, the API should usually enqueue work or call an orchestrator. Common AWS patterns include starting a Step Functions execution, submitting an ECS task, invoking a Lambda, publishing to EventBridge, or triggering an Airflow DAG through a controlled endpoint.</p>
+<div class="hi">Use FastAPI to accept and validate the request. Use a durable backend to run long work. That separation keeps the API responsive and recoverable.</div>
+<div class="warn">In-process background tasks can be lost if the container crashes, the process is killed, or the deployment rolls during execution.</div>
+<pre><code>from fastapi import BackgroundTasks, FastAPI
+
+app = FastAPI()
+
+def write_audit_event(job_id: str, user: str):
+    # Keep this short and non-critical
+    print({"job_id": job_id, "user": user})
+
+@app.post("/pipelines/{job_id}/trigger")
+def trigger_pipeline(job_id: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(write_audit_event, job_id, "sean")
+    return {"job_id": job_id, "status": "accepted"}
+</code></pre>
+<table>
+  <tr>
+    <th>Work Type</th>
+    <th>Use BackgroundTasks?</th>
+    <th>Better Production Choice</th>
+  </tr>
+  <tr>
+    <td>Audit log write</td>
+    <td>Sometimes</td>
+    <td>Direct write or queue</td>
+  </tr>
+  <tr>
+    <td>Email notification</td>
+    <td>Sometimes</td>
+    <td>SQS or EventBridge</td>
+  </tr>
+  <tr>
+    <td>Glue job trigger</td>
+    <td>No need</td>
+    <td>Call Glue API and return run id</td>
+  </tr>
+  <tr>
+    <td>Long ETL</td>
+    <td>No</td>
+    <td>Airflow, Step Functions, ECS, Glue</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Middleware, CORS, and Cross-Cutting Concerns</h2>
+<p>Middleware runs around requests and responses. It is a good place for cross-cutting concerns such as request IDs, timing, logging, security headers, metrics, and CORS. It is a bad place for business logic or database-heavy work.</p>
+<p>CORS matters when browser clients call your API from another origin. Internal service-to-service calls do not need CORS. A common production mistake is allowing all origins, all methods, and credentials together, which opens more surface area than intended.</p>
+<div class="hi">Middleware is for policy and observability around requests. Keep it small, fast, and predictable.</div>
+<div class="warn">Overly broad CORS settings are convenient in development and risky in production. Lock origins to known UI domains.</div>
+<pre><code>from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+import time
+import uuid
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://seanlgirgis.github.io"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
+
+@app.middleware("http")
+async def add_request_context(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+    start = time.perf_counter()
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Elapsed-ms"] = str(round((time.perf_counter() - start) * 1000, 2))
+    return response
+</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">OAuth2, JWT, and API Security</h2>
+<p>FastAPI includes security utilities for OAuth2-style bearer tokens, but the framework does not magically secure the system. In production, identity often comes from an external provider: Cognito, Okta, Azure AD, Auth0, or an internal identity service. The API validates the token, extracts claims, and applies authorization rules.</p>
+<p>JWTs are useful because they carry signed claims such as subject, issuer, audience, scopes, roles, and expiration. The API must validate signature, expiration, issuer, audience, and required scopes. Do not simply decode the token and trust the JSON.</p>
+<div class="hi">Authentication answers "who are you?" Authorization answers "what are you allowed to do?" FastAPI helps wire both, but the policy still has to be designed.</div>
+<div class="warn">A common JWT bug is accepting tokens without validating issuer, audience, expiration, or signature keys. That is not authentication; that is reading JSON from strangers.</div>
+<pre><code>from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def get_current_principal(token: str = Depends(oauth2_scheme)):
+    # In production: validate signature, issuer, audience, expiry, and scopes.
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing bearer token",
+        )
+    return {"subject": "user-123", "scopes": ["metrics:read"]}
+</code></pre>
+<table>
+  <tr>
+    <th>Security Layer</th>
+    <th>Production Decision</th>
+  </tr>
+  <tr>
+    <td>Identity provider</td>
+    <td>Cognito, Okta, Azure AD, Auth0, internal SSO</td>
+  </tr>
+  <tr>
+    <td>Token validation</td>
+    <td>Verify signature and claims</td>
+  </tr>
+  <tr>
+    <td>Authorization</td>
+    <td>Scopes, roles, row-level or tenant-level checks</td>
+  </tr>
+  <tr>
+    <td>Transport</td>
+    <td>TLS at load balancer, API Gateway, or ingress</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">OpenAPI and Swagger for Data Contracts</h2>
+<p>FastAPI automatically generates OpenAPI schemas and interactive Swagger documentation from routes and Pydantic models. For data teams, this is not just developer candy. It is a living contract between API producers and consumers.</p>
+<p>OpenAPI helps front-end teams, analytics teams, notebook users, platform engineers, and downstream services understand how to call the API. It can also feed client generation, contract testing, governance, and documentation portals.</p>
+<div class="hi">OpenAPI turns route definitions into shareable API contracts. That is especially useful when data products need stable interfaces across teams.</div>
+<div class="warn">Generated docs are only as good as your models, response codes, descriptions, and examples. Weak schemas produce weak contracts.</div>
+<pre><code>from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI(
+    title="Telemetry Data API",
+    version="1.0.0",
+    description="Curated endpoints for metrics, alerts, and pipeline status."
+)
+
+class HealthResponse(BaseModel):
+    status: str
+    version: str
+
+@app.get("/health", response_model=HealthResponse, tags=["platform"])
+def health():
+    return {"status": "ok", "version": "1.0.0"}
+</code></pre>
+<table>
+  <tr>
+    <th>Generated Endpoint</th>
+    <th>Purpose</th>
+  </tr>
+  <tr>
+    <td><code>/docs</code></td>
+    <td>Swagger UI for interactive exploration</td>
+  </tr>
+  <tr>
+    <td><code>/redoc</code></td>
+    <td>Alternative documentation UI</td>
+  </tr>
+  <tr>
+    <td><code>/openapi.json</code></td>
+    <td>Machine-readable API contract</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">Deployment on ECS Fargate and Lambda</h2>
+<p>FastAPI deploys cleanly to containers, which makes ECS Fargate a strong default for long-running production APIs. With ECS, you get stable network behavior, warm processes, connection pools, predictable scaling, and easier integration with VPC resources like RDS, ElastiCache, OpenSearch, and private subnets.</p>
+<p>FastAPI can also run on AWS Lambda using an adapter such as Mangum. Lambda is attractive for low-traffic APIs, internal tools, and bursty workloads. But cold starts, connection reuse, payload limits, and API Gateway behavior must be considered carefully.</p>
+<div class="hi">Choose ECS Fargate for steady APIs with database pools and low-latency expectations. Choose Lambda for bursty, low-maintenance APIs where cold start and adapter behavior are acceptable.</div>
+<div class="warn">Lambda plus relational databases can create connection storms. Use RDS Proxy, short queries, and conservative concurrency limits if you go serverless.</div>
+<pre><code># Minimal Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app ./app
+CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8000"]
+</code></pre>
+<pre><code># Lambda handler with Mangum
+from fastapi import FastAPI
+from mangum import Mangum
+
+app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+handler = Mangum(app)
+</code></pre>
+<table>
+  <tr>
+    <th>Deployment</th>
+    <th>Best For</th>
+    <th>Tradeoff</th>
+  </tr>
+  <tr>
+    <td>ECS Fargate</td>
+    <td>Steady APIs, DB pools, VPC-heavy workloads</td>
+    <td>More infrastructure than Lambda</td>
+  </tr>
+  <tr>
+    <td>Lambda + Mangum</td>
+    <td>Low traffic, event-driven APIs, internal tools</td>
+    <td>Cold starts and connection constraints</td>
+  </tr>
+  <tr>
+    <td>EKS</td>
+    <td>Large platform teams already on Kubernetes</td>
+    <td>Operational overhead</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s13">Testing, Observability, and Performance</h2>
+<p>FastAPI includes a simple testing story through <code>TestClient</code>. For serious systems, tests should cover route behavior, dependency overrides, auth behavior, validation errors, database transaction boundaries, and failure paths. A data API that only tests the happy path is usually hiding expensive production surprises.</p>
+<p>Observability should include structured logs, request IDs, latency metrics, error rates, dependency timing, and backend query timing. Performance tuning should focus first on the slowest dependency: database query, warehouse scan, model call, network call, or serialization. Worker counts are important, but they do not fix a bad query plan.</p>
+<div class="hi">Measure endpoint latency by segment: validation, auth, dependency setup, DB/query call, model call, serialization. The slow part is often not FastAPI itself.</div>
+<div class="warn">Increasing Uvicorn workers can hide symptoms while multiplying database pressure. Tune the whole system, not only the web server.</div>
+<pre><code>from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+</code></pre>
+<table>
+  <tr>
+    <th>Performance Lever</th>
+    <th>Use Carefully Because</th>
+  </tr>
+  <tr>
+    <td>More workers</td>
+    <td>More concurrent DB pressure</td>
+  </tr>
+  <tr>
+    <td>Async I/O</td>
+    <td>Only helps if dependencies are async</td>
+  </tr>
+  <tr>
+    <td>Caching</td>
+    <td>Requires invalidation and freshness rules</td>
+  </tr>
+  <tr>
+    <td>Pagination</td>
+    <td>Prevents huge memory and network responses</td>
+  </tr>
+  <tr>
+    <td>Response models</td>
+    <td>Great contracts, but validation has cost</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s14">When FastAPI Is the Right Choice</h2>
+<p>FastAPI is a strong choice when you need a Python-native API with clear contracts, automatic documentation, strong validation, and good performance for I/O-heavy workloads. It is especially useful when your team already writes Python for data engineering, ML, analytics, orchestration, and platform tooling.</p>
+<p>It is less ideal when the API is only a thin static site backend, when the organization already standardizes on another runtime, when ultra-low-latency systems require a different language, or when the workload is mostly long-running compute. In those cases, FastAPI may still be useful as a control plane, but not as the compute engine.</p>
+<div class="hi">FastAPI shines as the front door to data services: validation, auth, docs, orchestration, and controlled access to backend systems.</div>
+<div class="warn">The biggest design mistake is turning FastAPI into the place where all data work happens. Keep heavy computation and large-scale processing behind proper execution systems.</div>
+<table>
+  <tr>
+    <th>Choose FastAPI When</th>
+    <th>Consider Another Option When</th>
+  </tr>
+  <tr>
+    <td>You need typed Python APIs quickly</td>
+    <td>You only need a static site or simple form</td>
+  </tr>
+  <tr>
+    <td>You serve ML predictions or metadata</td>
+    <td>You need extreme low-latency systems in another runtime</td>
+  </tr>
+  <tr>
+    <td>You expose curated data platform operations</td>
+    <td>You need ad hoc analytics query serving at warehouse scale</td>
+  </tr>
+  <tr>
+    <td>You want automatic OpenAPI contracts</td>
+    <td>Your platform mandates another API framework</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you use async endpoints in FastAPI for a data platform?</div>
+  <div class="qa-a">A: I would use async endpoints when the call chain is I/O-bound and async-compatible, such as async database drivers or async HTTP calls to model services. I would avoid async if the endpoint calls blocking libraries like Pandas-heavy code, boto3, or sync database drivers unless those calls are isolated properly.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do Pydantic models help in production data APIs?</div>
+  <div class="qa-a">A: They make request and response contracts explicit. That protects backend systems from malformed input, documents the API through OpenAPI, and prevents accidental leakage of internal fields. For data teams, that turns an API boundary into a data contract.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What is the risk of exposing warehouse queries through FastAPI?</div>
+  <div class="qa-a">A: If the API allows arbitrary SQL or unbounded filters, users can trigger expensive scans, leak data, or overwhelm the warehouse. A better design exposes curated endpoints with validation, limits, pagination, authorization, and query patterns that match indexes or partitioning.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you manage database connections in a FastAPI service?</div>
+  <div class="qa-a">A: I would create shared engines or pools at application startup, use request-scoped sessions, close sessions reliably, and size pools based on database capacity. For Postgres at scale, I would consider PgBouncer or RDS Proxy depending on deployment style.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: ECS Fargate or Lambda for FastAPI?</div>
+  <div class="qa-a">A: ECS Fargate is usually better for steady APIs, low latency, VPC access, and database connection pooling. Lambda with Mangum can work well for low-traffic or bursty APIs, but cold starts and relational database connection storms need careful handling.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you secure a FastAPI endpoint used by internal data tools?</div>
+  <div class="qa-a">A: I would validate OAuth2 or JWT tokens from a trusted identity provider, verify issuer, audience, expiration, and signature, then enforce scopes or roles at the endpoint or dependency layer. For data APIs, I would also apply tenant, row-level, or dataset-level authorization where needed.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">FastAPI</div>
+    <div class="cd">Python ASGI framework for building typed, documented APIs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ASGI</div>
+    <div class="cd">Async server interface used by FastAPI for concurrent request handling.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Uvicorn</div>
+    <div class="cd">Common ASGI server used to run FastAPI applications.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Gunicorn</div>
+    <div class="cd">Process manager often used with Uvicorn workers in Linux containers.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">async def</div>
+    <div class="cd">Best for async-compatible I/O workloads such as async DB or HTTP clients.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">def</div>
+    <div class="cd">Good for blocking libraries and simple sync endpoints.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Pydantic</div>
+    <div class="cd">Validation and serialization layer for request and response models.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Depends</div>
+    <div class="cd">FastAPI dependency injection mechanism for auth, DB, config, and services.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TestClient</div>
+    <div class="cd">Testing client used with pytest to exercise routes without running a server.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">BackgroundTasks</div>
+    <div class="cd">Simple post-response task mechanism; not a durable job queue.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">CORS</div>
+    <div class="cd">Browser security policy controlling which origins can call the API.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">OAuth2</div>
+    <div class="cd">Authorization framework commonly used with bearer tokens.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">JWT</div>
+    <div class="cd">Signed token format carrying claims such as subject, scope, issuer, and expiry.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">OpenAPI</div>
+    <div class="cd">Machine-readable API contract generated from FastAPI routes and models.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">/docs</div>
+    <div class="cd">Swagger UI generated automatically by FastAPI.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Mangum</div>
+    <div class="cd">Adapter that lets ASGI apps such as FastAPI run on AWS Lambda.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ECS Fargate</div>
+    <div class="cd">Container deployment option well-suited for steady FastAPI services.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Pool size</div>
+    <div class="cd">Database connection pool setting that must be sized against backend capacity.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
