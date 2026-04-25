@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AWS Lambda — Master Engineering Reference | Sean Girgis</title>
+<title>AWS Lambda - Master Engineering Reference | Sean Girgis</title>
 <link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-lambda.html">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -62,843 +62,445 @@ tr:nth-child(even) td { background:#f8fafc; }
 <body id="top">
 <div class="doc">
 
-  <div class="topnav">
-    <a href="https://seanlgirgis.github.io/#learning">&larr; Learning Hub</a> / AWS Lambda - Master Engineering Reference
-  </div>
-
-  <h1>AWS Lambda</h1>
-  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-24 &middot; 25-35 min read</p>
-
-  <div class="tag-row">
-    <span class="tag">AWS</span>
-    <span class="tag">Lambda</span>
-    <span class="tag">Serverless</span>
-    <span class="tag">Event-Driven</span>
-    <span class="tag">Python</span>
-    <span class="tag">IAM</span>
-    <span class="tag">Cold Start</span>
-    </div>
-
-  <div class="audio-box">
-    <div class="audio-label">&#127911; Audio Overview</div>
-    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-lambda.mp3" type="audio/mpeg">
-    </audio>
-    <div class="video-hint" style="margin-top:8px;">Media bucket: https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/</div>
-    <div class="video-hint" style="margin-top:10px;">&#127916; Video Overview (NotebookLM)</div>
-    <video controls preload="metadata" style="width:100%;max-width:100%;border-radius:4px;margin-top:8px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/AWS_Lambda__Deep_Dive_small.mp4" type="video/mp4">
-    </video>
-  </div>
-
-  <div class="toc">
-    <h2>Contents</h2>
-    <ol>
-      <li><a href="#s1">What Lambda Actually Is</a></li>
-      <li><a href="#s2">Execution Model &amp; Lifecycle</a></li>
-      <li><a href="#s3">Cold Starts — Causes &amp; Mitigations</a></li>
-      <li><a href="#s4">Event Sources &amp; Triggers</a></li>
-      <li><a href="#s5">Invocation Types — Sync vs Async</a></li>
-      <li><a href="#s6">Concurrency — Reserved, Provisioned, Burst</a></li>
-      <li><a href="#s7">Handler Patterns &amp; Best Practices</a></li>
-      <li><a href="#s8">Layers, Packages &amp; Container Images</a></li>
-      <li><a href="#s9">Lambda + S3 Event Pipelines</a></li>
-      <li><a href="#s10">Lambda + SQS / SNS / EventBridge</a></li>
-      <li><a href="#s11">VPC, Networking &amp; RDS Access</a></li>
-      <li><a href="#s12">Observability — Logs, Metrics, Traces</a></li>
-      <li><a href="#s13">Security &amp; IAM</a></li>
-      <li><a href="#s14">Common Gotchas and Anti-Patterns</a></li>
-      <li><a href="#s15">10 Key Engineering Questions</a></li>
-      <li><a href="#s16">Production Story Angles</a></li>
-      <li><a href="#s17">Quick Reference Cheat Sheet</a></li>
-    </ol>
-  </div>
-
-  <!-- SECTION 1 -->
-  <h2 id="s1">1. What Lambda Actually Is</h2>
-
-  <p>AWS Lambda is a serverless compute service that runs your code in response to events without requiring you to provision or manage servers. You upload a function — a single handler in Python, Node.js, Java, Go, Ruby, or a custom runtime — and AWS handles everything else: execution environment provisioning, scaling, patching, and billing. You pay only for the compute time consumed, measured in 1ms increments.</p>
-
-  <p>Lambda's value is not raw compute performance — it's operational simplicity combined with infinite auto-scaling. A Lambda function that handles 1 invocation per day and one that handles 100,000 concurrent invocations require the same operational effort to deploy and maintain. For data engineers, Lambda fills a specific niche: short-lived, event-driven operations that sit between storage events and processing pipelines. Triggering a Glue job when a file lands in S3, registering new Athena partitions after an ETL run completes, sending a Slack notification on pipeline failure, or validating an incoming schema before it reaches a database — these are Lambda's natural domain.</p>
-
-  <p>Positioning Lambda against alternatives: compared to ECS/Fargate tasks, Lambda has a 15-minute execution limit and 10 GB ephemeral storage ceiling but zero cluster management overhead. For tasks that complete in under 15 minutes and don't need persistent state, Lambda wins on simplicity. Compared to Glue Python Shell jobs, Lambda has lower startup latency but no native Spark or DynamicFrame support. Compared to Step Functions tasks, Lambda is the execution unit — Step Functions orchestrates Lambda invocations rather than replacing them. In event-driven data pipelines, Lambda and Step Functions are complementary, not competing.</p>
-
-  <div class="hi">Lambda is not a general-purpose compute platform. It excels at: short, stateless, event-triggered operations. When a task needs more than 15 minutes, persistent network connections, large local disk, or GPU compute — choose ECS, Fargate, EMR, or Glue instead.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 2 -->
-  <h2 id="s2">2. Execution Model &amp; Lifecycle</h2>
-
-  <p>Understanding Lambda's execution model is essential for writing correct, performant functions and avoiding subtle bugs around state, connections, and initialization.</p>
-
-  <h3>Execution Environment</h3>
-  <p>When Lambda receives an invocation, it provisions an <strong>execution environment</strong> — an isolated micro-VM (using AWS Firecracker) with your function code, runtime, and configured memory. The environment has a fixed amount of memory (128 MB to 10 GB, configurable), a proportional CPU allocation (CPU scales linearly with memory — 1,769 MB gets you one full vCPU), and up to 10 GB of ephemeral local storage at <code>/tmp</code>.</p>
-
-  <h3>Init, Invoke, Shutdown Phases</h3>
-  <p>The execution environment lifecycle has three phases:</p>
-  <ul>
-    <li><strong>Init phase:</strong> Lambda downloads your code, starts the runtime, and runs code outside the handler function — module-level imports, SDK client initialization, database connection setup. This runs once per environment creation, not once per invocation.</li>
-    <li><strong>Invoke phase:</strong> Lambda calls your handler function with the event and context objects. This is the billable compute time.</li>
-    <li><strong>Shutdown phase:</strong> After a period of inactivity, Lambda freezes and eventually terminates the execution environment. Any state stored in memory is lost.</li>
-  </ul>
-
-<pre>
-import boto3
-import json
-
-# INIT phase — runs once when the environment is created
-# Expensive initialization here: SDK clients, DB connections, loaded config
-s3_client = boto3.client('s3')
-BUCKET_NAME = 'my-processed-bucket'
-
-def lambda_handler(event, context):
-    # INVOKE phase — runs on every invocation
-    # s3_client is already initialized — no re-initialization cost
-    records = event.get('Records', [])
-
-    for record in records:
-        key = record['s3']['object']['key']
-        process_object(key)
-
-    return {'statusCode': 200, 'body': json.dumps('OK')}
-
-def process_object(key):
-    obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
-    # ... process ...
-</pre>
-
-  <h3>Environment Reuse</h3>
-  <p>After a successful invocation, Lambda keeps the execution environment warm for a period (typically minutes to tens of minutes — exact duration is not guaranteed or published). Subsequent invocations reuse the same environment: module-level code is not re-executed, the <code>/tmp</code> directory retains files from previous invocations, and SDK clients remain initialized. This reuse is a performance optimization (eliminates init cost) but is also a source of subtle bugs when functions assume a clean state on every invocation.</p>
-
-  <div class="warn"><strong>Never assume a clean environment between invocations:</strong> Global variables mutated in one invocation persist into the next on the same environment. Temporary files written to <code>/tmp</code> survive across invocations. If your function writes to <code>/tmp</code> and assumes the directory is empty at startup, a warm invocation will see files from the previous run. Always check for and clean up state that must not persist.</div>
-
-<pre>
-import os, glob
-
-def lambda_handler(event, context):
-    # Clean up /tmp from potential previous warm invocations
-    for f in glob.glob('/tmp/*.csv'):
-        os.remove(f)
-
-    # Now safe to write fresh files
-    output_path = '/tmp/output.csv'
-    # ...
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 3 -->
-  <h2 id="s3">3. Cold Starts — Causes &amp; Mitigations</h2>
-
-  <p>A <strong>cold start</strong> occurs when Lambda must create a new execution environment before invoking your function. The cold start duration is the time to: provision the micro-VM, download and unpack the deployment package (or pull the container image), initialize the runtime, and run your init-phase code. Cold start latency ranges from ~100ms for lightweight Python functions with minimal dependencies, to several seconds for Java functions with large JARs or container images with heavy dependencies.</p>
-
-  <h3>What Causes Cold Starts</h3>
-  <ul>
-    <li><strong>First invocation ever</strong> — no environment exists yet</li>
-    <li><strong>Scaling out</strong> — concurrent invocations exceed the number of warm environments; new environments are created for the excess</li>
-    <li><strong>Code or configuration deployment</strong> — new deployments invalidate all existing environments</li>
-    <li><strong>Inactivity</strong> — environments not invoked for ~15–20 minutes (varies) are frozen and eventually terminated</li>
-    <li><strong>VPC attachment changes</strong> — historically a major cold start source; significantly improved since 2019 with the Hyperplane ENI model, but VPC functions still have slightly higher cold starts</li>
-  </ul>
-
-  <h3>Mitigation Strategies</h3>
-
-  <p><strong>1. Minimize deployment package size.</strong> Lambda downloads your package before initialization. A 10 MB zip cold-starts faster than a 250 MB zip. Remove unused dependencies, use Lambda Layers to cache shared libraries, and avoid bundling test frameworks into production packages.</p>
-
-  <p><strong>2. Move expensive init out of the handler.</strong> SDK client initialization, loading config from SSM Parameter Store, and establishing DB connections should all happen at module level (init phase), not inside the handler. Each cold start pays the init cost once; each warm invocation reuses the result.</p>
-
-  <p><strong>3. Provisioned Concurrency.</strong> Pre-warms a configurable number of execution environments and keeps them perpetually initialized. Invocations hitting provisioned environments never experience cold starts. Billed continuously (not per-invocation), so only cost-effective for latency-sensitive functions with predictable concurrency patterns.</p>
-
-<pre>
-# Enable Provisioned Concurrency on a function version/alias via boto3
-lambda_client = boto3.client('lambda')
-
-lambda_client.put_provisioned_concurrency_config(
-    FunctionName='my-api-function',
-    Qualifier='prod',           # alias or version
-    ProvisionedConcurrentExecutions=10
-)
-</pre>
-
-  <p><strong>4. Use Python or Node.js for latency-sensitive functions.</strong> Java and .NET have JVM/CLR startup overhead that adds hundreds of milliseconds to cold start time regardless of function logic. Python and Node.js cold starts are typically under 300ms for reasonably-sized packages. For Java/JVM workloads where Lambda is still needed, GraalVM native image (via custom runtime) can eliminate JVM startup overhead.</p>
-
-  <div class="hi">For data pipeline event triggers (start a Glue job, register a partition, send a notification), cold start latency usually doesn't matter — a 1-second cold start on a function that then triggers a 10-minute Glue job is irrelevant. Provisioned Concurrency makes sense for customer-facing synchronous APIs, not internal pipeline orchestration.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 4 -->
-  <h2 id="s4">4. Event Sources &amp; Triggers</h2>
-
-  <p>Lambda integrates natively with a large set of AWS services as event sources. The integration model varies by source — some use polling (Lambda polls the source), others use push (the source invokes Lambda directly), and others use streaming (Lambda processes records from a shard or partition continuously).</p>
-
-  <table>
-    <tr><th>Event Source</th><th>Model</th><th>Key Behavior</th></tr>
-    <tr><td>S3</td><td>Push</td><td>Object events (PUT, DELETE) invoke Lambda per-object; configure on bucket notifications</td></tr>
-    <tr><td>API Gateway / ALB</td><td>Push (sync)</td><td>HTTP request → Lambda → HTTP response; synchronous, client waits</td></tr>
-    <tr><td>SQS</td><td>Poll (Lambda)</td><td>Lambda polls queue, batches records, invokes function; Lambda manages the poll loop</td></tr>
-    <tr><td>SNS</td><td>Push (async)</td><td>SNS pushes notifications to Lambda; asynchronous invocation</td></tr>
-    <tr><td>EventBridge</td><td>Push (async)</td><td>Rules route events to Lambda; supports schedule (cron) and event pattern matching</td></tr>
-    <tr><td>Kinesis Data Streams</td><td>Poll (stream)</td><td>Lambda polls shards; processes records in order per shard</td></tr>
-    <tr><td>DynamoDB Streams</td><td>Poll (stream)</td><td>Table change events (INSERT/MODIFY/REMOVE) streamed to Lambda</td></tr>
-    <tr><td>Step Functions</td><td>Push (sync/async)</td><td>State machine task invokes Lambda; result returned to state machine</td></tr>
-  </table>
-
-<pre>
-# S3 event structure (PUT notification)
-{
-  "Records": [
-    {
-      "eventSource": "aws:s3",
-      "eventName": "ObjectCreated:Put",
-      "s3": {
-        "bucket": { "name": "my-raw-bucket" },
-        "object": {
-          "key": "raw/events/year=2026/month=04/day=13/events_001.json.gz",
-          "size": 1048576,
-          "eTag": "abc123"
-        }
-      }
-    }
-  ]
-}
-</pre>
-
-<pre>
-# SQS event structure (batch of messages)
-{
-  "Records": [
-    {
-      "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
-      "receiptHandle": "AQEBwJnKyrHigUMZj6reyNurzo...",
-      "body": "{\"event_type\": \"order_placed\", \"order_id\": 12345}",
-      "attributes": {
-        "ApproximateReceiveCount": "1",
-        "SentTimestamp": "1545082649183"
-      },
-      "messageAttributes": {},
-      "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b0",
-      "eventSource": "aws:sqs",
-      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789:MyQueue"
-    }
-  ]
-}
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 5 -->
-  <h2 id="s5">5. Invocation Types — Sync vs Async</h2>
-
-  <p>Lambda functions can be invoked in two fundamental modes: synchronous and asynchronous. The invocation type determines error handling behavior, retry logic, and how the caller interacts with the result.</p>
-
-  <h3>Synchronous Invocation</h3>
-  <p>The caller waits for the function to complete and receives the response directly. API Gateway, ALB, and direct SDK invocations with <code>InvocationType='RequestResponse'</code> are synchronous. Error handling is the caller's responsibility — if the function returns an error, the caller must decide whether to retry.</p>
-
-<pre>
-import boto3, json
-
-lambda_client = boto3.client('lambda')
-
-# Synchronous invocation — waits for result
-response = lambda_client.invoke(
-    FunctionName='my-validator-function',
-    InvocationType='RequestResponse',
-    Payload=json.dumps({'key': 'value'})
-)
-
-result = json.loads(response['Payload'].read())
-print(result)
-</pre>
-
-  <h3>Asynchronous Invocation</h3>
-  <p>The caller hands the event to Lambda's internal event queue and returns immediately (HTTP 202). Lambda processes the event from the queue, independent of the caller. If the function fails, Lambda automatically retries up to 2 times (3 total attempts) with delays between retries. After exhausting retries, the event is sent to a Dead Letter Queue (DLQ) or an EventBridge failure destination if configured. S3, SNS, and EventBridge all use asynchronous invocation.</p>
-
-<pre>
-# Asynchronous invocation — returns immediately
-response = lambda_client.invoke(
-    FunctionName='my-pipeline-trigger',
-    InvocationType='Event',             # async
-    Payload=json.dumps({'date': '2026-04-13'})
-)
-# response['StatusCode'] == 202 means Lambda accepted the event
-# Function executes independently; no result returned to caller
-</pre>
-
-  <div class="hi">For async invocations, always configure a DLQ (SQS queue) or an on-failure EventBridge destination. Without a DLQ, events that fail all retry attempts are silently dropped — there is no record of the failure beyond CloudWatch logs. A DLQ gives you a durable record of failed events and the ability to replay them.</div>
-
-  <h3>Event Source Mapping (Streaming)</h3>
-  <p>For SQS, Kinesis, and DynamoDB Streams, Lambda manages an internal poller (the Event Source Mapping). Lambda reads batches from the source and invokes your function with a batch of records. For streaming sources (Kinesis, DynamoDB Streams), a function failure blocks further processing of that shard until the batch succeeds or expires — records are processed in order. For SQS, failed batches return to the queue and are retried according to the queue's visibility timeout and redrive policy.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 6 -->
-  <h2 id="s6">6. Concurrency — Reserved, Provisioned, Burst</h2>
-
-  <p>Lambda concurrency is the number of function instances executing simultaneously. Understanding how concurrency is allocated, limited, and burst-scaled is essential for designing reliable event-driven systems.</p>
-
-  <h3>Account-Level Concurrency</h3>
-  <p>Every AWS account has a regional concurrency limit (default 1,000 concurrent executions, can be raised via support). All Lambda functions in the region share this pool. A single function that scales to 1,000 concurrent executions can starve all other functions in the account. This is the primary reason to set reserved concurrency on critical functions.</p>
-
-  <h3>Reserved Concurrency</h3>
-  <p>Reserving concurrency on a function guarantees that function a dedicated slice of the account pool, and simultaneously caps it at that level. A function with <code>reserved_concurrency=50</code> will always have 50 available slots and can never exceed 50 simultaneous invocations. Requests exceeding the cap are throttled (synchronous) or queued (asynchronous). Use reserved concurrency to: protect downstream systems from Lambda-driven overload, isolate critical functions from noisy neighbors, and cap cost for functions with unpredictable invocation patterns.</p>
-
-<pre>
-# Set reserved concurrency via boto3
-lambda_client.put_function_concurrency(
-    FunctionName='my-db-writer',
-    ReservedConcurrentExecutions=20   # cap at 20 simultaneous executions
-)
-
-# Remove reserved concurrency (function shares account pool)
-lambda_client.delete_function_concurrency(
-    FunctionName='my-db-writer'
-)
-</pre>
-
-  <h3>Provisioned Concurrency</h3>
-  <p>Provisioned concurrency pre-initializes a set number of execution environments and keeps them perpetually warm. Unlike reserved concurrency (which caps), provisioned concurrency is a floor guarantee on warm environments. Provisioned instances are always available with zero cold start, billing continuously at a separate (lower) rate for the initialized capacity. Suitable for user-facing functions with strict latency SLAs.</p>
-
-  <h3>Burst Concurrency</h3>
-  <p>When traffic scales rapidly, Lambda can burst beyond initial concurrency limits at a defined rate: initially 500–3,000 concurrent executions immediately (varies by region), then adding 500 per minute until the account limit is reached. Burst limits exist to prevent runaway scaling from consuming all account concurrency in seconds. For predictably high-concurrency workloads, request a concurrency limit increase in advance rather than discovering the burst ceiling under load.</p>
-
-  <table>
-    <tr><th>Concurrency Type</th><th>Purpose</th><th>Cost</th></tr>
-    <tr><td>Unreserved (default)</td><td>Shared account pool; no guarantee</td><td>Per-invocation only</td></tr>
-    <tr><td>Reserved</td><td>Dedicated slice; also a cap</td><td>Per-invocation only</td></tr>
-    <tr><td>Provisioned</td><td>Pre-warmed; eliminates cold starts</td><td>Continuous + per-invocation</td></tr>
-  </table>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 7 -->
-  <h2 id="s7">7. Handler Patterns &amp; Best Practices</h2>
-
-  <p>Writing maintainable, testable Lambda functions requires deliberate handler design. The handler function should be thin — a routing and coordination layer — with the actual logic extracted into separately testable modules.</p>
-
-  <h3>Thin Handler Pattern</h3>
-<pre>
-# handler.py — thin entry point
-import json
-from processor import process_s3_event
-from utils import setup_logging
-
-logger = setup_logging()
-
-def lambda_handler(event, context):
-    logger.info("Invocation started", extra={"event_source": event.get("source")})
-
-    try:
-        result = process_s3_event(event)
-        return {"statusCode": 200, "body": json.dumps(result)}
-    except ValueError as e:
-        logger.error("Validation error", extra={"error": str(e)})
-        return {"statusCode": 400, "body": json.dumps({"error": str(e)})}
-    except Exception as e:
-        logger.exception("Unexpected error")
-        raise   # re-raise for async retry / DLQ routing
-</pre>
-
-  <h3>Context Object</h3>
-  <p>The <code>context</code> object provides runtime metadata about the invocation: <code>context.function_name</code>, <code>context.aws_request_id</code> (unique per invocation — include in logs for traceability), <code>context.get_remaining_time_in_millis()</code> (useful for graceful shutdown before timeout), and <code>context.memory_limit_in_mb</code>.</p>
-
-<pre>
-def lambda_handler(event, context):
-    request_id = context.aws_request_id
-    remaining_ms = context.get_remaining_time_in_millis()
-
-    if remaining_ms < 5000:
-        # Less than 5 seconds remaining — abort gracefully
-        logger.warning("Insufficient time remaining", extra={
-            "request_id": request_id,
-            "remaining_ms": remaining_ms
-        })
-        return {"statusCode": 408, "body": "Timeout imminent"}
-
-    # ... normal processing ...
-</pre>
-
-  <h3>Environment Variables</h3>
-  <p>Use environment variables for configuration that varies between environments (dev/staging/prod): bucket names, table names, API endpoints, feature flags. Never hardcode ARNs or resource names in function code. For secrets (passwords, API keys), retrieve from AWS Secrets Manager or SSM Parameter Store at init time and cache in a module-level variable — do not pass secrets as plain environment variables where they appear in CloudWatch logs and console.</p>
-
-<pre>
-import os, boto3, json
-from functools import lru_cache
-
-@lru_cache(maxsize=1)
-def get_db_password():
-    """Fetch secret once per execution environment, cache thereafter."""
-    client = boto3.client('secretsmanager')
-    secret = client.get_secret_value(SecretId=os.environ['DB_SECRET_ARN'])
-    return json.loads(secret['SecretString'])['password']
-
-# Called at init time — cached on warm reuse
-DB_PASSWORD = get_db_password()
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 8 -->
-  <h2 id="s8">8. Layers, Packages &amp; Container Images</h2>
-
-  <p>Lambda supports three deployment models: zip packages, Lambda Layers, and container images. Choosing the right model depends on dependency size, sharing requirements, and team workflow.</p>
-
-  <h3>Zip Deployment Packages</h3>
-  <p>The default and simplest model. You bundle your function code and dependencies into a zip file (up to 50 MB compressed / 250 MB uncompressed). For Python, this means running <code>pip install -r requirements.txt -t ./package</code>, copying your code in, and zipping. Simple, fast to iterate on, but the 250 MB limit is hit quickly by data science or ML libraries.</p>
-
-<pre>
-# Package a Python Lambda function
-mkdir -p package
-pip install -r requirements.txt -t package/
-cp handler.py processor.py utils.py package/
-cd package && zip -r ../function.zip . && cd ..
-
-# Deploy
-aws lambda update-function-code \
-  --function-name my-function \
-  --zip-file fileb://function.zip
-</pre>
-
-  <h3>Lambda Layers</h3>
-  <p>Layers are versioned archives of shared code or dependencies that can be attached to multiple Lambda functions. A function can have up to 5 layers. Layer contents are extracted to <code>/opt/</code> in the execution environment. Common use: shared utility libraries used across many functions, large third-party packages (pandas, numpy) stored once as a layer rather than bundled into every function zip.</p>
-
-<pre>
-# Create a layer containing pandas + pyarrow
-mkdir python
-pip install pandas pyarrow -t python/
-zip -r pandas_layer.zip python/
-
-aws lambda publish-layer-version \
-  --layer-name pandas-pyarrow \
-  --zip-file fileb://pandas_layer.zip \
-  --compatible-runtimes python3.12
-</pre>
-
-  <h3>Container Images</h3>
-  <p>Container images (up to 10 GB) are the right choice for functions with large dependencies (ML models, heavy data processing libraries), functions that need custom system packages, or teams that want a unified container-based deployment workflow. Lambda pulls the image from ECR. Cold start is higher for large images — minimize image size with multi-stage builds and slim base images.</p>
-
-<pre>
-# Dockerfile for a Lambda container image
-FROM public.ecr.aws/lambda/python:3.12
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS Lambda - Master Engineering Reference
+</div>
+
+<h1>AWS Lambda</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 38-48 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Serverless</span>
+  <span class="tag">Event-Driven</span>
+  <span class="tag">AWS</span>
+  <span class="tag">ETL</span>
+  <span class="tag">S3</span>
+  <span class="tag">SQS</span>
+  <span class="tag">API Gateway</span>
+  <span class="tag">Data Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-lambda.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Lambda's Place in the AWS Data Stack</a></li>
+    <li><a href="#s2">Execution Model: Init, Invoke, Shutdown</a></li>
+    <li><a href="#s3">Cold Starts and Mitigation</a></li>
+    <li><a href="#s4">Invocation Types and Error Behavior</a></li>
+    <li><a href="#s5">Event Sources: Push vs Pull</a></li>
+    <li><a href="#s6">Concurrency, Throttling, and Backpressure</a></li>
+    <li><a href="#s7">Memory, CPU, Timeout, and Cost Math</a></li>
+    <li><a href="#s8">Packaging: Zip, Layers, and Container Images</a></li>
+    <li><a href="#s9">VPC Networking and Private Access</a></li>
+    <li><a href="#s10">Destinations, DLQs, and Failure Routing</a></li>
+    <li><a href="#s11">Lambda and S3 Event-Driven ETL</a></li>
+    <li><a href="#s12">Lambda for Data Engineering Workloads</a></li>
+    <li><a href="#s13">Lambda vs Fargate, Glue, and EC2</a></li>
+    <li><a href="#s14">Observability, Security, and Production Design</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Lambda's Place in the AWS Data Stack</h2>
+<p>AWS Lambda is a managed, event-driven compute service. For a senior data engineer, the important idea is not simply "serverless functions." Lambda is the glue between events and action: S3 object created, SQS message available, DynamoDB stream record emitted, API Gateway request received, EventBridge schedule fired, or Kinesis shard records ready to process.</p>
+<p>Lambda is strongest when the unit of work is short, isolated, horizontally scalable, and triggered by an event. It is weak when the workload needs long-lived compute, huge local disk, predictable low-latency startup, complex distributed processing, or heavy dependency initialization.</p>
+<div class="hi">Key insight: Lambda is excellent for control-plane automation and lightweight data-plane processing. It should orchestrate or transform small units, not replace Spark, Flink, or a durable worker platform for every workload.</div>
+<div class="warn">Production gotcha: teams often start with Lambda because it is easy, then accidentally build a distributed system with hidden queues, retries, partial failures, and duplicate processing. Treat Lambda pipelines as distributed systems from day one.</div>
+<table>
+  <tr><th>Fit</th><th>Good Lambda Example</th><th>Better Alternative</th></tr>
+  <tr><td>Event reaction</td><td>S3 file arrival validates metadata and starts Glue</td><td>Lambda is a good fit</td></tr>
+  <tr><td>Light transform</td><td>Normalize small JSON payload and write to SQS</td><td>Lambda is a good fit</td></tr>
+  <tr><td>Heavy ETL</td><td>Join hundreds of GB of Parquet</td><td>Glue, EMR, Spark, Athena CTAS</td></tr>
+  <tr><td>Long worker</td><td>Poll API for hours</td><td>ECS Fargate, EC2, Step Functions</td></tr>
+  <tr><td>Low-latency API</td><td>Strict p99 under 50 ms</td><td>ECS service, provisioned Lambda, or regional cache</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Execution Model: Init, Invoke, Shutdown</h2>
+<p>A Lambda execution environment is the isolated runtime environment where your function code runs. The lifecycle has three practical phases: init, invoke, and shutdown. Understanding this lifecycle is the difference between writing toy functions and production functions that reuse resources safely.</p>
+<h3>Init phase</h3>
+<p>During init, Lambda prepares the runtime, loads extensions, imports your code, and runs top-level initialization. In Python this means module-level code executes before the handler is called. This is where you should create reusable clients such as S3, DynamoDB, Secrets Manager cache clients, database pools, or compiled regex objects.</p>
+<pre><code>import boto3
+
+s3 = boto3.client("s3")
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table("etl_control")
+
+def handler(event, context):
+    # Reuses clients across warm invocations.
+    return {"status": "ok", "request_id": context.aws_request_id}</code></pre>
+<h3>Invoke phase</h3>
+<p>During invoke, Lambda passes the event and context to your handler. The same execution environment may process many invocations sequentially. Memory, temporary files in <code>/tmp</code>, and global variables can persist across warm invocations, but you must never rely on persistence for correctness.</p>
+<h3>Shutdown phase</h3>
+<p>Shutdown happens when AWS retires the environment because of scale-down, deployment, idle timeout, runtime update, or infrastructure maintenance. Your code usually does not control this moment. Extensions may receive shutdown signals, but application logic should assume the environment can disappear after any invocation.</p>
+<div class="hi">Key insight: initialize expensive clients outside the handler, but keep request-specific state inside the handler. Warm reuse is a performance optimization, not a data consistency mechanism.</div>
+<div class="warn">Production gotcha: global variables can leak data between invocations. This is especially dangerous for per-user authorization state, batch accumulators, or cached secrets with rotation requirements.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Cold Starts and Mitigation</h2>
+<p>A cold start occurs when Lambda must create a new execution environment before invoking your handler. Cold starts are caused by scale-out, new versions, idle environments being retired, runtime updates, VPC networking setup, large packages, slow dependency imports, and heavy initialization code.</p>
+<p>Cold start time varies widely. Small Python or Node.js zip functions can start very quickly. JVM and .NET workloads, large container images, many layers, and heavy framework bootstraps can take longer. The real performance question is p95 and p99 latency under bursty traffic, not the average.</p>
+<table>
+  <tr><th>Cause</th><th>Impact</th><th>Mitigation</th></tr>
+  <tr><td>Large deployment package</td><td>More load and unpack work</td><td>Trim dependencies, use smaller base images, avoid unused SDKs</td></tr>
+  <tr><td>Heavy init code</td><td>Longer first invocation</td><td>Lazy-load rarely used dependencies, cache only critical clients</td></tr>
+  <tr><td>JVM runtime</td><td>Slower startup but strong steady-state</td><td>Use SnapStart where supported, tune framework startup</td></tr>
+  <tr><td>Traffic burst</td><td>Many new environments at once</td><td>Provisioned concurrency, queue buffering, reserved concurrency</td></tr>
+  <tr><td>VPC access</td><td>Additional networking path complexity</td><td>Use VPC only when private resources are required</td></tr>
+</table>
+<h3>Provisioned concurrency</h3>
+<p>Provisioned concurrency keeps execution environments initialized and ready. It is useful for latency-sensitive APIs, predictable traffic windows, and workloads where cold start outliers violate SLOs. The tradeoff is cost: you pay to keep capacity warm whether invocations arrive or not.</p>
+<h3>SnapStart</h3>
+<p>SnapStart reduces startup for supported runtimes by snapshotting initialized execution state and restoring it for new environments. It is valuable for Java-heavy applications, but you must design initialization carefully: anything that must be unique per environment or invocation should be generated after restore, not frozen into the snapshot.</p>
+<div class="hi">Key insight: cold starts are not one problem. They are a blend of runtime startup, package loading, dependency initialization, VPC path, and burst scaling. Measure each before buying provisioned concurrency.</div>
+<div class="warn">Production gotcha: provisioned concurrency reduces cold starts, but it does not fix slow handler code, downstream database latency, bad connection pooling, or overloaded dependencies.</div>
+<pre><code>aws lambda put-provisioned-concurrency-config \
+  --function-name ingest-api \
+  --qualifier prod \
+  --provisioned-concurrent-executions 25</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Invocation Types and Error Behavior</h2>
+<p>Lambda has three broad invocation patterns: synchronous, asynchronous, and stream or queue based. They differ most in who waits, who retries, and where failures go.</p>
+<table>
+  <tr><th>Invocation Type</th><th>Examples</th><th>Retry Owner</th><th>Failure Path</th></tr>
+  <tr><td>Synchronous</td><td>API Gateway, ALB, direct SDK invoke</td><td>Caller</td><td>Caller receives error immediately</td></tr>
+  <tr><td>Asynchronous</td><td>S3, SNS, EventBridge</td><td>Lambda service</td><td>Retries, then destination or DLQ</td></tr>
+  <tr><td>Poll based</td><td>SQS, Kinesis, DynamoDB Streams</td><td>Event source mapping</td><td>Batch retry, partial batch response, DLQ/redrive depending source</td></tr>
+</table>
+<h3>Synchronous invocation</h3>
+<p>The caller waits for the function response. If Lambda times out or throws an error, the caller sees the failure. This fits APIs, validation services, and request-response workflows. The caller must implement retry policy, timeout policy, and idempotency controls.</p>
+<h3>Asynchronous invocation</h3>
+<p>The event is accepted by Lambda and processed later. Lambda retries failed events and can route final success or failure to destinations. This fits S3 notifications, SNS fanout, and EventBridge automation.</p>
+<h3>Stream and queue invocation</h3>
+<p>Lambda polls the source, reads records in batches, and invokes your function with a batch. Failure behavior is batch-oriented unless you enable partial batch responses. For streams, ordering and shard progress matter. A poison record can block progress on a shard until handled.</p>
+<div class="hi">Key insight: the same handler code can behave very differently depending on invocation type. Error handling belongs to the event contract, not just the try/except block.</div>
+<div class="warn">Production gotcha: with batch sources, one bad record can cause an entire batch to retry repeatedly. Use partial batch responses and poison-pill isolation where supported.</div>
+<pre><code>{
+  "FunctionName": "process-orders",
+  "InvocationType": "Event",
+  "Payload": "{\"order_id\":\"123\"}"
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Event Sources: Push vs Pull</h2>
+<p>Lambda integrations are either push-based or pull-based. In push-based models, the source service invokes Lambda. In pull-based models, Lambda's event source mapping polls the source and invokes your function. This distinction matters for throughput, permissions, retries, and failure isolation.</p>
+<table>
+  <tr><th>Source</th><th>Model</th><th>Common Data Engineering Use</th><th>Main Risk</th></tr>
+  <tr><td>S3</td><td>Push</td><td>Start ETL when a file lands</td><td>Duplicate events, missing idempotency</td></tr>
+  <tr><td>SQS</td><td>Pull</td><td>Buffer work and smooth spikes</td><td>Visibility timeout mismatch</td></tr>
+  <tr><td>SNS</td><td>Push</td><td>Fanout event notification</td><td>Subscriber failure isolation</td></tr>
+  <tr><td>EventBridge</td><td>Push</td><td>Schedules and domain events</td><td>Loose schemas without governance</td></tr>
+  <tr><td>Kinesis</td><td>Pull</td><td>Ordered stream processing</td><td>Shard hot spots and iterator age</td></tr>
+  <tr><td>DynamoDB Streams</td><td>Pull</td><td>CDC from DynamoDB tables</td><td>Poison records blocking progress</td></tr>
+  <tr><td>API Gateway</td><td>Push</td><td>Data product APIs</td><td>Timeout and cold-start latency</td></tr>
+</table>
+<p>For high-scale data systems, SQS is often the safest front door. It absorbs bursts, gives you redrive policies, supports visibility timeout control, and lets Lambda scale consumers based on backlog. S3 directly invoking Lambda is elegant, but S3 to SQS to Lambda is usually more resilient for production ETL.</p>
+<div class="hi">Key insight: direct triggers are simple; buffered triggers are controllable. When correctness matters, insert SQS between noisy producers and Lambda consumers.</div>
+<div class="warn">Production gotcha: S3 event notifications are at-least-once. Design object processing to be idempotent using object key, version ID, ETag, or a control table.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Concurrency, Throttling, and Backpressure</h2>
+<p>Concurrency is the number of Lambda execution environments handling requests at the same time. AWS enforces account-level concurrency limits, and each function can also have reserved concurrency and provisioned concurrency. Concurrency is the primary scaling control and also the easiest way to accidentally overload downstream systems.</p>
+<h3>Reserved concurrency</h3>
+<p>Reserved concurrency guarantees capacity for a function and caps its maximum concurrency. This is both a protection and a throttle. For example, you can cap a database-writing Lambda at 20 concurrent invocations to avoid exhausting database connections.</p>
+<h3>Provisioned concurrency</h3>
+<p>Provisioned concurrency pre-initializes environments for latency-sensitive workloads. It addresses startup latency, not downstream capacity.</p>
+<h3>Throttling behavior</h3>
+<p>When concurrency is exhausted, synchronous callers receive throttling errors. Asynchronous events are retried by Lambda. SQS events remain in the queue and are retried after visibility timeout. Stream consumers may fall behind, increasing iterator age.</p>
+<table>
+  <tr><th>Control</th><th>What It Does</th><th>Best Use</th></tr>
+  <tr><td>Account limit</td><td>Maximum regional concurrency pool</td><td>Global safety boundary</td></tr>
+  <tr><td>Reserved concurrency</td><td>Guarantees and caps one function</td><td>Protect critical functions or fragile databases</td></tr>
+  <tr><td>Provisioned concurrency</td><td>Keeps environments warm</td><td>Latency-sensitive APIs</td></tr>
+  <tr><td>SQS max concurrency</td><td>Limits event source mapping scale</td><td>Backpressure for queue consumers</td></tr>
+</table>
+<div class="hi">Key insight: concurrency is not just Lambda scaling. It is also downstream load generation. A Lambda function can scale faster than your RDS database, vendor API, or OpenSearch cluster can tolerate.</div>
+<div class="warn">Production gotcha: increasing memory or timeout does not fix throttling. Throttling is usually a concurrency quota, reserved concurrency, event source mapping, or downstream protection issue.</div>
+<pre><code>aws lambda put-function-concurrency \
+  --function-name write-to-rds \
+  --reserved-concurrent-executions 20</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Memory, CPU, Timeout, and Cost Math</h2>
+<p>Lambda charges are driven by requests and duration multiplied by allocated memory. Memory also controls CPU share and network throughput. This coupling is important: increasing memory can make a function faster enough that total cost stays flat or even drops.</p>
+<p>The practical tuning method is to test memory sizes against real events and compare duration, p95 latency, and cost per invocation. For CPU-bound transforms, more memory often reduces runtime. For IO-bound functions waiting on S3, DynamoDB, or APIs, memory may not help much.</p>
+<table>
+  <tr><th>Setting</th><th>Tradeoff</th><th>Data Engineering Angle</th></tr>
+  <tr><td>Memory</td><td>Higher cost per ms, more CPU/network</td><td>Useful for compression, JSON parsing, Parquet metadata, encryption</td></tr>
+  <tr><td>Timeout</td><td>Longer max runtime, slower failure detection</td><td>Must align with SQS visibility timeout and API Gateway limits</td></tr>
+  <tr><td>Ephemeral storage</td><td>More local scratch space</td><td>Useful for temp files, decompression, small file staging</td></tr>
+  <tr><td>Batch size</td><td>More throughput, bigger retry blast radius</td><td>Critical for SQS, Kinesis, DynamoDB Streams</td></tr>
+</table>
+<pre><code># Rough cost intuition:
+# cost ~= invocations * duration_seconds * memory_GB * price_per_GB_second
+# plus request charges and any provisioned concurrency charges.</code></pre>
+<div class="hi">Key insight: right-sizing Lambda is empirical. Benchmark with production-like payloads, not synthetic hello-world events.</div>
+<div class="warn">Production gotcha: for SQS, the visibility timeout should be longer than the Lambda timeout. Otherwise the same message can become visible and be processed twice while the first invocation is still running.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Packaging: Zip, Layers, and Container Images</h2>
+<p>Lambda supports zip deployments, layers, and container images. The packaging choice affects startup time, dependency management, deployment size, security scanning, and developer workflow.</p>
+<table>
+  <tr><th>Packaging</th><th>Best For</th><th>Tradeoff</th></tr>
+  <tr><td>Zip</td><td>Small functions, fast deploys, simple dependencies</td><td>Package size discipline required</td></tr>
+  <tr><td>Layers</td><td>Shared libraries, common utilities, agents</td><td>Version pinning and dependency drift</td></tr>
+  <tr><td>Container image</td><td>Large dependencies, custom runtimes, ML libraries</td><td>Image hygiene, slower build/deploy loop, ECR management</td></tr>
+</table>
+<p>Layers are useful for shared libraries, observability agents, or organization-wide helper packages. Pin layer versions explicitly. A layer update does not automatically mean all functions are safely compatible. Treat layers like shared production libraries with semantic versioning and release notes.</p>
+<p>Container images can be up to 10 GB and are useful when the dependency tree is awkward for zip deployment. They do not turn Lambda into ECS. The same Lambda lifecycle, timeout, event model, and concurrency behavior still apply.</p>
+<div class="hi">Key insight: choose container images for dependency complexity, not because the workload is container-shaped. If you need long-running workers or daemon processes, use ECS or EC2.</div>
+<div class="warn">Production gotcha: using the <code>latest</code> image tag for Lambda deployments makes rollbacks and audits painful. Use immutable tags or image digests.</div>
+<pre><code>FROM public.ecr.aws/lambda/python:3.12
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-COPY handler.py processor.py ./
+COPY app.py ${LAMBDA_TASK_ROOT}
 
-CMD ["handler.lambda_handler"]
-</pre>
+CMD ["app.handler"]</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <div class="warn"><strong>Container image cold starts:</strong> Lambda caches container images at the infrastructure level, so cold starts for previously-invoked images are faster than the first pull. However, a 2 GB container image will always have a noticeably higher cold start than a 5 MB zip package. Use Provisioned Concurrency if deploying large container images in latency-sensitive contexts.</div>
+<h2 id="s9">VPC Networking and Private Access</h2>
+<p>Lambda does not need a VPC to access public AWS service endpoints such as S3, DynamoDB, or public APIs. Lambda needs VPC access when it must reach private resources: RDS in private subnets, ElastiCache, internal NLBs, private OpenSearch domains, or services reachable only through private networking.</p>
+<p>When attached to a VPC, Lambda uses elastic network interfaces behind the scenes to connect to selected subnets and security groups. Modern Lambda networking is much better than the old painful ENI cold-start days, but VPC design still affects routing, NAT cost, DNS, and security.</p>
+<table>
+  <tr><th>Need</th><th>Recommended Pattern</th><th>Why</th></tr>
+  <tr><td>Access S3 privately</td><td>S3 Gateway Endpoint</td><td>Avoid NAT data charges and keep traffic on AWS network</td></tr>
+  <tr><td>Access Secrets Manager</td><td>Interface Endpoint</td><td>Private API access from VPC subnets</td></tr>
+  <tr><td>Access RDS</td><td>Lambda in private subnets</td><td>Security group to database security group</td></tr>
+  <tr><td>Access internet API</td><td>Public Lambda or private subnet plus NAT</td><td>VPC Lambda in private subnet needs outbound route</td></tr>
+</table>
+<div class="hi">Key insight: do not put Lambda in a VPC by default. Put it in a VPC only when it needs private network reachability, then design endpoints and NAT deliberately.</div>
+<div class="warn">Production gotcha: a Lambda in a private subnet without NAT or VPC endpoints cannot reach public AWS APIs or the public internet. This often breaks calls to Secrets Manager, STS, or third-party APIs.</div>
+<pre><code>{
+  "Effect": "Allow",
+  "Action": [
+    "ec2:CreateNetworkInterface",
+    "ec2:DescribeNetworkInterfaces",
+    "ec2:DeleteNetworkInterface"
+  ],
+  "Resource": "*"
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <a class="back-top" href="#top">↑ Back to top</a>
+<h2 id="s10">Destinations, DLQs, and Failure Routing</h2>
+<p>Failure handling in Lambda should be explicit. Asynchronous invocations can use destinations to route successful or failed events to SQS, SNS, EventBridge, or another Lambda. Older DLQ patterns route failed async events to SQS or SNS. For SQS event sources, the queue's redrive policy controls movement to a dead-letter queue after receive attempts are exhausted.</p>
+<p>Destinations are richer than DLQs because they include execution context, response information, and failure details. DLQs are still simple and valuable where a queue-based replay workflow is preferred.</p>
+<table>
+  <tr><th>Mechanism</th><th>Applies To</th><th>Best Use</th></tr>
+  <tr><td>Lambda destination</td><td>Async invoke</td><td>Route success/failure to EventBridge or SQS</td></tr>
+  <tr><td>Lambda DLQ</td><td>Async invoke</td><td>Simple failure capture</td></tr>
+  <tr><td>SQS redrive policy</td><td>SQS source queue</td><td>Poison messages after max receives</td></tr>
+  <tr><td>Partial batch response</td><td>SQS and some streams</td><td>Retry only failed records</td></tr>
+</table>
+<div class="hi">Key insight: design a replay path before production. A DLQ without an operator workflow is just a graveyard with better branding.</div>
+<div class="warn">Production gotcha: sending failures to another Lambda can create recursive failure loops if the failure handler itself throws errors or writes back to the same source.</div>
+<pre><code>aws lambda update-function-event-invoke-config \
+  --function-name enrich-file-event \
+  --maximum-retry-attempts 2 \
+  --destination-config '{"OnFailure":{"Destination":"arn:aws:sqs:us-east-1:123456789012:lambda-failures"}}'</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <!-- SECTION 9 -->
-  <h2 id="s9">9. Lambda + S3 Event Pipelines</h2>
+<h2 id="s11">Lambda and S3 Event-Driven ETL</h2>
+<p>A common pattern is S3 event notification to Lambda: a file lands in raw storage, Lambda validates the object, records metadata, and starts the next step. This is powerful for low-latency ingestion, but it needs guardrails.</p>
+<p>For production data platforms, the robust version is often S3 to EventBridge or S3 to SQS to Lambda. The queue provides buffering, retry visibility, redrive, and controlled concurrency. Lambda should not perform a huge transformation directly if the file is large. It should trigger Glue, Step Functions, ECS run-task, Athena CTAS, or a streaming workflow.</p>
+<pre><code>def handler(event, context):
+    for record in event["Records"]:
+        bucket = record["s3"]["bucket"]["name"]
+        key = record["s3"]["object"]["key"]
+        etag = record["s3"]["object"].get("eTag")
 
-  <p>The Lambda + S3 combination is one of the most common patterns in data engineering: a file lands in an S3 bucket, an S3 event notification triggers a Lambda function, and the function either processes the file directly or orchestrates downstream processing (Glue job, Step Functions, SNS notification). This pattern enables event-driven pipelines that respond to data arrival without polling.</p>
+        # Idempotency key example:
+        # bucket + key + etag or bucket + key + version_id
+        start_glue_job(bucket, key, etag)</code></pre>
+<table>
+  <tr><th>Step</th><th>Lambda Responsibility</th><th>What Not To Do</th></tr>
+  <tr><td>Validate</td><td>Check prefix, size, extension, manifest</td><td>Read a 20 GB object into memory</td></tr>
+  <tr><td>Register</td><td>Write control row to DynamoDB or RDS</td><td>Assume S3 event is unique</td></tr>
+  <tr><td>Trigger</td><td>Start Glue, Step Functions, or ECS task</td><td>Run a full Spark-like ETL inside Lambda</td></tr>
+  <tr><td>Notify</td><td>Publish status event</td><td>Hide failure without DLQ or destination</td></tr>
+</table>
+<div class="hi">Key insight: Lambda is often the event router in S3 ETL, not the ETL engine. Keep it small, idempotent, and observable.</div>
+<div class="warn">Production gotcha: S3 multipart uploads, object overwrites, retries, and duplicate notifications can all create repeated events. Use idempotency keys and control tables.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-<pre>
-# S3 trigger Lambda — triggers a Glue job when a new file lands
-import boto3, os, urllib.parse, logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-glue = boto3.client('glue')
-GLUE_JOB_NAME = os.environ['GLUE_JOB_NAME']
-
-def lambda_handler(event, context):
-    for record in event['Records']:
-        bucket = record['s3']['bucket']['name']
-        key = urllib.parse.unquote_plus(record['s3']['object']['key'])
-
-        logger.info(f"New file detected: s3://{bucket}/{key}")
-
-        # Derive processing date from key path (year=2026/month=04/day=13/...)
-        parts = {p.split('=')[0]: p.split('=')[1]
-                 for p in key.split('/') if '=' in p}
-
-        response = glue.start_job_run(
-            JobName=GLUE_JOB_NAME,
-            Arguments={
-                '--input_path': f's3://{bucket}/{key}',
-                '--processing_date': f"{parts.get('year','')}-{parts.get('month','')}-{parts.get('day','')}",
-            }
-        )
-        logger.info(f"Started Glue job run: {response['JobRunId']}")
-
-    return {'statusCode': 200}
-</pre>
-
-  <h3>S3 Event Notification Configuration</h3>
-  <p>S3 event notifications can be configured to filter by prefix and suffix, ensuring Lambda is only triggered for relevant files. This is important — without prefix filtering, every object created in a bucket (including temp files, .crc files, or output from the Lambda itself) triggers an invocation, potentially causing runaway recursive invocations.</p>
-
-  <div class="warn"><strong>Recursive invocation trap:</strong> If your Lambda function writes output back to the same S3 bucket it's triggered from, and you don't use prefix/suffix filtering to distinguish input from output paths, each Lambda output file triggers a new Lambda invocation — creating an infinite recursive loop that runs until the concurrency limit is hit and generates significant unexpected cost. Always use prefix filters to ensure triggers only fire on input paths.</div>
-
-<pre>
-# EventBridge rule as an alternative to S3 notifications
-# (More flexible filtering, better audit trail)
-{
-  "source": ["aws.s3"],
-  "detail-type": ["Object Created"],
-  "detail": {
-    "bucket": { "name": ["my-raw-bucket"] },
-    "object": { "key": [{ "prefix": "raw/events/" }] }
-  }
-}
-</pre>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 10 -->
-  <h2 id="s10">10. Lambda + SQS / SNS / EventBridge</h2>
-
-  <p>SQS, SNS, and EventBridge are the three core messaging services that integrate with Lambda for decoupled, resilient event-driven architectures. Each has a distinct delivery model and failure behavior.</p>
-
-  <h3>Lambda + SQS</h3>
-  <p>Lambda polls the SQS queue via an Event Source Mapping. Lambda reads batches of messages (configurable batch size 1–10,000 for Standard queues) and invokes your function with the batch. If processing succeeds, Lambda deletes the messages from the queue. If processing fails (function throws an exception), the messages return to the queue after the visibility timeout and are retried. A Dead Letter Queue (DLQ) on the SQS queue captures messages that exhaust their retry count.</p>
-
-<pre>
-def lambda_handler(event, context):
-    failed_message_ids = []
-
-    for record in event['Records']:
-        message_id = record['messageId']
-        body = json.loads(record['body'])
-
+<h2 id="s12">Lambda for Data Engineering Workloads</h2>
+<p>Lambda is useful in data engineering when the work is small and event-driven: CDC fanout, schema validation, metadata enrichment, API backends for data products, scheduled control tasks, and file-arrival orchestration.</p>
+<h3>Trigger-based CDC</h3>
+<p>DynamoDB Streams to Lambda can publish change events to EventBridge, SQS, OpenSearch, or downstream services. This is not a free lunch: ordering, retries, poison records, and idempotency must be designed. For relational CDC, Lambda is often downstream of DMS, Kinesis, MSK, or SQS rather than reading database logs directly.</p>
+<h3>Lightweight transformation</h3>
+<p>Lambda can normalize JSON, validate schemas, enrich events with small reference data, write compact records to Firehose, or call a model endpoint. It should not do unbounded joins, repartitioning, or memory-heavy analytics.</p>
+<h3>Data product APIs</h3>
+<p>API Gateway plus Lambda is a strong pattern for internal metadata APIs, ML inference wrappers, feature lookup endpoints, and pipeline trigger APIs. Add caching, authentication, throttling, and downstream timeouts deliberately.</p>
+<div class="hi">Key insight: Lambda is great at edges: event edge, API edge, orchestration edge, validation edge. The closer you get to heavy stateful compute, the more you should consider another service.</div>
+<div class="warn">Production gotcha: database-backed Lambda APIs can create connection storms. Use RDS Proxy, reserved concurrency, pooling discipline, or move to ECS for high steady traffic.</div>
+<pre><code># Example: return partial batch failures for SQS
+def handler(event, context):
+    failures = []
+    for record in event["Records"]:
         try:
-            process_message(body)
-        except Exception as e:
-            logger.error(f"Failed to process {message_id}: {e}")
-            failed_message_ids.append(message_id)
+            process_message(record)
+        except Exception:
+            failures.append({"itemIdentifier": record["messageId"]})
+    return {"batchItemFailures": failures}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-    # Partial batch response — only failed messages return to queue
-    # Requires: FunctionResponseTypes=['ReportBatchItemFailures'] on ESM
-    if failed_message_ids:
-        return {
-            "batchItemFailures": [
-                {"itemIdentifier": mid} for mid in failed_message_ids
-            ]
-        }
-</pre>
+<h2 id="s13">Lambda vs Fargate, Glue, and EC2</h2>
+<p>Choosing Lambda is an architectural decision. Compare it against ECS Fargate, AWS Glue, and EC2 based on runtime duration, dependency complexity, scaling profile, operational control, and cost shape.</p>
+<table>
+  <tr><th>Service</th><th>Best For</th><th>When Lambda Loses</th></tr>
+  <tr><td>Lambda</td><td>Short event-driven tasks, APIs, orchestration</td><td>Long jobs, heavy state, large local processing</td></tr>
+  <tr><td>ECS Fargate</td><td>Containers, workers, APIs, batch tasks</td><td>When event volume is tiny and sporadic</td></tr>
+  <tr><td>Glue</td><td>Spark ETL, catalog-aware data lake processing</td><td>Small instant reactions and simple routing</td></tr>
+  <tr><td>EC2</td><td>Maximum control, custom runtimes, high steady usage</td><td>When operations overhead outweighs control</td></tr>
+  <tr><td>Step Functions</td><td>Workflow orchestration and retries</td><td>Single small task with no workflow state</td></tr>
+</table>
+<p>A strong pattern is to combine services: Lambda receives the event, Step Functions manages state, Glue performs distributed ETL, ECS handles custom containers, and EventBridge publishes domain events. Lambda is not the entire platform; it is one compute primitive in a larger design.</p>
+<div class="hi">Key insight: senior architecture is not "Lambda or Glue." It is often "Lambda triggers Step Functions, Step Functions starts Glue, and failures route to EventBridge and SQS."</div>
+<div class="warn">Production gotcha: forcing Lambda to handle long-running data jobs usually creates timeout workarounds, recursive invocations, fragile checkpoints, and painful replay logic.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <div class="hi">Use <strong>partial batch responses</strong> (ReportBatchItemFailures) for SQS event source mappings. Without it, a single failed message in a batch of 100 causes all 100 messages to return to the queue and be retried — most of them successfully processed but now re-processed again. Partial batch responses mark only the failed messages for retry.</div>
+<h2 id="s14">Observability, Security, and Production Design</h2>
+<p>Production Lambda functions need structured logs, metrics, tracing, alarms, deployment safety, least-privilege IAM, and repeatable infrastructure. CloudWatch Logs alone is not enough. Track invocations, errors, duration, throttles, concurrent executions, iterator age, DLQ depth, async event age, and downstream dependency errors.</p>
+<h3>Structured logging</h3>
+<p>Log JSON with request IDs, correlation IDs, event source, object key, message ID, retry attempt, and business identifiers. Do not log secrets or full payloads blindly.</p>
+<h3>Security</h3>
+<p>Use least-privilege IAM roles, encrypt environment variables, prefer Secrets Manager or Parameter Store for sensitive values, pin runtime versions, scan dependencies, and isolate functions by responsibility. The execution role should grant exactly what the function needs, not broad administrator access.</p>
+<h3>Deployment safety</h3>
+<p>Use versions and aliases for production. Shift traffic gradually with CodeDeploy when downtime or error spikes matter. Keep infrastructure in Terraform, CloudFormation, CDK, or SAM so event sources and permissions are reproducible.</p>
+<pre><code>{
+  "level": "INFO",
+  "service": "s3-file-router",
+  "correlation_id": "01HVZ...",
+  "bucket": "raw-zone",
+  "key": "orders/date=2026-04-25/file.json",
+  "action": "start_glue_job",
+  "status": "submitted"
+}</code></pre>
+<div class="hi">Key insight: the operational unit is not just the function. It is function plus trigger plus permissions plus retries plus DLQ plus alarms plus replay process.</div>
+<div class="warn">Production gotcha: Lambda permissions are split across execution role permissions and resource-based invoke permissions. A function can have S3 permissions but still not be invokable by S3 unless the resource policy allows it.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-  <h3>Lambda + SNS</h3>
-  <p>SNS pushes notifications directly to Lambda asynchronously. SNS fan-out (one topic, multiple Lambda subscriptions) is useful for broadcasting an event to multiple independent processors in parallel — e.g., an order event triggers both an inventory-update Lambda and an analytics-write Lambda simultaneously without either knowing about the other.</p>
+<h2 id="qa">Interview Q&amp;A</h2>
 
-  <h3>Lambda + EventBridge</h3>
-  <p>EventBridge is the most flexible routing layer. Rules match events by source, detail-type, and field-level patterns and route to one or more Lambda targets. Scheduled rules (cron or rate expressions) replace CloudWatch Events for time-based Lambda invocations. EventBridge Pipes connect a source (SQS, Kinesis, DynamoDB Streams) to a Lambda target with optional filtering and enrichment steps, reducing boilerplate polling code.</p>
+<div class="qa">
+  <div class="qa-q">Q: Explain the Lambda execution lifecycle and how it affects performance.</div>
+  <div class="qa-a">A: Lambda creates an execution environment, runs init code, invokes the handler, and eventually shuts the environment down. Expensive clients should be initialized outside the handler for warm reuse, but request-specific state must stay inside the handler. Cold starts happen when a new environment is needed, so package size, runtime choice, VPC setup, and init logic all affect latency.</div>
+</div>
 
-  <a class="back-top" href="#top">↑ Back to top</a>
+<div class="qa">
+  <div class="qa-q">Q: How would you design an S3-triggered ETL pipeline with Lambda safely?</div>
+  <div class="qa-a">A: I would avoid doing heavy ETL inside Lambda. S3 events should route to SQS or EventBridge, Lambda should validate and register the object, then start Glue, Step Functions, ECS, or Athena. I would add idempotency using bucket, key, version or ETag, and route failures to a DLQ or destination with a replay process.</div>
+</div>
 
-  <!-- SECTION 11 -->
-  <h2 id="s11">11. VPC, Networking &amp; RDS Access</h2>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between reserved concurrency and provisioned concurrency?</div>
+  <div class="qa-a">A: Reserved concurrency guarantees and caps the concurrency for a function, which protects both the function and downstream dependencies. Provisioned concurrency keeps environments initialized to reduce cold-start latency. Reserved concurrency is mainly a capacity and safety control; provisioned concurrency is mainly a latency control.</div>
+</div>
 
-  <p>By default, Lambda functions run outside any VPC — they have access to the internet and all public AWS endpoints but cannot reach resources in a private VPC subnet (RDS instances, ElastiCache clusters, internal services). To reach VPC-private resources, you attach the Lambda function to a VPC by specifying subnets and security groups.</p>
+<div class="qa">
+  <div class="qa-q">Q: Why can Lambda be dangerous in front of a relational database?</div>
+  <div class="qa-a">A: Lambda can scale very quickly, and each execution environment may open database connections. Without reserved concurrency, RDS Proxy, pooling discipline, and timeout controls, a traffic spike can exhaust database connections. The application may look serverless, but the database is not infinitely scalable.</div>
+</div>
 
-  <h3>VPC Attachment Model (Hyperplane)</h3>
-  <p>Since 2019, Lambda uses the Hyperplane ENI model for VPC connectivity. Instead of creating a new ENI per execution environment (which caused 30–90 second cold starts), Lambda creates shared ENIs per unique (VPC, subnet, security group) combination at function creation time. Cold starts for VPC-attached functions are now typically under 1 second, matching non-VPC functions.</p>
+<div class="qa">
+  <div class="qa-q">Q: How do error semantics differ between API Gateway, S3, SQS, and Kinesis triggers?</div>
+  <div class="qa-a">A: API Gateway is synchronous, so the caller receives the error and owns retries. S3 invokes asynchronously, so Lambda retries and can use destinations or DLQ. SQS is poll-based; messages return to the queue after visibility timeout and can redrive to a DLQ. Kinesis is stream-based, so failed batches can block shard progress and increase iterator age unless failure handling is designed carefully.</div>
+</div>
 
-<pre>
-# Lambda function in VPC (CDK/CloudFormation-style config)
-# The function gets an ENI in each specified subnet
-{
-  "VpcConfig": {
-    "SubnetIds": [
-      "subnet-0a1b2c3d",   // private subnet AZ-a
-      "subnet-0e5f6g7h"    // private subnet AZ-b
-    ],
-    "SecurityGroupIds": ["sg-0123456789abcdef0"]
-  }
-}
-</pre>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose ECS Fargate or Glue instead of Lambda?</div>
+  <div class="qa-a">A: I would choose ECS Fargate for long-running workers, container-native services, steady APIs, or custom runtimes. I would choose Glue for distributed Spark ETL, data lake transformations, catalog integration, and large file processing. Lambda is best for short event-driven orchestration, validation, and lightweight transforms.</div>
+</div>
 
-  <h3>Accessing RDS from Lambda</h3>
-  <p>The recommended pattern for Lambda-to-RDS connectivity is <strong>RDS Proxy</strong>. Lambda functions can create thousands of concurrent database connections — each execution environment opens its own connection, and at high concurrency this exhausts the RDS connection pool (typically capped at a few hundred connections). RDS Proxy pools and multiplexes connections between Lambda and RDS, presenting a single connection endpoint to Lambda while managing a smaller connection pool to the actual database.</p>
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
-<pre>
-import psycopg2, os, boto3
-
-# Connect via RDS Proxy endpoint (not directly to RDS)
-# RDS Proxy handles connection pooling behind the scenes
-conn = psycopg2.connect(
-    host=os.environ['RDS_PROXY_ENDPOINT'],
-    port=5432,
-    database=os.environ['DB_NAME'],
-    user=os.environ['DB_USER'],
-    password=get_db_password(),   # from Secrets Manager
-    sslmode='require'
-)
-</pre>
-
-  <div class="warn"><strong>Lambda in VPC requires internet access via NAT:</strong> A VPC-attached Lambda function loses its default internet access. To call external APIs, reach public AWS endpoints (S3, DynamoDB, SSM — unless using VPC endpoints), or pull packages, the subnets must have a NAT Gateway route. A common failure mode: Lambda is attached to a private subnet, tries to call <code>boto3.client('s3')</code>, and times out because there's no NAT and no S3 VPC endpoint.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 12 -->
-  <h2 id="s12">12. Observability — Logs, Metrics, Traces</h2>
-
-  <p>Lambda emits logs to CloudWatch Logs, metrics to CloudWatch Metrics, and traces to X-Ray automatically. Understanding each layer is important for diagnosing production issues.</p>
-
-  <h3>CloudWatch Logs</h3>
-  <p>Each function has a log group (<code>/aws/lambda/function-name</code>). Each execution environment produces a log stream. Lambda automatically logs the START, END, and REPORT lines for every invocation — REPORT includes: duration, billed duration, memory configured, max memory used, and init duration (for cold starts). Your function's <code>print()</code> or <code>logging</code> output goes to the same log stream.</p>
-
-<pre>
-import logging, json
-
-# Structured logging — makes CloudWatch Insights queries effective
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-def lambda_handler(event, context):
-    logger.info(json.dumps({
-        "request_id": context.aws_request_id,
-        "event_source": event.get("source", "unknown"),
-        "record_count": len(event.get("Records", []))
-    }))
-</pre>
-
-  <h3>CloudWatch Metrics</h3>
-  <p>Lambda publishes key metrics per function: <code>Invocations</code>, <code>Errors</code>, <code>Throttles</code>, <code>Duration</code> (p50/p90/p99), <code>ConcurrentExecutions</code>, and <code>IteratorAge</code> (for streaming sources — how far behind the stream the function is). Build dashboards and alarms on <code>Errors</code>, <code>Throttles</code>, and for streaming sources, <code>IteratorAge</code> — high iterator age means the function is falling behind the stream.</p>
-
-<pre>
-# CloudWatch alarm on Lambda errors (boto3)
-cloudwatch = boto3.client('cloudwatch')
-
-cloudwatch.put_metric_alarm(
-    AlarmName='LambdaErrorRate-my-function',
-    MetricName='Errors',
-    Namespace='AWS/Lambda',
-    Dimensions=[{'Name': 'FunctionName', 'Value': 'my-function'}],
-    Statistic='Sum',
-    Period=300,         # 5-minute window
-    EvaluationPeriods=1,
-    Threshold=5,
-    ComparisonOperator='GreaterThanOrEqualToThreshold',
-    AlarmActions=['arn:aws:sns:us-east-1:123456789:ops-alerts']
-)
-</pre>
-
-  <h3>X-Ray Tracing</h3>
-  <p>Enable active tracing on your Lambda function to get distributed traces across Lambda invocations, SDK calls, and downstream services. X-Ray traces show time spent in each segment (function init, handler, AWS SDK calls), making it easy to identify whether latency is in your function code, in S3 calls, in downstream Lambda invocations, or in DynamoDB. For event-driven pipelines with multiple Lambda functions, X-Ray's service map shows the full call graph.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 13 -->
-  <h2 id="s13">13. Security &amp; IAM</h2>
-
-  <h3>Execution Role</h3>
-  <p>Every Lambda function runs under an IAM execution role. The function assumes this role at invocation time and all AWS SDK calls use the role's permissions. Follow least-privilege: give the role only the permissions the function actually needs. Avoid attaching broad managed policies like <code>AmazonS3FullAccess</code> — scope to specific resource ARNs and specific actions.</p>
-
-<pre>
-# Minimal execution role policy for an S3-triggered Glue-launching function
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject"],
-      "Resource": "arn:aws:s3:::my-raw-bucket/raw/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["glue:StartJobRun", "glue:GetJobRun"],
-      "Resource": "arn:aws:glue:us-east-1:123456789:job/my-etl-job"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
-      "Resource": "arn:aws:logs:us-east-1:123456789:log-group:/aws/lambda/my-function:*"
-    }
-  ]
-}
-</pre>
-
-  <h3>Resource-Based Policy</h3>
-  <p>In addition to the execution role (which grants the function permission to call AWS services), Lambda functions have a resource-based policy that grants other services permission to invoke the function. When you add an S3 trigger in the console, AWS automatically adds a resource-based policy statement allowing S3 to invoke the function. Review these policies — an overly permissive resource-based policy can allow unintended services or accounts to invoke your function.</p>
-
-  <h3>Environment Variable Encryption</h3>
-  <p>Lambda encrypts environment variables at rest using a Lambda-managed KMS key by default. For sensitive values, use a CMK and enable in-transit encryption (encrypt values before they reach the Lambda service). Better still, avoid storing secrets in environment variables entirely — retrieve them from Secrets Manager at init time.</p>
-
-  <div class="warn"><strong>Execution role scope creep:</strong> Lambda roles accumulate permissions over time as developers add new integrations without removing old ones. Periodically audit Lambda execution roles with IAM Access Analyzer or AWS CloudTrail to identify unused permissions and remove them. An over-privileged Lambda function is a significant blast radius in the event of a code injection vulnerability.</div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 14 -->
-  <h2 id="s14">14. Common Gotchas and Anti-Patterns</h2>
-
-  <div class="warn">
-    <strong>1. Mutable global state across invocations:</strong> Execution environment reuse means global variables, cached objects, and /tmp files persist between warm invocations. A counter incremented in a global variable will have an unpredictable value on warm invocations. Always initialize per-invocation state inside the handler, not at module level.
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Init phase</div>
+    <div class="cd">Runtime setup, extension load, imports, and top-level code before handler invocation.</div>
   </div>
-
-  <div class="warn">
-    <strong>2. Missing DLQ on async invocations:</strong> Async Lambda invocations retry up to 2 times on failure and then silently drop the event. Without a DLQ or on-failure destination, failed events disappear with no recovery path. Always configure an SQS DLQ or EventBridge on-failure destination for any async Lambda function processing important events.
+  <div class="cheat-row">
+    <div class="ct">Invoke phase</div>
+    <div class="cd">Handler processes one event with access to event payload and context metadata.</div>
   </div>
-
-  <div class="warn">
-    <strong>3. Opening DB connections inside the handler:</strong> Opening a new database connection on every invocation (inside the handler) is expensive and exhausts DB connection limits at high concurrency. Initialize connections at module level so they are reused across warm invocations. Use RDS Proxy to absorb connection churn from cold starts and scale-out events.
+  <div class="cheat-row">
+    <div class="ct">Cold start</div>
+    <div class="cd">New execution environment creation before handling a request.</div>
   </div>
-
-  <div class="warn">
-    <strong>4. Ignoring SQS partial batch failures:</strong> Without partial batch response support, a single failed message in a large SQS batch causes all messages to retry. Successfully processed messages are processed again unnecessarily. Enable <code>ReportBatchItemFailures</code> and return the batch item failure response structure from your handler.
+  <div class="cheat-row">
+    <div class="ct">Warm start</div>
+    <div class="cd">Reuse of an existing execution environment for a later invocation.</div>
   </div>
-
-  <div class="warn">
-    <strong>5. Recursive S3 trigger loops:</strong> A Lambda function triggered by S3 writes output to the same bucket prefix it's triggered from. Each output file triggers a new invocation. The function scales to maximum concurrency, generates unexpected cost, and may corrupt or duplicate data. Always use prefix filters on S3 event notifications and validate that output paths are outside the trigger prefix.
+  <div class="cheat-row">
+    <div class="ct">Reserved conc.</div>
+    <div class="cd">Guarantees and caps concurrency for a function; useful for downstream protection.</div>
   </div>
-
-  <div class="warn">
-    <strong>6. Exceeding the 15-minute timeout for long operations:</strong> Lambda has a hard 15-minute execution limit. Designing a Lambda function to process a large batch of work in a single invocation is fragile — any unexpected slowdown or data volume increase pushes it over the limit. For work that might approach the limit, break it into smaller units using SQS, Step Functions, or fan-out patterns.
+  <div class="cheat-row">
+    <div class="ct">Provisioned conc.</div>
+    <div class="cd">Keeps execution environments initialized to reduce cold-start latency.</div>
   </div>
-
-  <div class="warn">
-    <strong>7. Over-allocating memory without measuring:</strong> Lambda CPU scales proportionally with memory. Doubling memory from 512 MB to 1 GB doubles CPU and roughly halves execution time for CPU-bound functions — often at lower total cost since billed duration drops. Under-allocating memory for compute-intensive functions wastes money. Use Lambda Power Tuning (open-source tool) to find the optimal memory setting for your function's cost/performance profile.
+  <div class="cheat-row">
+    <div class="ct">SnapStart</div>
+    <div class="cd">Snapshot-and-restore startup optimization for supported runtimes.</div>
   </div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 15 -->
-  <h2 id="s15">15. 10 Key Engineering Questions</h2>
-
-  <div class="qa">
-    <div class="qa-q">Q1. What is a Lambda cold start and what factors affect its duration?</div>
-    <div class="qa-a">A cold start occurs when Lambda must create a new execution environment before invoking the function. Duration is affected by: deployment package size (larger zip = longer download), runtime choice (Python/Node cold-start in ~100–300ms; Java in 1–3s), dependency count and complexity, VPC attachment (slightly higher due to ENI setup), and amount of init-phase code. Mitigations: minimize package size, initialize SDK clients at module level, use Provisioned Concurrency for latency-sensitive functions, and prefer lighter runtimes when cold start matters.</div>
+  <div class="cheat-row">
+    <div class="ct">Async invoke</div>
+    <div class="cd">Lambda accepts the event, retries on failure, and can route to destinations or DLQ.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q2. What is the difference between reserved concurrency and provisioned concurrency?</div>
-    <div class="qa-a">Reserved concurrency is both a guarantee and a cap: it dedicates a slice of the account concurrency pool to a function and prevents it from exceeding that limit. Requests beyond the limit are throttled. Provisioned concurrency pre-warms a set number of execution environments, eliminating cold starts for those instances. Reserved concurrency costs nothing extra; provisioned concurrency bills continuously for the initialized capacity. Reserved concurrency is for isolation and caps; provisioned concurrency is for eliminating cold start latency.</div>
+  <div class="cheat-row">
+    <div class="ct">SQS trigger</div>
+    <div class="cd">Poll-based event source; visibility timeout and batch failure behavior are critical.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q3. How does Lambda handle failures differently for synchronous vs asynchronous invocations?</div>
-    <div class="qa-a">For synchronous invocations, errors are returned directly to the caller — no automatic retry; the caller handles retries. For asynchronous invocations, Lambda automatically retries up to 2 times (3 total attempts) with increasing delays. After all retries are exhausted, the event is sent to a configured DLQ or on-failure EventBridge destination, or silently dropped if none is configured. For SQS Event Source Mappings, failed batches return to the queue and are retried according to the queue's visibility timeout and redrive policy.</div>
+  <div class="cheat-row">
+    <div class="ct">Kinesis trigger</div>
+    <div class="cd">Poll-based stream source where shard ordering and iterator age matter.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q4. Why is execution environment reuse both a performance feature and a source of bugs?</div>
-    <div class="qa-a">Environment reuse amortizes cold start cost across multiple invocations — module-level initialization runs once and SDK clients are reused. However, it means global variables, /tmp files, and cached state persist between invocations on the same environment. A function that assumes a clean state (empty /tmp, zero counters, fresh connection) will behave incorrectly on warm invocations if that state was mutated by a previous invocation. Always initialize per-invocation state inside the handler, not at module level, and explicitly clean up /tmp if needed.</div>
+  <div class="cheat-row">
+    <div class="ct">Lambda layer</div>
+    <div class="cd">Versioned shared dependency package mounted into the runtime.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q5. How would you prevent Lambda from exhausting RDS connection limits at high concurrency?</div>
-    <div class="qa-a">Use RDS Proxy. At high Lambda concurrency, each execution environment opens its own database connection — 500 concurrent Lambda invocations can attempt 500 simultaneous connections, overwhelming an RDS instance (typically capped at a few hundred). RDS Proxy pools connections between Lambda and RDS: Lambda connects to the Proxy, the Proxy multiplexes those into a smaller pool of real connections to RDS. Additionally, initialize the connection at module level (not inside the handler) so it's reused across warm invocations on the same environment.</div>
+  <div class="cheat-row">
+    <div class="ct">Container image</div>
+    <div class="cd">Lambda packaging option for large dependencies or custom runtimes, up to 10 GB image size.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q6. What is a partial batch response in SQS + Lambda and why is it important?</div>
-    <div class="qa-a">Without partial batch responses, if a Lambda function fails while processing an SQS batch (even due to one bad message), all messages in the batch return to the queue for retry — including ones that were successfully processed, causing duplicate processing. With partial batch responses (ReportBatchItemFailures on the Event Source Mapping), the function returns a list of only the failed message IDs. Lambda deletes the successful messages and returns only the failures to the queue, preventing duplicate processing of good messages.</div>
+  <div class="cheat-row">
+    <div class="ct">/tmp storage</div>
+    <div class="cd">Ephemeral local scratch storage that can persist during warm reuse but is not durable state.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q7. How does Lambda VPC networking work and what is required for a VPC-attached function to reach S3?</div>
-    <div class="qa-a">Lambda uses the Hyperplane ENI model — shared ENIs are created per (VPC, subnet, security group) combination rather than per execution environment, eliminating the old 30-90 second cold start penalty. A VPC-attached function loses default internet access. To reach S3, the function's subnet needs either: a NAT Gateway (for internet-routed S3 traffic), or an S3 VPC Endpoint (Gateway type, free, routes S3 traffic within AWS network). Without one of these, boto3 S3 calls time out silently.</div>
+  <div class="cheat-row">
+    <div class="ct">Destination</div>
+    <div class="cd">Async success or failure routing to SQS, SNS, EventBridge, or Lambda.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q8. When would you use a Lambda Layer vs a container image deployment?</div>
-    <div class="qa-a">Use Lambda Layers when: multiple functions share the same dependencies (layer is attached to all of them, avoiding duplicate packaging), dependencies are under the 250 MB uncompressed limit, and you want fast zip-based deployments. Use container images when: dependencies exceed 250 MB (container limit is 10 GB), you need custom system packages (OS libraries, binaries), the team already uses containers for other services and wants a unified workflow, or you need ML models bundled with the function. Container images have higher cold starts and require ECR management.</div>
+  <div class="cheat-row">
+    <div class="ct">DLQ</div>
+    <div class="cd">Dead-letter queue or topic for failed events after retry policy is exhausted.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q9. What Lambda metrics should you alarm on for a production event-driven pipeline?</div>
-    <div class="qa-a">Core alarms: Errors (absolute count or error rate) — signals function failures; Throttles — signals concurrency limits being hit, causing dropped or delayed processing; for SQS/Kinesis sources, IteratorAge — measures how far behind the stream the function is, indicating processing backlog. Secondary: Duration p99 — if approaching the 15-minute limit; ConcurrentExecutions — to detect unexpected traffic spikes. For async functions, monitor the DLQ depth separately to catch events accumulating after exhausting retries.</div>
+  <div class="cheat-row">
+    <div class="ct">RDS Proxy</div>
+    <div class="cd">Managed connection pooling layer to protect relational databases from Lambda connection storms.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">Q10. How does Lambda CPU allocation work and how can you use this to optimize cost?</div>
-    <div class="qa-a">Lambda CPU scales linearly with configured memory — at 1,769 MB you get one full vCPU; at 3,538 MB you get two full vCPUs. For CPU-bound functions, doubling memory halves execution time, and since Lambda bills duration × memory, the cost impact is neutral or better — you pay the same or less for faster execution. Use the open-source Lambda Power Tuning tool to benchmark your function across memory settings and find the optimal cost/performance point. Memory-bound functions benefit directly from more memory; I/O-bound functions (waiting on S3, RDS) see less benefit from additional CPU/memory.</div>
+  <div class="cheat-row">
+    <div class="ct">EventBridge</div>
+    <div class="cd">Event bus and scheduler commonly used to route Lambda-driven platform events.</div>
   </div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 16 -->
-  <h2 id="s16">16. Production Story Angles</h2>
-
-  <p>At a large financial institution, Lambda served as the event-driven coordination layer in a multi-stage data pipeline. Raw data arrived in an S3 landing zone via partner file drops and internal system exports throughout the day — arrival times were irregular, not on a fixed schedule. Rather than polling for new files or running a scheduled Glue job every 15 minutes (which would either over-scan or introduce lag), an S3 event notification triggered a Lambda function within seconds of each file landing.</p>
-
-  <p>The Lambda function's role was intentionally narrow: validate that the file matched expected naming conventions and size thresholds, extract partition metadata from the S3 key path, and trigger a Glue ETL job with the file path and processing date as arguments. The function itself did no data transformation — it was an orchestration router, not a processor. This design kept the function fast (under 500ms per invocation), well within Lambda's timeout ceiling, and easy to test in isolation.</p>
-
-  <p>Concurrency management was critical. The downstream Glue cluster had a finite number of concurrent job slots. Without concurrency controls on the Lambda function, a burst of 50 files landing simultaneously would trigger 50 parallel Glue job starts — more than the cluster could handle. The Lambda function was configured with reserved concurrency of 5, effectively serializing Glue job launches. Excess S3 events queued in Lambda's async queue and were processed as Glue job slots freed up, with the full event backlog draining cleanly over time.</p>
-
-  <p>Failure handling used an SQS DLQ on the Lambda async invocation. If a file failed validation or the Glue job launch failed three times, the event landed in the DLQ. A separate Lambda function processed the DLQ on a schedule, extracted the failed file details, and posted a structured alert to the operations channel. The DLQ also served as the replay mechanism — once the root cause was resolved, messages in the DLQ could be re-driven to the main function without re-dropping the original files.</p>
-
-  <p>Observability was structured from day one. Every Lambda invocation logged a JSON structure including the request ID, S3 key, triggered Glue job run ID, and processing duration. CloudWatch Insights queries over this structured log data made it trivial to answer "what Glue job corresponds to this S3 file?" or "how many files arrived between 9am and 10am yesterday?" within seconds — without needing to cross-reference multiple systems.</p>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
-
-  <!-- SECTION 17 -->
-  <h2 id="s17">17. Quick Reference Cheat Sheet</h2>
-
-  <div class="cheat">
-    <div class="cheat-row">
-      <div class="ct">Cold Start</div>
-      <div class="cd">New environment creation cost: code download + runtime init + your module-level code</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Init Phase</div>
-      <div class="cd">Module-level code runs once per environment — use for SDK clients, DB connections, config loading</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Execution Env</div>
-      <div class="cd">Reused across warm invocations — global state and /tmp persist; never assume clean state</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Reserved Concurrency</div>
-      <div class="cd">Dedicated pool slice + hard cap — protects downstream systems, prevents noisy-neighbor starvation</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Provisioned Concurrency</div>
-      <div class="cd">Pre-warmed environments — zero cold start; billed continuously, not per-invocation</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Async Retry</div>
-      <div class="cd">Auto-retries 2x on failure; configure DLQ or on-failure destination to capture exhausted events</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Partial Batch Response</div>
-      <div class="cd">Return only failed SQS message IDs — prevents re-processing of successfully handled messages</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">RDS Proxy</div>
-      <div class="cd">Connection pooler between Lambda and RDS — prevents connection exhaustion at high concurrency</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">VPC + NAT</div>
-      <div class="cd">VPC-attached Lambda loses internet access — needs NAT Gateway or VPC endpoints to reach AWS APIs</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">IteratorAge</div>
-      <div class="cd">CloudWatch metric for stream sources — measures processing lag; alarm if trending up</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">aws_request_id</div>
-      <div class="cd">Unique ID per invocation from context object — include in every log line for traceability</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">15-min limit</div>
-      <div class="cd">Hard execution timeout — design for smaller units; use SQS/Step Functions for longer work</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Memory → CPU</div>
-      <div class="cd">CPU scales linearly with memory; 1,769 MB = 1 full vCPU — tune for cost with Power Tuning tool</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Layers</div>
-      <div class="cd">Shared dependency archives (up to 5 per function) — extracted to /opt/ in execution environment</div>
-    </div>
-    <div class="cheat-row">
-      <div class="ct">Resource Policy</div>
-      <div class="cd">Controls which services/accounts can invoke the function — separate from the execution role</div>
-    </div>
+  <div class="cheat-row">
+    <div class="ct">aws lambda invoke</div>
+    <div class="cd">CLI command for direct Lambda invocation and testing.</div>
   </div>
-
-  <a class="back-top" href="#top">↑ Back to top</a>
+</div>
 
 </div>
 </body>
 </html>
-
-
