@@ -63,11 +63,11 @@ tr:nth-child(even) td { background:#f8fafc; }
 <div class="doc">
 
   <div class="topnav">
-    <a href="https://seanlgirgis.github.io/#learning">? Learning Hub</a> / Amazon EC2 - Master Engineering Reference
+    <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Amazon EC2 - Master Engineering Reference
   </div>
 
   <h1>Amazon EC2</h1>
-  <p class="subtitle">Engineering reference � Senior Data Engineer � Last updated 2026-04-24 � 25-35 min read</p>
+  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-24 &middot; 25-35 min read</p>
 
   <div class="tag-row">
     <span class="tag">AWS</span>
@@ -80,12 +80,12 @@ tr:nth-child(even) td { background:#f8fafc; }
   </div>
 
     <div class="audio-box">
-    <div class="audio-label">🎧 Audio Overview</div>
+    <div class="audio-label">&#127911; Audio Overview</div>
     <audio controls preload="metadata" style="width:100%;margin-top:6px;">
       <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-ec2.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
-    <div class="video-hint" style="margin-top:10px;">🎬 Video Overview (NotebookLM)</div>
+    <div class="video-hint" style="margin-top:10px;">&#127916; Video Overview (NotebookLM)</div>
     <video controls preload="metadata" style="width:100%;max-width:100%;border-radius:4px;margin-top:8px;">
       <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/EC2__Engineering_Deep_Dive_small.mp4" type="video/mp4">
     </video>
@@ -144,7 +144,7 @@ More Ops                                        Less Ops
   patching     scaling       scaling
 </pre>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 2 -->
   <h2 id="s2">2. Instance Types &amp; Families</h2>
@@ -177,7 +177,7 @@ i3en.3xlarge   # Storage optimized, NVMe, 12 vCPU, 96 GB, 7.5 TB NVMe
 
   <div class="hi">For Spark executor nodes (EMR, self-managed), the r family is typically optimal - Spark is memory-bound and needs high RAM-to-CPU ratios. For Kafka brokers, the c or m family with gp3 EBS volumes delivers the right balance of network throughput and cost. For jump hosts and cron runners, t3.micro or t3.small is sufficient and cheap.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 3 -->
   <h2 id="s3">3. Purchasing Options - On-Demand, Reserved, Spot</h2>
@@ -224,7 +224,7 @@ response = ec2.run_instances(
     <tr><td>Spot</td><td>60-90%</td><td>2-min warning, can be reclaimed</td><td>Fault-tolerant batch, stateless workers</td></tr>
   </table>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 4 -->
   <h2 id="s4">4. AMIs - Amazon Machine Images</h2>
@@ -264,7 +264,7 @@ print(f"AMI creation started: {ami_id}")
 
   <div class="warn"><strong>AMI region lock-in:</strong> AMIs are regional. If your infrastructure spans multiple regions for DR or multi-region active-active, you must copy the AMI to each region and maintain region-specific AMI IDs in your IaC (Terraform, CDK). A common mistake is hardcoding a us-east-1 AMI ID into a CloudFormation template and then trying to deploy it in eu-west-1.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 5 -->
   <h2 id="s5">5. Storage - EBS, Instance Store, EFS</h2>
@@ -311,7 +311,7 @@ ec2.attach_volume(
   <h3>EFS (Elastic File System)</h3>
   <p>EFS is a managed NFS file system that can be mounted on multiple EC2 instances simultaneously across multiple AZs. Unlike EBS (one-to-one instance-to-volume) and instance store (local only), EFS is a shared, multi-attach file system. Use EFS for: shared configuration or code that multiple instances need to read, shared scratch space for a distributed job where all workers need read/write access to common files, and ML training data that needs to be accessible from multiple training instances in parallel.</p>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 6 -->
   <h2 id="s6">6. Networking - VPC, ENI, Security Groups</h2>
@@ -363,7 +363,7 @@ ec2.authorize_security_group_egress(
 
   <div class="hi">Prefer SSM Session Manager over bastion hosts for instance access. Session Manager requires no open inbound SSH port, no key pair management, logs all session activity to CloudWatch/S3, and integrates with IAM for access control. It eliminates the most common EC2 attack surface - exposed SSH on port 22.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 7 -->
   <h2 id="s7">7. IAM Roles &amp; Instance Profiles</h2>
@@ -413,7 +413,7 @@ ec2.run_instances(
 )
 </pre>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 8 -->
   <h2 id="s8">8. User Data &amp; Instance Initialization</h2>
@@ -452,7 +452,7 @@ aws s3 cp s3://my-config-bucket/cloudwatch-agent-config.json /opt/aws/amazon-clo
 
   <div class="warn"><strong>Don't put secrets in user data:</strong> User data is visible to anyone with <code>ec2:DescribeInstanceAttribute</code> permission and is stored in plaintext in the EC2 service. Never pass passwords, API keys, or credentials via user data. Retrieve secrets at runtime from Secrets Manager or SSM Parameter Store using the instance's IAM role.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 9 -->
   <h2 id="s9">9. Auto Scaling Groups</h2>
@@ -495,7 +495,7 @@ ec2.create_launch_template(
 
   <div class="hi">For data pipeline worker pools backed by SQS, the pattern is: ASG scales based on SQS <code>ApproximateNumberOfMessagesVisible</code> via a Step Scaling policy. When the queue is empty, scale to zero (or minimum 0). When messages arrive, scale out proportionally. Workers dequeue, process, and delete messages. The ASG + SQS combination provides elastic, fault-tolerant batch processing without managing a job scheduler.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 10 -->
   <h2 id="s10">10. Load Balancers - ALB, NLB, CLB</h2>
@@ -515,14 +515,14 @@ ec2.create_launch_template(
     <tr><th>Feature</th><th>ALB</th><th>NLB</th></tr>
     <tr><td>Layer</td><td>7 (HTTP/HTTPS)</td><td>4 (TCP/UDP/TLS)</td></tr>
     <tr><td>Routing</td><td>Path, host, header, query string</td><td>Connection-level only</td></tr>
-    <tr><td>Latency</td><td>~1ms</td><td>~100�s</td></tr>
+    <tr><td>Latency</td><td>~1ms</td><td>~100&micro;s</td></tr>
     <tr><td>Static IP</td><td>No (DNS only)</td><td>Yes (1 Elastic IP per AZ)</td></tr>
     <tr><td>WebSocket</td><td>Yes</td><td>Yes (TCP passthrough)</td></tr>
     <tr><td>Auth integration</td><td>Yes (Cognito, OIDC)</td><td>No</td></tr>
     <tr><td>Best for</td><td>Web apps, REST APIs, microservices</td><td>TCP services, Kafka, low-latency, static IP</td></tr>
   </table>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 11 -->
   <h2 id="s11">11. EC2 in Data Pipelines</h2>
@@ -549,7 +549,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
 
   <div class="hi">The key design decision for EC2-based ETL workers: make each worker stateless and idempotent. The SQS message contains the job description; the worker fetches input from S3, processes it, writes output to S3 or a database, and deletes the SQS message only on success. If the instance is terminated mid-job (Spot interruption, AZ failure), the SQS message becomes visible again after the visibility timeout and another worker picks it up.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 12 -->
   <h2 id="s12">12. Monitoring - CloudWatch, SSM, Status Checks</h2>
@@ -589,7 +589,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
   <h3>AWS Systems Manager (SSM)</h3>
   <p>SSM provides fleet-wide instance management without SSH. Key features for data engineering: <strong>Session Manager</strong> for secure shell-less access, <strong>Run Command</strong> for executing scripts across multiple instances simultaneously, <strong>Patch Manager</strong> for automated OS patching, and <strong>Parameter Store</strong> for centralized configuration storage accessed by instances at runtime.</p>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 13 -->
   <h2 id="s13">13. Security Best Practices</h2>
@@ -608,7 +608,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
 
   <div class="warn"><strong>Security group drift:</strong> Security groups accumulate rules over time as developers add temporary access for debugging and forget to remove it. Periodically audit security groups with AWS Config rules (<code>restricted-ssh</code>, <code>vpc-sg-open-only-to-authorized-ports</code>) or AWS Trusted Advisor. A single overly permissive inbound rule can expose an entire fleet.</div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 14 -->
   <h2 id="s14">14. Common Gotchas and Anti-Patterns</h2>
@@ -641,7 +641,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
     <strong>7. Scaling based on CPU alone for queue-backed workers:</strong> An ASG scaling on CPU utilization doesn't react to SQS queue depth directly - if workers are idle waiting for messages, CPU stays low even if the queue has 50,000 messages. Scale queue-backed worker ASGs on <code>ApproximateNumberOfMessagesVisible</code> in SQS rather than (or in addition to) CPU, to ensure workers spin up as work arrives.
   </div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 15 -->
   <h2 id="s15">15. 10 Key Engineering Questions</h2>
@@ -683,7 +683,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
 
   <div class="qa">
     <div class="qa-q">Q8. How does an ALB differ from an NLB and when would you choose each?</div>
-    <div class="qa-a">ALB operates at Layer 7 (HTTP/HTTPS) and can route based on URL path, hostname, and headers - appropriate for web applications, REST APIs, and microservices. NLB operates at Layer 4 (TCP/UDP) and passes connections through without HTTP inspection - appropriate for non-HTTP protocols (Kafka, databases, gRPC), latency-critical workloads (NLB adds ~100�s vs ALB's ~1ms), and workloads needing static Elastic IPs per AZ. NLB preserves client source IP; ALB uses X-Forwarded-For headers.</div>
+    <div class="qa-a">ALB operates at Layer 7 (HTTP/HTTPS) and can route based on URL path, hostname, and headers - appropriate for web applications, REST APIs, and microservices. NLB operates at Layer 4 (TCP/UDP) and passes connections through without HTTP inspection - appropriate for non-HTTP protocols (Kafka, databases, gRPC), latency-critical workloads (NLB adds ~100&micro;s vs ALB's ~1ms), and workloads needing static Elastic IPs per AZ. NLB preserves client source IP; ALB uses X-Forwarded-For headers.</div>
   </div>
 
   <div class="qa">
@@ -696,7 +696,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
     <div class="qa-a">Launch an ASG using a Launch Template pointing to a golden AMI with the worker software pre-baked. Scale the ASG based on SQS <code>ApproximateNumberOfMessagesVisible</code> via a Step Scaling policy (scale to 0 when queue empty, scale out proportionally when messages arrive). Workers: long-poll SQS for messages, set an appropriate visibility timeout (longer than the maximum expected processing time), process the message idempotently, delete the message only on success, and handle the SIGTERM signal (Spot interruption, ASG scale-in) by not deleting the message - it will become visible again after the visibility timeout for another worker to pick up.</div>
   </div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 16 -->
   <h2 id="s16">16. Production Story Angles</h2>
@@ -711,7 +711,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
 
   <p>EBS gp3 volumes were sized conservatively at 50 GB for the OS and application layer, with IOPS and throughput configured to the minimum needed. The key insight discovered during load testing: default gp3 baseline (3,000 IOPS) was the bottleneck during the write phase, not CPU or memory. Increasing the configured IOPS to 6,000 on the same volume (no size increase, modest cost increase) eliminated the bottleneck entirely - something that would have required doubling the volume size on gp2 to achieve.</p>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
   <!-- SECTION 17 -->
   <h2 id="s17">17. Quick Reference Cheat Sheet</h2>
@@ -779,11 +779,12 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
     </div>
   </div>
 
-  <a class="back-top" href="#top">? Back to top</a>
+  <a class="back-top" href="#top">&uarr; Back to top</a>
 
 </div>
 </body>
 </html>
+
 
 
 
