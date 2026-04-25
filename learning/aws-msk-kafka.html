@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS MSK and Apache Kafka - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-msk-kafka.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS MSK and Apache Kafka - Master Engineering Reference
+</div>
+
+<h1>AWS MSK and Apache Kafka</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 40-50 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Apache Kafka</span>
+  <span class="tag">AWS MSK</span>
+  <span class="tag">Streaming</span>
+  <span class="tag">Event-Driven Architecture</span>
+  <span class="tag">Consumer Groups</span>
+  <span class="tag">Schema Registry</span>
+  <span class="tag">MSK Connect</span>
+  <span class="tag">Data Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-msk-kafka.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Kafka Solves</a></li>
+    <li><a href="#s2">Core Kafka Concepts</a></li>
+    <li><a href="#s3">AWS MSK Architecture</a></li>
+    <li><a href="#s4">MSK Serverless vs Provisioned</a></li>
+    <li><a href="#s5">MSK vs Self-Managed Kafka on EC2</a></li>
+    <li><a href="#s6">Topic, Partition, and Key Design</a></li>
+    <li><a href="#s7">Producer Configuration Tuning</a></li>
+    <li><a href="#s8">Consumer Configuration Tuning</a></li>
+    <li><a href="#s9">Rebalancing and Consumer Lag</a></li>
+    <li><a href="#s10">Delivery Semantics and Exactly-Once</a></li>
+    <li><a href="#s11">Schema Governance with Glue Schema Registry</a></li>
+    <li><a href="#s12">MSK Connect and Data Engineering Patterns</a></li>
+    <li><a href="#s13">Monitoring, Security, and Cost</a></li>
+    <li><a href="#s14">Kafka vs Kinesis</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Kafka Solves</h2>
+<p>Apache Kafka is a distributed commit log used to move events between producers and consumers with durable storage, ordered reads within partitions, replay capability, and horizontal scale. In a data engineering platform, Kafka is the buffer between operational systems and analytical consumers. It prevents tight coupling between source applications, transformation jobs, storage sinks, alerting systems, and machine learning features.</p>
+<p>AWS Managed Streaming for Apache Kafka, or MSK, runs Kafka as a managed AWS service. It keeps the Kafka programming model while shifting broker operations, patching, monitoring integrations, encryption, and AWS networking into a managed platform.</p>
+<div class="hi">Kafka is not just a queue. It is a durable event log. The key architectural advantage is replay: a new consumer can read old events without asking the source system to resend them.</div>
+<div class="warn">Do not introduce Kafka only because a system needs async behavior. If nobody needs replay, ordering, multiple subscribers, or high-throughput ingestion, SQS or EventBridge may be simpler and cheaper.</div>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>Kafka Fit</th>
+    <th>Reason</th>
+  </tr>
+  <tr>
+    <td>Clickstream ingestion</td>
+    <td>Strong</td>
+    <td>High volume, append-only events, multiple downstream consumers.</td>
+  </tr>
+  <tr>
+    <td>Database change data capture</td>
+    <td>Strong</td>
+    <td>CDC streams need ordering, replay, and sink fan-out.</td>
+  </tr>
+  <tr>
+    <td>One-off batch transfer</td>
+    <td>Weak</td>
+    <td>S3 batch loading is usually simpler.</td>
+  </tr>
+  <tr>
+    <td>Human workflow commands</td>
+    <td>Mixed</td>
+    <td>SQS/EventBridge may be better unless event history matters.</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Core Kafka Concepts</h2>
+<p>A Kafka cluster contains brokers. Producers write records to topics. Topics are split into partitions. Each partition is an ordered append-only log. Consumers read from partitions and track their position using offsets. Consumer groups allow multiple consumers to share the work for one logical application.</p>
+<h3>Key building blocks</h3>
+<table>
+  <tr>
+    <th>Concept</th>
+    <th>Meaning</th>
+    <th>Senior-Level Detail</th>
+  </tr>
+  <tr>
+    <td>Broker</td>
+    <td>Kafka server node</td>
+    <td>Stores partitions, serves reads/writes, participates in replication.</td>
+  </tr>
+  <tr>
+    <td>Topic</td>
+    <td>Named event stream</td>
+    <td>Retention, partitions, compaction, and replication are topic-level design decisions.</td>
+  </tr>
+  <tr>
+    <td>Partition</td>
+    <td>Ordered shard of a topic</td>
+    <td>Ordering is guaranteed only within one partition, not across the topic.</td>
+  </tr>
+  <tr>
+    <td>Offset</td>
+    <td>Position in a partition</td>
+    <td>Committed offsets represent what a consumer group has acknowledged.</td>
+  </tr>
+  <tr>
+    <td>Consumer group</td>
+    <td>Logical subscriber application</td>
+    <td>Each partition is assigned to only one active consumer in the group.</td>
+  </tr>
+</table>
+<pre><code># Inspect topics
+kafka-topics.sh --bootstrap-server b-1.example:9098 --list
+
+# Describe partition count, leaders, replicas, and ISR
+kafka-topics.sh --bootstrap-server b-1.example:9098 \
+  --describe --topic telemetry.events
+
+# Check consumer group offsets and lag
+kafka-consumer-groups.sh --bootstrap-server b-1.example:9098 \
+  --describe --group warehouse-loader</code></pre>
+<div class="hi">Partition count controls maximum parallelism for a consumer group. If a topic has 12 partitions, one group can have up to 12 active consumers reading in parallel.</div>
+<div class="warn">Adding more consumers than partitions does not increase throughput. Extra consumers sit idle because Kafka assigns each partition to only one consumer per group.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">AWS MSK Architecture</h2>
+<p>MSK runs Kafka brokers inside your VPC subnets and exposes bootstrap endpoints for clients. In provisioned MSK, you choose broker instance types, broker count, storage, Kafka version, networking, authentication, and scaling approach. In MSK Serverless, AWS abstracts broker capacity and scales ingestion and storage behind a serverless cluster interface.</p>
+<p>Most production MSK clusters span multiple Availability Zones. Replication protects data when a broker or AZ fails. Clients connect through VPC networking, typically with TLS and IAM authentication, SASL/SCRAM, or mutual TLS depending on the security model.</p>
+<div class="hi">MSK is still Kafka. You keep Kafka client libraries, consumer group behavior, offsets, topic semantics, and producer/consumer tuning. The main difference is who operates the brokers.</div>
+<div class="warn">A managed cluster does not eliminate data modeling mistakes. Poor partition keys, huge messages, unbounded lag, or broken offset commits will still hurt you on MSK.</div>
+<table>
+  <tr>
+    <th>Layer</th>
+    <th>MSK Handles</th>
+    <th>You Still Own</th>
+  </tr>
+  <tr>
+    <td>Infrastructure</td>
+    <td>Broker provisioning, replacements, monitoring hooks</td>
+    <td>Subnet design, client connectivity, quotas, capacity choices</td>
+  </tr>
+  <tr>
+    <td>Kafka runtime</td>
+    <td>Version support, patch workflows</td>
+    <td>Topic design, retention, partitions, app configs</td>
+  </tr>
+  <tr>
+    <td>Security</td>
+    <td>TLS, auth integrations, encryption options</td>
+    <td>IAM policy boundaries, secret rotation, least privilege</td>
+  </tr>
+  <tr>
+    <td>Operations</td>
+    <td>CloudWatch metrics, broker health</td>
+    <td>Lag alerting, consumer recovery, cost governance</td>
+  </tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">MSK Serverless vs Provisioned</h2>
+<p>MSK Serverless is best when traffic is variable, teams want low operations overhead, and workload limits fit the serverless model. Provisioned MSK is better when you need predictable high throughput, broker-level control, specific instance sizing, custom capacity planning, or mature Kafka tuning knobs.</p>
+<table>
+  <tr>
+    <th>Dimension</th>
+    <th>MSK Serverless</th>
+    <th>MSK Provisioned</th>
+  </tr>
+  <tr>
+    <td>Capacity model</td>
+    <td>Managed scaling</td>
+    <td>You size brokers, storage, and partitions</td>
+  </tr>
+  <tr>
+    <td>Operational effort</td>
+    <td>Lower</td>
+    <td>Medium; still easier than EC2 self-managed</td>
+  </tr>
+  <tr>
+    <td>Cost profile</td>
+    <td>Good for bursty or moderate workloads</td>
+    <td>Good for steady, high utilization workloads</td>
+  </tr>
+  <tr>
+    <td>Control</td>
+    <td>Less broker-level control</td>
+    <td>More control over instance/storage/network tuning</td>
+  </tr>
+  <tr>
+    <td>Best use case</td>
+    <td>New streaming apps, unpredictable demand</td>
+    <td>Large established data platforms</td>
+  </tr>
+</table>
+<div class="hi">The simplest decision rule: choose Serverless when you want Kafka semantics without Kafka capacity planning; choose Provisioned when throughput and cost efficiency require explicit engineering control.</div>
+<div class="warn">Serverless can still surprise you on cost if producers flood the cluster, consumers fall behind, or retention is longer than expected. Serverless removes broker sizing, not architecture discipline.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">MSK vs Self-Managed Kafka on EC2</h2>
+<p>Self-managed Kafka on EC2 gives maximum control but also maximum operational responsibility. You manage broker fleets, operating system patches, disk pressure, ZooKeeper or KRaft operations depending on version, rolling upgrades, metrics, certificates, restart procedures, broker replacement, and incident response.</p>
+<p>MSK is usually the better enterprise default unless the team has a strong Kafka platform engineering function or requires custom configurations that MSK does not expose.</p>
+<table>
+  <tr>
+    <th>Choice</th>
+    <th>Strength</th>
+    <th>Risk</th>
+  </tr>
+  <tr>
+    <td>MSK</td>
+    <td>Managed operations, AWS integrations, less undifferentiated work</td>
+    <td>Less low-level control, service quotas, AWS-specific constraints</td>
+  </tr>
+  <tr>
+    <td>Kafka on EC2</td>
+    <td>Full control over binaries, configs, plugins, disk layout</td>
+    <td>High operational burden and higher outage responsibility</td>
+  </tr>
+  <tr>
+    <td>Confluent Cloud</td>
+    <td>Rich Kafka ecosystem and managed connectors</td>
+    <td>Vendor cost, networking, and governance considerations</td>
+  </tr>
+</table>
+<div class="hi">For most data engineering teams, operating Kafka well is not the business differentiator. Event modeling, data contracts, stream processing, and downstream reliability are where the value is.</div>
+<div class="warn">Self-managed Kafka often starts cheap on paper and becomes expensive during the first disk-full incident, failed broker replacement, bad rolling upgrade, or cross-AZ latency problem.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Topic, Partition, and Key Design</h2>
+<p>Topic design is data architecture. A good topic represents a stable business event stream such as <code>orders.created</code>, <code>payments.authorized</code>, or <code>telemetry.metric_samples</code>. Partitions provide parallelism, but the partition key controls ordering and distribution. Choose keys based on the unit of ordering and expected cardinality.</p>
+<h3>Partition key examples</h3>
+<table>
+  <tr>
+    <th>Use Case</th>
+    <th>Candidate Key</th>
+    <th>Tradeoff</th>
+  </tr>
+  <tr>
+    <td>Order lifecycle</td>
+    <td><code>order_id</code></td>
+    <td>Preserves order-level sequence; high cardinality is usually good.</td>
+  </tr>
+  <tr>
+    <td>Customer activity</td>
+    <td><code>customer_id</code></td>
+    <td>Preserves customer sequence but can create hot partitions for huge customers.</td>
+  </tr>
+  <tr>
+    <td>IoT telemetry</td>
+    <td><code>device_id</code></td>
+    <td>Good ordering per device; watch for noisy devices.</td>
+  </tr>
+  <tr>
+    <td>Unkeyed logs</td>
+    <td>Null key</td>
+    <td>Good distribution, no business ordering guarantee.</td>
+  </tr>
+</table>
+<pre><code># Create a topic for telemetry ingestion
+kafka-topics.sh --bootstrap-server b-1.example:9098 \
+  --create \
+  --topic telemetry.metric_samples \
+  --partitions 24 \
+  --replication-factor 3 \
+  --config retention.ms=604800000</code></pre>
+<div class="hi">Partition keys are a contract. Changing the key later can break ordering assumptions and repartition downstream state stores.</div>
+<div class="warn">Too few partitions cap consumer parallelism. Too many partitions increase metadata, file handles, recovery time, and rebalance overhead. Do not create thousands casually.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Producer Configuration Tuning</h2>
+<p>Producer tuning balances durability, latency, throughput, and duplicate risk. The most important settings are <code>acks</code>, <code>enable.idempotence</code>, <code>linger.ms</code>, <code>batch.size</code>, <code>compression.type</code>, <code>retries</code>, and <code>delivery.timeout.ms</code>.</p>
+<table>
+  <tr>
+    <th>Setting</th>
+    <th>Typical Production Value</th>
+    <th>Why It Matters</th>
+  </tr>
+  <tr>
+    <td><code>acks</code></td>
+    <td><code>all</code></td>
+    <td>Waits for in-sync replicas before acknowledging writes.</td>
+  </tr>
+  <tr>
+    <td><code>enable.idempotence</code></td>
+    <td><code>true</code></td>
+    <td>Prevents duplicate writes during retries for a single producer session.</td>
+  </tr>
+  <tr>
+    <td><code>compression.type</code></td>
+    <td><code>snappy</code> or <code>lz4</code></td>
+    <td>Reduces network and storage cost; CPU tradeoff applies.</td>
+  </tr>
+  <tr>
+    <td><code>linger.ms</code></td>
+    <td><code>5</code> to <code>50</code></td>
+    <td>Allows batching; improves throughput at small latency cost.</td>
+  </tr>
+  <tr>
+    <td><code>batch.size</code></td>
+    <td>Workload dependent</td>
+    <td>Larger batches improve throughput when events are small.</td>
+  </tr>
+</table>
+<pre><code># Example producer properties
+bootstrap.servers=b-1.example:9098,b-2.example:9098
+security.protocol=SASL_SSL
+acks=all
+enable.idempotence=true
+retries=2147483647
+delivery.timeout.ms=120000
+linger.ms=20
+batch.size=65536
+compression.type=lz4
+max.in.flight.requests.per.connection=5</code></pre>
+<div class="hi">For high-volume data pipelines, batching and compression often matter as much as broker size. Small uncompressed writes are a tax on brokers, network, and storage.</div>
+<div class="warn">Setting <code>acks=1</code> may look faster but can lose acknowledged data if the leader fails before replicas catch up. Do not use it blindly for critical events.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Consumer Configuration Tuning</h2>
+<p>Consumer tuning controls how quickly records are fetched, processed, committed, and recovered after failures. Important settings include <code>fetch.min.bytes</code>, <code>fetch.max.wait.ms</code>, <code>max.poll.records</code>, <code>max.poll.interval.ms</code>, <code>session.timeout.ms</code>, <code>heartbeat.interval.ms</code>, and offset commit strategy.</p>
+<table>
+  <tr>
+    <th>Concern</th>
+    <th>Setting</th>
+    <th>Design Guidance</th>
+  </tr>
+  <tr>
+    <td>Throughput</td>
+    <td><code>fetch.min.bytes</code>, <code>max.poll.records</code></td>
+    <td>Increase for batch-oriented sinks like S3 or warehouses.</td>
+  </tr>
+  <tr>
+    <td>Long processing</td>
+    <td><code>max.poll.interval.ms</code></td>
+    <td>Raise if processing batches can exceed default poll interval.</td>
+  </tr>
+  <tr>
+    <td>Failure detection</td>
+    <td><code>session.timeout.ms</code></td>
+    <td>Lower detects dead consumers faster but can cause false rebalances.</td>
+  </tr>
+  <tr>
+    <td>Commit behavior</td>
+    <td><code>enable.auto.commit</code></td>
+    <td>Use manual commits for reliable sinks and controlled retries.</td>
+  </tr>
+</table>
+<pre><code># Example consumer properties
+bootstrap.servers=b-1.example:9098,b-2.example:9098
+group.id=s3-raw-loader
+enable.auto.commit=false
+auto.offset.reset=earliest
+max.poll.records=1000
+max.poll.interval.ms=900000
+fetch.min.bytes=1048576
+fetch.max.wait.ms=500
+partition.assignment.strategy=org.apache.kafka.clients.consumer.CooperativeStickyAssignor</code></pre>
+<div class="hi">Manual commits let a consumer write to a sink first, then commit offsets. This is the foundation of practical at-least-once processing.</div>
+<div class="warn">If processing takes longer than <code>max.poll.interval.ms</code>, Kafka considers the consumer unhealthy and triggers a rebalance. The result can look like random duplicate processing.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Rebalancing and Consumer Lag</h2>
+<p>A rebalance happens when partitions are reassigned among consumers in a group. It can be triggered by consumer joins, consumer exits, missed heartbeats, topic partition changes, deployment restarts, or slow polling. Rebalances are normal, but frequent or long rebalances disrupt throughput and increase lag.</p>
+<p>Consumer lag is the distance between the latest partition offset and the consumer group's committed offset. Lag is not always bad. A batch sink may intentionally process in waves. The real question is whether lag is bounded, predictable, and recovering.</p>
+<h3>Ways to reduce rebalance disruption</h3>
+<ul>
+  <li>Use cooperative rebalancing where supported.</li>
+  <li>Avoid rolling all consumers at the same time.</li>
+  <li>Keep processing time below <code>max.poll.interval.ms</code>.</li>
+  <li>Use static group membership for stable long-running consumers.</li>
+  <li>Scale partitions and consumers based on measured throughput, not hope.</li>
+</ul>
+<div class="hi">Lag alerting should combine lag size and lag age. A million records of lag may be fine for tiny events but dangerous if the oldest event is two hours late in a real-time pipeline.</div>
+<div class="warn">A rebalance storm can be caused by slow processing, network instability, bad deployments, or too many partitions. Treat it as a platform reliability incident, not just an application bug.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">Delivery Semantics and Exactly-Once</h2>
+<p>Kafka delivery semantics are usually described as at-most-once, at-least-once, and exactly-once. In real systems, the end-to-end guarantee depends on Kafka, the consumer code, the sink, idempotency, transactions, and failure recovery. Kafka can support exactly-once semantics for Kafka-to-Kafka workflows using idempotent producers and transactions. Once data leaves Kafka for S3, JDBC, OpenSearch, or an API, the sink must also support idempotent or transactional writes.</p>
+<table>
+  <tr>
+    <th>Semantic</th>
+    <th>Meaning</th>
+    <th>Typical Use</th>
+  </tr>
+  <tr>
+    <td>At-most-once</td>
+    <td>May lose records, no duplicates</td>
+    <td>Low-value metrics where loss is acceptable.</td>
+  </tr>
+  <tr>
+    <td>At-least-once</td>
+    <td>No loss if designed correctly, duplicates possible</td>
+    <td>Most data engineering pipelines.</td>
+  </tr>
+  <tr>
+    <td>Exactly-once</td>
+    <td>Each logical event affects final state once</td>
+    <td>Financial ledgers, stateful stream processing, compacted tables.</td>
+  </tr>
+</table>
+<div class="hi">Most production pipelines do not need pure exactly-once Kafka transactions. They need at-least-once delivery plus idempotent writes, deterministic keys, and deduplication in the sink.</div>
+<div class="warn">Exactly-once is not magic. If a consumer calls an external REST API and then crashes before committing the offset, Kafka cannot automatically undo the API side effect.</div>
+<pre><code># Common idempotent sink pattern
+event_id = record.headers["event_id"]
+upsert into target_table(event_id, payload, processed_at)
+values (:event_id, :payload, current_timestamp)
+on conflict (event_id) do update
+set payload = excluded.payload,
+    processed_at = excluded.processed_at;</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">Schema Governance with Glue Schema Registry</h2>
+<p>Glue Schema Registry helps producers and consumers enforce schemas for Kafka messages. It supports schema formats such as Avro, JSON Schema, and Protobuf depending on client integration. The registry stores schema versions and compatibility rules so event contracts can evolve without breaking consumers.</p>
+<p>For senior data engineering teams, schema governance is not paperwork. It is outage prevention. Streaming systems fail painfully when producers silently rename fields, change types, remove required attributes, or publish malformed records.</p>
+<table>
+  <tr>
+    <th>Compatibility Mode</th>
+    <th>What It Protects</th>
+    <th>Typical Use</th>
+  </tr>
+  <tr>
+    <td>Backward</td>
+    <td>New consumers can read old data</td>
+    <td>Common for analytics and replay.</td>
+  </tr>
+  <tr>
+    <td>Forward</td>
+    <td>Old consumers can read new data</td>
+    <td>Useful during producer-first deployments.</td>
+  </tr>
+  <tr>
+    <td>Full</td>
+    <td>Both backward and forward compatibility</td>
+    <td>Strict enterprise contracts.</td>
+  </tr>
+</table>
+<pre><code>{
+  "type": "record",
+  "name": "MetricSample",
+  "namespace": "com.sean.telemetry",
+  "fields": [
+    { "name": "endpoint_id", "type": "string" },
+    { "name": "metric_name", "type": "string" },
+    { "name": "value", "type": "double" },
+    { "name": "event_time", "type": "string" }
+  ]
+}</code></pre>
+<div class="hi">Schema versioning makes replay safer. A consumer rebuilding a table from last month's events must understand older message versions.</div>
+<div class="warn">Do not let teams publish arbitrary JSON forever. The first downstream warehouse, ML feature store, or audit replay will expose the damage.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">MSK Connect and Data Engineering Patterns</h2>
+<p>MSK Connect runs Kafka Connect connectors as a managed AWS service. It is commonly used for S3 sinks, JDBC sources, JDBC sinks, Debezium CDC, OpenSearch sinks, and other connector-based integrations. This reduces custom code, but connector configuration and operational ownership still matter.</p>
+<h3>Common MSK patterns</h3>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>Flow</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Raw event lake</td>
+    <td>Producer -&gt; MSK -&gt; S3 sink</td>
+    <td>Use partitioned paths by event date, topic, and source.</td>
+  </tr>
+  <tr>
+    <td>CDC lakehouse</td>
+    <td>Database -&gt; Debezium -&gt; MSK -&gt; Iceberg/S3</td>
+    <td>Requires delete handling, ordering, and schema evolution.</td>
+  </tr>
+  <tr>
+    <td>Real-time analytics</td>
+    <td>MSK -&gt; Flink/Spark Streaming -&gt; S3/OpenSearch</td>
+    <td>Use checkpoints and idempotent sinks.</td>
+  </tr>
+  <tr>
+    <td>Operational search</td>
+    <td>MSK -&gt; OpenSearch sink</td>
+    <td>Requires stable document IDs to avoid duplicates.</td>
+  </tr>
+</table>
+<pre><code>{
+  "connector.class": "io.confluent.connect.s3.S3SinkConnector",
+  "topics": "telemetry.metric_samples",
+  "s3.bucket.name": "de-raw-events",
+  "s3.region": "us-east-1",
+  "flush.size": "10000",
+  "format.class": "io.confluent.connect.s3.format.parquet.ParquetFormat",
+  "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
+  "path.format": "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH"
+}</code></pre>
+<div class="hi">MSK Connect is best when the integration is standard. Write custom consumers only when business logic, error handling, or sink semantics exceed connector configuration.</div>
+<div class="warn">Connectors can fail silently from poison records, schema mismatches, IAM permission errors, small-file explosions, or sink throttling. Monitor connector task state and dead letter queues.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s13">Monitoring, Security, and Cost</h2>
+<p>MSK operations need three monitoring layers: broker health, topic throughput, and consumer behavior. CloudWatch broker metrics show CPU, memory pressure, disk usage, network throughput, request latency, under-replicated partitions, active controller count, and connection counts. Consumer lag tells you if downstream applications are keeping up.</p>
+<h3>Security checklist</h3>
+<ul>
+  <li>Use TLS for encryption in transit.</li>
+  <li>Use IAM authentication, SASL/SCRAM, or mTLS consistently.</li>
+  <li>Restrict broker access to approved VPCs, subnets, and security groups.</li>
+  <li>Separate producer and consumer permissions by topic prefix.</li>
+  <li>Encrypt data at rest and rotate secrets/certificates.</li>
+</ul>
+<h3>Cost drivers</h3>
+<table>
+  <tr>
+    <th>Driver</th>
+    <th>Why It Surprises Teams</th>
+    <th>Mitigation</th>
+  </tr>
+  <tr>
+    <td>Broker capacity</td>
+    <td>Provisioned clusters run even when traffic is low.</td>
+    <td>Right-size, use Serverless for bursty workloads.</td>
+  </tr>
+  <tr>
+    <td>Storage retention</td>
+    <td>Long retention across replicated partitions grows fast.</td>
+    <td>Set retention per topic and offload to S3 when possible.</td>
+  </tr>
+  <tr>
+    <td>Cross-AZ traffic</td>
+    <td>Replication and clients across AZs add network cost.</td>
+    <td>Place clients carefully and understand data transfer paths.</td>
+  </tr>
+  <tr>
+    <td>Small files in S3</td>
+    <td>Over-flushing from connectors increases downstream query cost.</td>
+    <td>Tune flush size, rotate interval, and compaction jobs.</td>
+  </tr>
+</table>
+<div class="hi">Alert on symptoms users feel: consumer lag age, failed connector tasks, under-replicated partitions, disk pressure, and produce/consume error rates.</div>
+<div class="warn">Kafka retention is not a warehouse retention policy. Keeping months of replicated Kafka data can be expensive. Land durable history in S3 and use Kafka for hot replay windows.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s14">Kafka vs Kinesis</h2>
+<p>Kafka and Kinesis both support streaming ingestion, but they fit different operating models. Kafka is portable, ecosystem-rich, and strong when teams already use Kafka clients, Kafka Connect, Flink, Spark, or multi-cloud patterns. Kinesis is AWS-native, simpler to operate, and integrates directly with Lambda, Firehose, CloudWatch, IAM, and other AWS services.</p>
+<table>
+  <tr>
+    <th>Dimension</th>
+    <th>Kafka/MSK</th>
+    <th>Kinesis</th>
+  </tr>
+  <tr>
+    <td>API ecosystem</td>
+    <td>Open Kafka protocol and large connector ecosystem</td>
+    <td>AWS-native APIs and integrations</td>
+  </tr>
+  <tr>
+    <td>Operations</td>
+    <td>More tuning and Kafka knowledge</td>
+    <td>Less broker thinking; shard/serverless model</td>
+  </tr>
+  <tr>
+    <td>Portability</td>
+    <td>High</td>
+    <td>Lower; AWS-specific</td>
+  </tr>
+  <tr>
+    <td>Ordering unit</td>
+    <td>Partition</td>
+    <td>Shard</td>
+  </tr>
+  <tr>
+    <td>Best fit</td>
+    <td>Kafka ecosystem, complex streaming platform</td>
+    <td>AWS-first event ingestion and simple stream fan-out</td>
+  </tr>
+</table>
+<div class="hi">Choose MSK when Kafka compatibility and ecosystem matter. Choose Kinesis when AWS-native simplicity matters more than Kafka portability.</div>
+<div class="warn">Do not compare only ingestion price. Include client complexity, operations, replay needs, connector maturity, downstream integrations, and team expertise.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: How do Kafka partitions affect ordering and scalability?</div>
+  <div class="qa-a">A: Kafka guarantees ordering only within a partition. More partitions increase parallelism for producers and consumer groups, but they also increase metadata, recovery overhead, rebalance cost, and operational complexity. The partition key should match the business unit that requires ordering.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you choose MSK Serverless instead of provisioned MSK?</div>
+  <div class="qa-a">A: I would choose MSK Serverless for new or variable workloads where I want Kafka semantics without broker sizing. I would choose provisioned MSK for predictable high-throughput platforms where explicit control over broker type, storage, partition strategy, and cost optimization matters.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What producer settings matter most for reliable ingestion?</div>
+  <div class="qa-a">A: The core settings are acks=all, enable.idempotence=true, retries enabled, reasonable delivery timeout, compression, batching, and a partition key that distributes load. These settings protect against data loss and improve throughput, but they must be matched with broker replication and topic min.insync.replicas.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you design a Kafka consumer that writes reliably to S3 or a database?</div>
+  <div class="qa-a">A: I usually disable auto-commit, process records in controlled batches, write to the sink using idempotent keys or upserts, then commit offsets only after the sink write succeeds. For S3, I also watch file sizing, partition paths, schema evolution, and retry behavior around partial failures.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What does exactly-once mean in Kafka, and when is it worth using?</div>
+  <div class="qa-a">A: Kafka exactly-once usually means transactional Kafka-to-Kafka processing where output records and consumed offsets are committed atomically. It is worth using for stateful stream processing where duplicates corrupt results. For many data pipelines, at-least-once plus idempotent sink writes is simpler and sufficient.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you troubleshoot increasing consumer lag in MSK?</div>
+  <div class="qa-a">A: I would check whether produce rate increased, consumers are erroring, rebalances are frequent, processing time exceeds max.poll.interval.ms, sink systems are throttling, or partitions are imbalanced. Then I would inspect CloudWatch metrics, consumer group lag, connector task status, and application logs before scaling consumers or partitions.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Broker</div>
+    <div class="cd">Kafka server that stores partitions and handles producer/consumer requests.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Topic</div>
+    <div class="cd">Named event stream with retention, partitions, and replication settings.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Partition</div>
+    <div class="cd">Ordered shard of a topic; the unit of parallelism and ordering.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Offset</div>
+    <div class="cd">Record position within a partition; committed by consumer groups.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Consumer group</div>
+    <div class="cd">Logical subscriber where partitions are distributed among active consumers.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">acks=all</div>
+    <div class="cd">Producer waits for all required in-sync replicas before acknowledging a write.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">idempotence</div>
+    <div class="cd">Producer feature that prevents duplicates caused by retrying sends.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">linger.ms</div>
+    <div class="cd">Producer delay that allows more records to batch before send.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">max.poll.interval</div>
+    <div class="cd">Maximum time between consumer polls before Kafka triggers group rebalance.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Consumer lag</div>
+    <div class="cd">Difference between latest offset and committed consumer group offset.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Rebalance</div>
+    <div class="cd">Partition reassignment after consumer group membership or topic changes.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">MSK Connect</div>
+    <div class="cd">Managed Kafka Connect service for source and sink connectors.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Glue Registry</div>
+    <div class="cd">AWS schema registry for schema versions, compatibility, and enforcement.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Serverless MSK</div>
+    <div class="cd">MSK option that abstracts broker capacity for variable workloads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Provisioned MSK</div>
+    <div class="cd">MSK option where you choose broker count, instance type, storage, and scaling.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Kafka vs Kinesis</div>
+    <div class="cd">Kafka favors portability and ecosystem; Kinesis favors AWS-native simplicity.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
