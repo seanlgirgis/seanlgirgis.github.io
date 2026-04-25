@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delta Lake - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/delta-lake.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Delta Lake - Master Engineering Reference
+</div>
+
+<h1>Delta Lake</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Delta Lake</span>
+  <span class="tag">Lakehouse</span>
+  <span class="tag">Parquet</span>
+  <span class="tag">ACID</span>
+  <span class="tag">CDC</span>
+  <span class="tag">Databricks</span>
+  <span class="tag">AWS</span>
+  <span class="tag">Table Formats</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_delta-lake.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Delta Lake Is</a></li>
+    <li><a href="#s2">The Transaction Log &amp; ACID on Object Storage</a></li>
+    <li><a href="#s3">Time Travel</a></li>
+    <li><a href="#s4">Schema Enforcement &amp; Evolution</a></li>
+    <li><a href="#s5">MERGE INTO</a></li>
+    <li><a href="#s6">OPTIMIZE &amp; Z-ORDER</a></li>
+    <li><a href="#s7">VACUUM</a></li>
+    <li><a href="#s8">Delta vs Iceberg vs Hudi</a></li>
+    <li><a href="#s9">Delta on AWS &amp; Databricks</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Delta Lake Is &mdash; open table format on Parquet</h2>
+<p>Delta Lake is an open table format layered on top of Parquet files. It keeps the low-cost, columnar storage model of a data lake while adding table semantics that raw object storage does not provide by itself: transactions, schema rules, table history, deletes, updates, and CDC-friendly merges.</p>
+<p>For data engineers, the practical value is that a directory of files can behave more like a database table. Instead of treating S3 or ADLS as a loose pile of immutable files, Delta adds a control plane around the files so readers can see a consistent table snapshot while writers continue appending or replacing data.</p>
+<div class="hi">Key insight: Delta does not replace Parquet; it coordinates Parquet files with metadata so lake storage can support warehouse-like behavior.</div>
+<div class="warn">Raw Parquet folders are easy to write but hard to govern. Without a transaction layer, partial writes, schema drift, duplicate loads, and unsafe overwrites become production landmines.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">The Transaction Log &amp; ACID on Object Storage</h2>
+<p>The heart of Delta Lake is the <code>_delta_log</code> directory. Each table commit writes a new JSON log entry that records which data files were added, removed, and what table metadata changed. Readers do not list every Parquet file and guess the table state; they reconstruct or read a checkpointed snapshot from the transaction log.</p>
+<p>ACID on object storage works because commits are coordinated through the log. Atomicity means the table advances only when the commit is accepted. Isolation means readers operate against a stable snapshot, even while writers create newer versions. Durability comes from the underlying object store, while Delta provides the metadata discipline that object storage lacks.</p>
+<pre><code>delta_table/
+  _delta_log/
+    00000000000000000000.json
+    00000000000000000001.json
+    00000000000000000010.checkpoint.parquet
+  part-0000-....snappy.parquet
+  part-0001-....snappy.parquet</code></pre>
+<div class="warn">Never modify Delta table Parquet files directly outside the Delta writer path. The log is the source of truth; bypassing it creates invisible, orphaned, or corrupt table state.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Time Travel &mdash; VERSION AS OF, TIMESTAMP AS OF</h2>
+<p>Time travel lets you query a Delta table as it existed at a previous commit. <code>VERSION AS OF</code> is deterministic because it points to a specific table version. <code>TIMESTAMP AS OF</code> is more human-friendly for audit and debugging, but it depends on retained log and data files still being available.</p>
+<p>This is extremely useful when a bad pipeline corrupts a table, a business user asks why yesterday's metric changed, or an ML feature set needs reproducibility. In senior interviews, frame time travel as an operational safety feature, not a cute query trick.</p>
+<pre><code>SELECT *
+FROM sales_delta VERSION AS OF 42;
+
+SELECT *
+FROM sales_delta TIMESTAMP AS OF '2026-04-24 09:00:00';</code></pre>
+<div class="hi">Time travel is only as good as retention. If old files were vacuumed, the log may know about an old version but the data files needed to read it may be gone.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Schema Enforcement &amp; Evolution</h2>
+<p>Schema enforcement means Delta rejects writes that do not match the table schema by default. This prevents silent corruption where one producer writes <code>customer_id</code> as a string, another writes it as an integer, and downstream readers discover the mess during month-end reporting.</p>
+<p>Schema evolution is the controlled exception. Adding nullable columns is usually safe when explicitly enabled with options such as <code>mergeSchema</code>. Renames, drops, and type changes need more care because older files still exist and downstream readers may depend on the old contract.</p>
+<table>
+  <tr><th>Change</th><th>Risk</th><th>Typical handling</th></tr>
+  <tr><td>Add nullable column</td><td>Low</td><td>Allow with explicit schema evolution</td></tr>
+  <tr><td>Add required column</td><td>Medium</td><td>Backfill or provide default strategy</td></tr>
+  <tr><td>Rename column</td><td>Medium</td><td>Use column mapping where supported; validate readers</td></tr>
+  <tr><td>Change data type</td><td>High</td><td>Prefer new column plus migration</td></tr>
+  <tr><td>Drop column</td><td>High</td><td>Check lineage, contracts, and historical reads</td></tr>
+</table>
+<div class="warn">Automatic schema evolution is convenient but dangerous when producers are sloppy. Treat schema as a data contract, not a suggestion box.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">MERGE INTO &mdash; CDC upsert pattern</h2>
+<p><code>MERGE INTO</code> is the main Delta pattern for CDC and idempotent upserts. A source change set is matched against a target table by business key or surrogate key, then rows are updated, inserted, or deleted based on operation flags and timestamps.</p>
+<p>The production challenge is not syntax; it is correctness. You must handle duplicate source keys, late-arriving events, delete records, replay safety, and whether the newest event wins by event time, ingestion time, or source-system sequence number.</p>
+<pre><code>MERGE INTO customer_tgt AS t
+USING customer_cdc AS s
+ON t.customer_id = s.customer_id
+WHEN MATCHED AND s.op = 'D' THEN DELETE
+WHEN MATCHED AND s.updated_at &gt; t.updated_at THEN
+  UPDATE SET name = s.name, status = s.status, updated_at = s.updated_at
+WHEN NOT MATCHED AND s.op &lt;&gt; 'D' THEN
+  INSERT (customer_id, name, status, updated_at)
+  VALUES (s.customer_id, s.name, s.status, s.updated_at);</code></pre>
+<div class="hi">A good CDC merge is replay-safe. Running the same batch twice should not create duplicates, reverse newer changes, or resurrect deleted rows.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">OPTIMIZE &amp; Z-ORDER</h2>
+<p><code>OPTIMIZE</code> compacts many small Parquet files into fewer larger files. This matters because lakehouse performance is often dominated by metadata listing, file open cost, and poor scan efficiency before the query engine even reaches CPU-heavy work.</p>
+<p>Z-ORDER clustering colocates related values across files so selective filters skip more data. It is most useful for high-value query predicates such as <code>customer_id</code>, <code>event_date</code>, or <code>device_id</code>, but it is not a replacement for partitioning or a magic index.</p>
+<pre><code>OPTIMIZE events_delta;
+
+OPTIMIZE events_delta
+ZORDER BY (customer_id, event_date);</code></pre>
+<div class="warn">Do not Z-ORDER every column. Each clustering choice optimizes some access patterns while adding rewrite cost and operational complexity.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">VACUUM &mdash; retention and time travel window</h2>
+<p><code>VACUUM</code> removes data files that are no longer referenced by the current table state and are older than the configured retention window. It controls storage cost and cleans up files made obsolete by updates, deletes, overwrites, compaction, and merges.</p>
+<p>The tradeoff is direct: shorter retention saves storage but reduces rollback and time travel capability. Longer retention helps audit, debugging, and reproducibility but keeps more historical files in the lake. In regulated environments, retention should align with recovery objectives and compliance rules, not just storage bills.</p>
+<pre><code>VACUUM events_delta RETAIN 168 HOURS;</code></pre>
+<div class="warn">Aggressive vacuuming can break time travel, streaming readers, or long-running jobs that still reference older table versions.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Delta vs Iceberg vs Hudi</h2>
+<p>Delta Lake, Apache Iceberg, and Apache Hudi all solve the same core problem: making large object-store tables reliable, mutable, and queryable at scale. The differences are mostly around ecosystem fit, catalog behavior, update strategy, engine support, and operational preferences.</p>
+<table>
+  <tr><th>Format</th><th>Strength</th><th>Watch point</th></tr>
+  <tr><td>Delta Lake</td><td>Strong Databricks integration, simple log model, mature lakehouse workflows</td><td>Best experience often comes inside Databricks</td></tr>
+  <tr><td>Iceberg</td><td>Broad open ecosystem, hidden partitioning, strong catalog abstraction</td><td>Requires disciplined catalog and engine compatibility choices</td></tr>
+  <tr><td>Hudi</td><td>CDC, incremental pulls, record-level ingestion patterns</td><td>More operational knobs; can feel heavier</td></tr>
+</table>
+<div class="hi">Interview framing: pick the table format based on platform ecosystem and workload pattern, not because one format is universally better.</div>
+<div class="warn">The expensive mistake is mixing engines that claim support but do not support the same feature level, protocol version, or write semantics.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Delta on AWS &amp; Databricks</h2>
+<p>On AWS, Delta commonly sits on S3 with Spark-based compute: Databricks, EMR, Glue, or self-managed Spark. The table data lives in object storage, while the compute layer reads the Delta log, plans file scans, applies predicate pruning, and writes new commits.</p>
+<p>Databricks gives Delta its most integrated experience: optimized writes, auto compaction, Unity Catalog governance, Photon execution, Delta Live Tables, and operational tooling around quality and lineage. Outside Databricks, the design still works, but you must be more deliberate about catalog choice, writer compatibility, IAM, job orchestration, and maintenance tasks.</p>
+<div class="hi">For a senior data engineer, Delta is not just a file format decision. It is a platform decision touching catalog, security, orchestration, cost, and team operating model.</div>
+<div class="warn">S3 is durable storage, not a database transaction manager. Delta adds table-level transaction semantics, but you still need disciplined writers, consistent runtimes, and safe maintenance windows.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: What problem does Delta Lake solve that plain Parquet on S3 does not?</div>
+  <div class="qa-a">A: Plain Parquet gives efficient columnar files but not reliable table semantics. Delta adds a transaction log so readers see consistent snapshots and writers can safely update, delete, merge, and evolve schemas. The operational win is fewer corrupt tables, fewer partial-write failures, and better recovery options.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How does Delta provide ACID behavior on object storage?</div>
+  <div class="qa-a">A: Delta coordinates table changes through the <code>_delta_log</code>. A commit records file additions and removals, and readers select a consistent snapshot from the log rather than guessing from directory listings. Object storage provides durability; Delta provides atomic table state transitions and snapshot isolation.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you use MERGE INTO in a data engineering pipeline?</div>
+  <div class="qa-a">A: I would use it for CDC upserts where incoming records may insert new entities, update existing entities, or delete records. The key design issue is idempotency: the same change batch should be safe to replay. I would also deduplicate the source change set before merging so one target row is not matched by multiple source rows.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What can go wrong with VACUUM?</div>
+  <div class="qa-a">A: VACUUM can remove old data files needed for time travel, rollback, streaming recovery, or long-running readers. Short retention lowers storage cost but weakens recovery. I would align the retention window with audit, SLA, and pipeline replay requirements before tuning it aggressively.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do OPTIMIZE and Z-ORDER improve performance?</div>
+  <div class="qa-a">A: OPTIMIZE reduces small-file overhead by compacting files into larger Parquet files. Z-ORDER improves data skipping by colocating related values, making selective filters read fewer files. They help most when query patterns are stable and the maintenance cost is lower than the scan savings.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you choose between Delta, Iceberg, and Hudi?</div>
+  <div class="qa-a">A: I would start with the platform and workload. Delta is a strong fit for Databricks-centered lakehouses, Iceberg is attractive for broad open-engine interoperability, and Hudi is strong for CDC-heavy ingestion and incremental consumption. The deciding factor is usually operational fit, catalog strategy, and engine support, not a checklist of features.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Delta Lake</div>
+    <div class="cd">Open table format that adds ACID transactions and metadata management to Parquet files.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">_delta_log</div>
+    <div class="cd">Transaction log directory; the source of truth for table versions, file adds, removals, and metadata changes.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Snapshot</div>
+    <div class="cd">Consistent view of a table at a specific committed version.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">VERSION AS OF</div>
+    <div class="cd">Query a table at an exact historical commit version.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TIMESTAMP AS OF</div>
+    <div class="cd">Query a table as of a specific wall-clock time, assuming required history still exists.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">MERGE INTO</div>
+    <div class="cd">CDC upsert command for matched updates/deletes and not-matched inserts.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">mergeSchema</div>
+    <div class="cd">Controlled schema evolution option, commonly used to add new columns safely.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">OPTIMIZE</div>
+    <div class="cd">Compacts small files into fewer larger files to reduce scan and metadata overhead.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ZORDER BY</div>
+    <div class="cd">Clusters related values to improve data skipping for selective predicates.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">VACUUM</div>
+    <div class="cd">Deletes unreferenced old data files after the retention window.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Retention</div>
+    <div class="cd">Determines how far back time travel and safe rollback can reach before old files are removed.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Small files</div>
+    <div class="cd">Performance anti-pattern caused by excessive tiny Parquet files and metadata overhead.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Delta vs Iceberg</div>
+    <div class="cd">Often a platform and ecosystem decision: Databricks strength vs broader open catalog interoperability.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Delta on S3</div>
+    <div class="cd">Common AWS pattern: S3 for storage, Spark/Databricks/EMR/Glue for compute, catalog for governance.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
