@@ -67,7 +67,7 @@ tr:nth-child(even) td { background:#f8fafc; }
   </div>
 
   <h1>Amazon EC2</h1>
-  <p class="subtitle">Engineering reference · Senior Data Engineer · Last updated 2026-04-13 · 25-35 min read</p>
+  <p class="subtitle">Engineering reference ï¿½ Senior Data Engineer ï¿½ Last updated 2026-04-24 ï¿½ 25-35 min read</p>
 
   <div class="tag-row">
     <span class="tag">AWS</span>
@@ -80,11 +80,12 @@ tr:nth-child(even) td { background:#f8fafc; }
   </div>
 
     <div class="audio-box">
-    <div class="audio-label">AI-Generated Audio Overview</div>
+    <div class="audio-label">ðŸŽ§ Audio Overview</div>
     <audio controls preload="metadata" style="width:100%;margin-top:6px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/Senior_Engineering_Rules_for_Amazon_EC2_small.m4a" type="audio/mp4">
+      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-ec2.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
     </audio>
-    <div class="video-hint" style="margin-top:10px;">dYZª AI-Generated Video Overview</div>
+    <div class="video-hint" style="margin-top:10px;">ðŸŽ¬ Video Overview (NotebookLM)</div>
     <video controls preload="metadata" style="width:100%;max-width:100%;border-radius:4px;margin-top:8px;">
       <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/EC2__Engineering_Deep_Dive_small.mp4" type="video/mp4">
     </video>
@@ -514,7 +515,7 @@ ec2.create_launch_template(
     <tr><th>Feature</th><th>ALB</th><th>NLB</th></tr>
     <tr><td>Layer</td><td>7 (HTTP/HTTPS)</td><td>4 (TCP/UDP/TLS)</td></tr>
     <tr><td>Routing</td><td>Path, host, header, query string</td><td>Connection-level only</td></tr>
-    <tr><td>Latency</td><td>~1ms</td><td>~100µs</td></tr>
+    <tr><td>Latency</td><td>~1ms</td><td>~100ï¿½s</td></tr>
     <tr><td>Static IP</td><td>No (DNS only)</td><td>Yes (1 Elastic IP per AZ)</td></tr>
     <tr><td>WebSocket</td><td>Yes</td><td>Yes (TCP passthrough)</td></tr>
     <tr><td>Auth integration</td><td>Yes (Cognito, OIDC)</td><td>No</td></tr>
@@ -682,7 +683,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
 
   <div class="qa">
     <div class="qa-q">Q8. How does an ALB differ from an NLB and when would you choose each?</div>
-    <div class="qa-a">ALB operates at Layer 7 (HTTP/HTTPS) and can route based on URL path, hostname, and headers - appropriate for web applications, REST APIs, and microservices. NLB operates at Layer 4 (TCP/UDP) and passes connections through without HTTP inspection - appropriate for non-HTTP protocols (Kafka, databases, gRPC), latency-critical workloads (NLB adds ~100µs vs ALB's ~1ms), and workloads needing static Elastic IPs per AZ. NLB preserves client source IP; ALB uses X-Forwarded-For headers.</div>
+    <div class="qa-a">ALB operates at Layer 7 (HTTP/HTTPS) and can route based on URL path, hostname, and headers - appropriate for web applications, REST APIs, and microservices. NLB operates at Layer 4 (TCP/UDP) and passes connections through without HTTP inspection - appropriate for non-HTTP protocols (Kafka, databases, gRPC), latency-critical workloads (NLB adds ~100ï¿½s vs ALB's ~1ms), and workloads needing static Elastic IPs per AZ. NLB preserves client source IP; ALB uses X-Forwarded-For headers.</div>
   </div>
 
   <div class="qa">
@@ -783,6 +784,7 @@ Security:       Private subnet, no public IP, SG restricts 9092 to app SGs
 </div>
 </body>
 </html>
+
 
 
 
