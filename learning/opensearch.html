@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS OpenSearch - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/opensearch.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS OpenSearch - Master Engineering Reference
+</div>
+
+<h1>AWS OpenSearch</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 38-45 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">OpenSearch</span>
+  <span class="tag">Elasticsearch</span>
+  <span class="tag">Search</span>
+  <span class="tag">Log Analytics</span>
+  <span class="tag">Observability</span>
+  <span class="tag">Kinesis</span>
+  <span class="tag">Data Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_opensearch.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What OpenSearch Is</a></li>
+    <li><a href="#s2">OpenSearch vs Elasticsearch</a></li>
+    <li><a href="#s3">Core Architecture</a></li>
+    <li><a href="#s4">Index and Shard Design</a></li>
+    <li><a href="#s5">Mappings and Field Types</a></li>
+    <li><a href="#s6">Query DSL and Aggregations</a></li>
+    <li><a href="#s7">Relevance Scoring and Tuning</a></li>
+    <li><a href="#s8">Managed Service vs Serverless</a></li>
+    <li><a href="#s9">Ingestion Patterns</a></li>
+    <li><a href="#s10">Observability Use Cases</a></li>
+    <li><a href="#s11">Data Engineering Patterns</a></li>
+    <li><a href="#s12">ISM and Retention</a></li>
+    <li><a href="#s13">Security and AWS Integration</a></li>
+    <li><a href="#s14">Cost Model and Sizing</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What OpenSearch Is</h2>
+<p>Amazon OpenSearch Service is AWS's managed platform for running OpenSearch clusters and OpenSearch Dashboards. In data engineering, it is usually used for three workloads: full-text search, log analytics, and observability-style exploration over high-volume events. It is not a replacement for a warehouse, lakehouse, or OLTP database. It is a distributed search engine optimized for indexing documents and answering low-latency search, filter, and aggregation queries.</p>
+<p>The mental model is simple: applications, pipelines, or log shippers write JSON documents into indexes. OpenSearch analyzes selected text fields, stores inverted indexes, keeps column-like doc values for sorting and aggregations, and distributes data across shards. Queries fan out to the relevant shards, compute local matches and aggregations, then merge results back to the coordinator.</p>
+<div class="hi">Key insight: OpenSearch is strongest when users need interactive discovery over text-heavy or event-heavy data. It is weaker when the primary requirement is relational joins, governed batch analytics, or cheap long-term historical storage.</div>
+<div class="warn">Production gotcha: many teams put every log, metric, and trace into OpenSearch forever. That works until shard count, heap pressure, EBS growth, and dashboard aggregations turn the cluster into an expensive bonfire.</div>
+<table>
+  <tr><th>Use case</th><th>OpenSearch fit</th><th>Better companion</th></tr>
+  <tr><td>Application search</td><td>Excellent for text search, filters, ranking, autocomplete</td><td>DynamoDB, RDS, or S3 as source of truth</td></tr>
+  <tr><td>Log analytics</td><td>Excellent for recent operational investigation</td><td>S3 for archive, Athena for cheap historical queries</td></tr>
+  <tr><td>Metrics analytics</td><td>Good for indexed metric events and anomaly detection</td><td>CloudWatch, Prometheus, Timestream, or InfluxDB</td></tr>
+  <tr><td>Data warehouse analytics</td><td>Usually poor for wide joins and large scans</td><td>Redshift, Snowflake, Athena, Spark</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">OpenSearch vs Elasticsearch</h2>
+<p>OpenSearch began as a fork of Elasticsearch and Kibana after Elastic changed licensing for newer Elasticsearch versions. AWS and the open-source community continued the Apache-licensed lineage as OpenSearch and OpenSearch Dashboards. For engineers, the practical question is not just history; it is compatibility, client behavior, plugin support, and operational expectations.</p>
+<p>Older Elasticsearch 7.x clients and APIs often feel familiar, but compatibility is not a blanket guarantee. Index templates, security configuration, query syntax, analyzers, vector search behavior, and dashboard plugins can diverge. Treat OpenSearch as its own platform, not as a drop-in forever clone.</p>
+<div class="hi">Key insight: the fork matters because operational knowledge transfers, but version-specific assumptions do not. Always validate clients, mappings, templates, and dashboard objects against the exact OpenSearch version you run.</div>
+<div class="warn">Production gotcha: migration projects fail when teams test only simple document indexing. The real breakage usually appears in templates, ingest pipelines, alerting rules, security roles, snapshot restore, or custom plugins.</div>
+<table>
+  <tr><th>Area</th><th>OpenSearch</th><th>Elasticsearch</th></tr>
+  <tr><td>Project lineage</td><td>Open-source fork of Elasticsearch/Kibana 7.10 era</td><td>Elastic-maintained search platform</td></tr>
+  <tr><td>AWS managed offering</td><td>Native Amazon OpenSearch Service</td><td>Elastic Cloud available separately</td></tr>
+  <tr><td>Dashboards</td><td>OpenSearch Dashboards</td><td>Kibana</td></tr>
+  <tr><td>Plugins</td><td>AWS/OpenSearch plugin ecosystem</td><td>Elastic plugin ecosystem</td></tr>
+  <tr><td>Migration risk</td><td>Mostly API-compatible for basic operations</td><td>Diverges by version and feature set</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Core Architecture</h2>
+<p>A managed OpenSearch domain is a cluster with data nodes, optional dedicated cluster manager nodes, optional warm/cold storage tiers, indexes, primary shards, and replica shards. Each index is split into primary shards. Replicas provide redundancy and query parallelism. A coordinating node receives a query, sends it to shards, merges results, and returns the response.</p>
+<p>The service hides much of the undifferentiated operations work, but it does not remove architecture responsibility. You still own index design, shard count, mapping quality, retention policy, ingest shape, query cost, and dashboard behavior.</p>
+<div class="hi">Key insight: OpenSearch performance is usually a shard, heap, and query-shape problem before it is an instance-size problem.</div>
+<div class="warn">Production gotcha: adding bigger nodes can hide bad design temporarily. Over-sharded indexes, unbounded fields, high-cardinality aggregations, and wildcard-heavy queries eventually win the fight.</div>
+<pre><code>Document write path:
+producer -&gt; ingest endpoint -&gt; index routing -&gt; primary shard -&gt; replica shard(s) -&gt; refresh -&gt; searchable segment
+
+Query path:
+client -&gt; coordinating node -&gt; matching shards -&gt; local scoring/aggregation -&gt; merge/reduce -&gt; response</code></pre>
+<table>
+  <tr><th>Component</th><th>Role</th><th>Senior-level concern</th></tr>
+  <tr><td>Data node</td><td>Stores shards and executes search/indexing</td><td>CPU, heap, disk watermarks, IO saturation</td></tr>
+  <tr><td>Cluster manager</td><td>Manages cluster state</td><td>Use dedicated nodes for larger clusters</td></tr>
+  <tr><td>Primary shard</td><td>Main shard for writes</td><td>Count is fixed at index creation</td></tr>
+  <tr><td>Replica shard</td><td>Copy for HA and search scale</td><td>Costs storage and write amplification</td></tr>
+  <tr><td>Segment</td><td>Lucene storage unit</td><td>Merges consume IO and CPU</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Index and Shard Design</h2>
+<p>Index design is the difference between a stable platform and a cluster that fails every Monday morning. Time-series logs usually use date-based indexes or data streams. Search applications often use business-domain indexes such as products, documents, tickets, claims, or knowledge articles. Each index has primary shards and replicas, and every shard consumes heap, file handles, metadata, and cluster-state overhead.</p>
+<p>Shard sizing is workload-specific, but a practical engineering target is to avoid both tiny shards and giant shards. Tiny shards create cluster-state and heap overhead. Giant shards slow recovery, relocation, merge operations, and queries. Many production teams aim for shard sizes in the tens of GB, then validate with recovery time, indexing throughput, and query latency.</p>
+<div class="hi">Key insight: choose shard count from future data volume and query parallelism, not from today's empty index.</div>
+<div class="warn">Production gotcha: over-sharding is one of the most common OpenSearch cost bugs. It burns heap and cluster coordination capacity even when the documents themselves are small.</div>
+<pre><code>PUT _index_template/logs-template
+{
+  "index_patterns": ["app-logs-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "30s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "service":    { "type": "keyword" },
+        "level":      { "type": "keyword" },
+        "message":    { "type": "text" }
+      }
+    }
+  }
+}</code></pre>
+<table>
+  <tr><th>Decision</th><th>Good pattern</th><th>Bad pattern</th></tr>
+  <tr><td>Time-series logs</td><td>Daily/weekly rollover based on size and age</td><td>One massive forever index</td></tr>
+  <tr><td>Shard count</td><td>Based on expected index size and recovery target</td><td>Defaulting everything to five or ten shards</td></tr>
+  <tr><td>Replicas</td><td>At least one replica for production HA</td><td>Zero replicas for critical workloads</td></tr>
+  <tr><td>Refresh interval</td><td>Relaxed for heavy ingest workloads</td><td>One-second refresh for bulk backfills</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Mappings and Field Types</h2>
+<p>Mappings define how OpenSearch stores and searches fields. The two field types that matter most in interviews and production are <code>text</code> and <code>keyword</code>. A <code>text</code> field is analyzed for full-text search. A <code>keyword</code> field is stored as an exact value for filters, joins-by-application logic, sorting, and aggregations.</p>
+<p>Dynamic mapping is convenient for prototypes, but explicit mapping is safer for production data platforms. Logs and events often carry unpredictable JSON payloads. Without guardrails, one noisy service can create thousands of fields, trigger mapping explosion, and destabilize the cluster.</p>
+<div class="hi">Key insight: use <code>text</code> for human language and <code>keyword</code> for identifiers, categories, codes, service names, regions, statuses, and aggregation dimensions.</div>
+<div class="warn">Production gotcha: mapping explosion can be worse than data volume. Dynamic fields from arbitrary JSON keys can bloat cluster state and make every index operation more expensive.</div>
+<pre><code>PUT tickets-v1
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "ticket_id":   { "type": "keyword" },
+      "created_at":  { "type": "date" },
+      "priority":    { "type": "keyword" },
+      "region":      { "type": "keyword" },
+      "title":       { "type": "text", "fields": { "raw": { "type": "keyword" } } },
+      "description": { "type": "text" },
+      "duration_ms": { "type": "long" }
+    }
+  }
+}</code></pre>
+<table>
+  <tr><th>Field type</th><th>Use it for</th><th>Avoid using it for</th></tr>
+  <tr><td><code>keyword</code></td><td>Exact filters, aggregations, sorting</td><td>Paragraph search</td></tr>
+  <tr><td><code>text</code></td><td>Full-text search and relevance</td><td>High-cardinality aggregations</td></tr>
+  <tr><td><code>date</code></td><td>Time filters, rollups, dashboards</td><td>String timestamps</td></tr>
+  <tr><td><code>nested</code></td><td>Arrays of objects that must preserve object boundaries</td><td>Simple flattened metadata</td></tr>
+  <tr><td><code>flattened</code></td><td>Unknown key-value payloads</td><td>Deep relational querying</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Query DSL and Aggregations</h2>
+<p>The Query DSL is JSON-based and separates scoring queries from filter context. Senior engineers should care about this distinction because filter context can be cached and does not calculate relevance scores. Use <code>match</code> for analyzed full-text search, <code>term</code> for exact keyword matches, <code>range</code> for date or numeric boundaries, <code>bool</code> to combine conditions, and aggregations for grouped metrics.</p>
+<p>Nested queries are required when arrays of objects must preserve relationships between fields inside each object. Without <code>nested</code>, OpenSearch may match values across different objects in the same array, producing false positives.</p>
+<div class="hi">Key insight: for log analytics, most conditions should be filters, not scoring queries. You usually care whether an event matches, not how relevant it is.</div>
+<div class="warn">Production gotcha: dashboard users can accidentally run expensive wide time-range aggregations over high-cardinality fields. Guard with index patterns, time filters, permissions, and sensible defaults.</div>
+<pre><code>GET app-logs-*/_search
+{
+  "size": 20,
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "message": "timeout connecting database" } }
+      ],
+      "filter": [
+        { "term":  { "service": "payment-api" } },
+        { "range": { "@timestamp": { "gte": "now-1h" } } },
+        { "terms": { "level": ["ERROR", "WARN"] } }
+      ]
+    }
+  },
+  "aggs": {
+    "errors_by_region": {
+      "terms": { "field": "region", "size": 10 }
+    }
+  }
+}</code></pre>
+<table>
+  <tr><th>DSL feature</th><th>Meaning</th><th>Common use</th></tr>
+  <tr><td><code>match</code></td><td>Analyzed text query</td><td>Search message, title, description</td></tr>
+  <tr><td><code>bool</code></td><td>Combines must, should, filter, must_not</td><td>Real production search forms</td></tr>
+  <tr><td><code>range</code></td><td>Date or numeric boundaries</td><td>Time windows, latency thresholds</td></tr>
+  <tr><td><code>terms agg</code></td><td>Group by field</td><td>Top services, regions, error codes</td></tr>
+  <tr><td><code>nested</code></td><td>Preserve object boundaries</td><td>Events with arrays of attributes</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Relevance Scoring and Tuning</h2>
+<p>For application search, relevance quality matters as much as infrastructure. OpenSearch uses BM25-style scoring for text relevance, considering term frequency, inverse document frequency, and field length normalization. In practice, search quality is tuned with analyzers, synonyms, field boosts, <code>multi_match</code>, <code>function_score</code>, recency boosts, business popularity signals, and careful result evaluation.</p>
+<p>For data engineering platforms, relevance usually appears in knowledge search, incident search, ticket search, support search, document discovery, and lake metadata search. The pipeline must preserve useful fields and avoid turning rich documents into one blob.</p>
+<div class="hi">Key insight: relevance tuning is data engineering plus product thinking. Good search requires clean fields, stable identifiers, metadata, click/feedback signals, and repeatable evaluation queries.</div>
+<div class="warn">Production gotcha: boosting everything means boosting nothing. If every field has a high boost, result quality becomes unpredictable and hard to explain.</div>
+<pre><code>GET tickets-v1/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query": "oracle connection timeout",
+          "fields": ["title^3", "description", "service.raw^2"]
+        }
+      },
+      "functions": [
+        {
+          "filter": { "term": { "priority": "P1" } },
+          "weight": 2
+        },
+        {
+          "gauss": {
+            "created_at": { "origin": "now", "scale": "14d", "decay": 0.5 }
+          }
+        }
+      ],
+      "boost_mode": "multiply"
+    }
+  }
+}</code></pre>
+<table>
+  <tr><th>Tuning lever</th><th>What it changes</th><th>Risk</th></tr>
+  <tr><td>Field boost</td><td>Gives title, tags, or exact fields more weight</td><td>Overpowering useful body matches</td></tr>
+  <tr><td>Analyzer</td><td>Controls tokenization and normalization</td><td>Breaking exact phrase expectations</td></tr>
+  <tr><td>Synonyms</td><td>Matches related terms</td><td>False positives if too broad</td></tr>
+  <tr><td><code>function_score</code></td><td>Adds business signals</td><td>Harder explainability</td></tr>
+  <tr><td>Recency boost</td><td>Promotes newer documents</td><td>Hides older canonical answers</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Managed Service vs Serverless</h2>
+<p>Amazon OpenSearch Service gives two major operating models: managed domains and OpenSearch Serverless. Managed domains expose more traditional cluster design: instance families, data nodes, storage, shards, replicas, UltraWarm, cold storage, and version configuration. Serverless uses collections and OpenSearch Compute Units, reducing infrastructure management while limiting some low-level control.</p>
+<p>The decision is mostly about control versus operational simplicity. Managed clusters are better when you need specific plugins, careful shard strategy, custom performance tuning, warm/cold tiers, or predictable always-on workloads. Serverless is attractive for bursty search and log analytics where you want AWS to handle capacity scaling and you can accept the serverless feature model and baseline cost behavior.</p>
+<div class="hi">Key insight: Serverless removes node management, not data modeling. Bad mappings, noisy ingestion, expensive aggregations, and high-cardinality fields can still hurt performance and cost.</div>
+<div class="warn">Production gotcha: Serverless can be expensive for tiny idle workloads because base capacity still exists. Managed small domains may be cheaper for stable low-volume dev/test use cases.</div>
+<table>
+  <tr><th>Dimension</th><th>Managed OpenSearch Service</th><th>OpenSearch Serverless</th></tr>
+  <tr><td>Capacity model</td><td>Choose instances, node count, storage</td><td>OCU-based scaling</td></tr>
+  <tr><td>Control</td><td>High</td><td>Lower</td></tr>
+  <tr><td>Shard tuning</td><td>Directly managed</td><td>More abstracted</td></tr>
+  <tr><td>Best fit</td><td>Predictable, customized, feature-rich clusters</td><td>Bursting, simpler operations, managed scaling</td></tr>
+  <tr><td>Cost risk</td><td>Over-provisioned nodes and storage</td><td>OCU baseline and scaling surprises</td></tr>
+</table>
+<pre><code># Create a managed domain with AWS CLI shape shown for discussion only
+aws opensearch create-domain \
+  --domain-name prod-search \
+  --engine-version OpenSearch_2.13 \
+  --cluster-config InstanceType=r7g.large.search,InstanceCount=3,DedicatedMasterEnabled=true,DedicatedMasterType=m7g.medium.search,DedicatedMasterCount=3 \
+  --ebs-options EBSEnabled=true,VolumeType=gp3,VolumeSize=300</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Ingestion Patterns</h2>
+<p>OpenSearch ingestion usually arrives through Kinesis Data Firehose, Lambda, Logstash, Beats, Fluent Bit, OpenSearch Ingestion, Kafka Connect, or custom application writers. For AWS-native pipelines, Kinesis Data Firehose is a common low-ops choice for logs and events. Lambda is useful for lightweight transforms and routing. OpenSearch Ingestion provides managed pipelines for filtering, enrichment, and delivery. Logstash remains useful in environments with existing Elastic-style pipelines and complex plugin needs.</p>
+<p>Senior data engineers should design ingestion with backpressure, retry behavior, dead-letter handling, idempotent document IDs, and bulk indexing. OpenSearch prefers batches. One document per HTTP request is a self-inflicted wound.</p>
+<div class="hi">Key insight: treat OpenSearch as a serving index, not the only copy of the data. Land raw events in S3 first or in parallel so reindexing is possible.</div>
+<div class="warn">Production gotcha: failed bulk requests can partially succeed. Retry logic must inspect item-level errors, not just HTTP status.</div>
+<table>
+  <tr><th>Ingestion option</th><th>Best for</th><th>Tradeoff</th></tr>
+  <tr><td>Kinesis Data Firehose</td><td>AWS-native log/event delivery</td><td>Less custom logic than code-heavy pipelines</td></tr>
+  <tr><td>Lambda</td><td>Light transforms, enrichment, routing</td><td>Timeouts and concurrency need control</td></tr>
+  <tr><td>Logstash</td><td>Complex parsing and existing plugins</td><td>Operate servers or containers</td></tr>
+  <tr><td>OpenSearch Ingestion</td><td>Managed pipeline processing</td><td>OCU cost and feature boundaries</td></tr>
+  <tr><td>Kafka Connect</td><td>Streaming platforms and replay</td><td>Connector operations and offset management</td></tr>
+</table>
+<pre><code>POST _bulk
+{ "index": { "_index": "app-logs-2026.04.25", "_id": "svcA-10001" } }
+{ "@timestamp": "2026-04-25T12:00:00Z", "service": "svcA", "level": "ERROR", "message": "timeout" }
+{ "index": { "_index": "app-logs-2026.04.25", "_id": "svcA-10002" } }
+{ "@timestamp": "2026-04-25T12:00:02Z", "service": "svcA", "level": "INFO", "message": "retry succeeded" }</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s10">Observability Use Cases</h2>
+<p>OpenSearch is widely used as an observability store for logs, traces, and derived metrics. The value is interactive debugging: filter by service, time, region, host, trace ID, customer ID, or error code; then pivot into related events. OpenSearch Dashboards provides visualizations, saved searches, alerting, and operational views.</p>
+<p>The challenge is that logs, metrics, and traces have different shapes. Logs are verbose and semi-structured. Metrics are numeric and repetitive. Traces are graph-like with parent-child spans. Putting all three into one index design usually creates bad mappings and poor query behavior. Use separate index patterns and common correlation IDs.</p>
+<div class="hi">Key insight: the observability win is correlation. A trace ID or request ID that connects logs, spans, and metrics is often more valuable than simply storing more events.</div>
+<div class="warn">Production gotcha: debug logs can multiply ingestion volume by 10x during incidents, exactly when the cluster is already under pressure.</div>
+<table>
+  <tr><th>Signal</th><th>Recommended design</th><th>Common mistake</th></tr>
+  <tr><td>Logs</td><td>Time-series indexes, strict core fields, flattened extras</td><td>Dynamic mapping every JSON key</td></tr>
+  <tr><td>Metrics</td><td>Metric name, dimensions, timestamp, numeric value</td><td>One field per metric name</td></tr>
+  <tr><td>Traces</td><td>Trace ID, span ID, parent span ID, service, duration</td><td>Huge nested payloads for every span</td></tr>
+  <tr><td>Alerts</td><td>Separate alert/event index with status lifecycle</td><td>Only storing rendered alert text</td></tr>
+</table>
+<pre><code>{
+  "@timestamp": "2026-04-25T14:18:00Z",
+  "service": "checkout-api",
+  "env": "prod",
+  "region": "us-east-1",
+  "trace_id": "9f4b1c8d",
+  "span_id": "a771",
+  "level": "ERROR",
+  "error_code": "DB_TIMEOUT",
+  "duration_ms": 1842,
+  "message": "Database timeout while authorizing payment"
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s11">Data Engineering Patterns</h2>
+<p>For data engineers, OpenSearch often sits beside S3, Glue, Athena, Redshift, DynamoDB, Kinesis, and Lambda. It serves fast search access while the lake or warehouse remains the durable analytical source. A strong pattern is dual-write through a controlled pipeline: raw events land in S3, curated documents are indexed into OpenSearch, and failures go to a dead-letter queue for replay.</p>
+<p>OpenSearch can also make a data lake searchable. For example, Glue crawlers and ETL jobs can produce metadata documents for datasets, tables, columns, owners, tags, PII classifications, and data quality results. OpenSearch serves the discovery UI while Athena or Spark performs the heavy scan work.</p>
+<div class="hi">Key insight: OpenSearch is a serving layer in a data platform. Keep lineage and raw data elsewhere so index rebuilds are boring instead of terrifying.</div>
+<div class="warn">Production gotcha: if OpenSearch becomes the only place transformed data exists, a bad mapping, accidental delete, or failed upgrade becomes a data-loss event.</div>
+<table>
+  <tr><th>Pattern</th><th>Flow</th><th>Why it works</th></tr>
+  <tr><td>Search over lake metadata</td><td>Glue/Data Catalog -&gt; ETL -&gt; OpenSearch</td><td>Fast discovery, cheap data in S3</td></tr>
+  <tr><td>Log analytics</td><td>Firehose -&gt; S3 backup + OpenSearch</td><td>Replayable and searchable</td></tr>
+  <tr><td>Operational search</td><td>DynamoDB/RDS stream -&gt; Lambda -&gt; OpenSearch</td><td>Search index follows source of truth</td></tr>
+  <tr><td>Incident enrichment</td><td>Kinesis -&gt; Lambda enrichment -&gt; OpenSearch</td><td>Add service ownership and metadata</td></tr>
+</table>
+<pre><code>Recommended durability pattern:
+
+Application events
+  -&gt; Kinesis Data Stream
+  -&gt; Firehose raw backup to S3
+  -&gt; Transform/enrich pipeline
+  -&gt; OpenSearch index
+  -&gt; Failed records to SQS dead-letter queue
+  -&gt; Replay from S3 or DLQ when mappings/pipelines change</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s12">ISM and Retention</h2>
+<p>Index State Management, or ISM, controls lifecycle actions such as rollover, warm migration, cold migration, retention, and deletion. For time-series data, lifecycle design is mandatory. The hot tier should hold data that needs fast search and ingest. Warm or cold tiers can hold older data at lower cost, while S3 keeps the long-term archive for compliance and replay.</p>
+<p>Rollover can be based on index age, size, or document count. Size-based rollover is often more stable than date-only indexing because volume changes by service, incident, and business cycle. Retention should be a product and compliance decision, not a default set by whoever created the first dashboard.</p>
+<div class="hi">Key insight: lifecycle policy is cost control. Without rollover and deletion, OpenSearch cost grows automatically while user value often stays concentrated in recent data.</div>
+<div class="warn">Production gotcha: deleting old indexes is safer than deleting documents from large active indexes. Delete-by-query can be expensive and disruptive.</div>
+<pre><code>PUT _plugins/_ism/policies/logs-hot-delete-30d
+{
+  "policy": {
+    "description": "Rollover logs, then delete after 30 days",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          { "rollover": { "min_index_age": "1d", "min_size": "40gb" } }
+        ],
+        "transitions": [
+          { "state_name": "delete", "conditions": { "min_index_age": "30d" } }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [ { "delete": {} } ]
+      }
+    ]
+  }
+}</code></pre>
+<table>
+  <tr><th>Lifecycle action</th><th>Purpose</th><th>Design note</th></tr>
+  <tr><td>Rollover</td><td>Create a new write index</td><td>Use size and age together</td></tr>
+  <tr><td>Warm migration</td><td>Move older data to cheaper tier</td><td>Good for less frequent searches</td></tr>
+  <tr><td>Cold storage</td><td>Lower-cost historical access</td><td>Expect different latency</td></tr>
+  <tr><td>Delete</td><td>Remove expired indexes</td><td>Prefer whole-index deletion</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s13">Security and AWS Integration</h2>
+<p>OpenSearch security has several layers: network access, IAM access, fine-grained access control, encryption, audit logging, and dashboard authentication. A production AWS design usually places managed domains inside a VPC, restricts security groups, uses encryption at rest and in transit, and controls access through IAM plus OpenSearch roles.</p>
+<p>For ingestion, AWS services such as Firehose, Lambda, and OpenSearch Ingestion need IAM permissions to write to the domain or collection. For analytics users, Dashboards access should be separated by role. Operators may need cluster management permissions; analysts usually need read-only access to specific index patterns.</p>
+<div class="hi">Key insight: IAM controls who can reach the service API, while fine-grained access control controls what users can do inside OpenSearch. You usually need both.</div>
+<div class="warn">Production gotcha: public endpoints with broad resource policies are still found in real environments. Treat search indexes as sensitive because logs often contain tokens, emails, customer IDs, and stack traces.</div>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "es:ESHttpPost",
+        "es:ESHttpPut"
+      ],
+      "Resource": "arn:aws:es:us-east-1:123456789012:domain/prod-search/app-logs-*"
+    }
+  ]
+}</code></pre>
+<table>
+  <tr><th>Security layer</th><th>Purpose</th><th>Typical control</th></tr>
+  <tr><td>Network</td><td>Limit reachability</td><td>VPC, security groups, private subnets</td></tr>
+  <tr><td>IAM</td><td>Control AWS API access</td><td>Roles for Lambda, Firehose, operators</td></tr>
+  <tr><td>Fine-grained access</td><td>Control index/action permissions</td><td>OpenSearch roles and mappings</td></tr>
+  <tr><td>Encryption</td><td>Protect data</td><td>KMS at rest, TLS in transit</td></tr>
+  <tr><td>Audit</td><td>Track access and changes</td><td>Audit logs to CloudWatch/S3</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s14">Cost Model and Sizing</h2>
+<p>Managed OpenSearch cost is driven by instance hours, storage, replicas, dedicated cluster manager nodes, warm/cold tiers, snapshots, data transfer, and ingestion pipeline costs. Serverless cost is driven by OpenSearch Compute Units, storage, and workload shape. AWS documentation describes managed cluster charges as instance hours, storage, and data transfer, with pricing dependent on instance type and storage tier. OpenSearch Serverless provisions and scales capacity through OCUs, and AWS has described a small redundant deployment baseline as four half OCUs for some workloads.</p>
+<p>Cost optimization starts with architecture: reduce unnecessary fields, avoid duplicate raw payloads when not needed, choose retention deliberately, use S3 for archive, tune shard count, right-size instances, and monitor sustained CPU, heap, disk, indexing pressure, search latency, and queue depth. AWS cost guidance also highlights storage-saving options such as derived source and newer optimized instance families for managed clusters.</p>
+<div class="hi">Key insight: OpenSearch bills are usually caused by always-on capacity plus retained data, not by a single expensive query.</div>
+<div class="warn">Production gotcha: replicas double indexed storage. They are required for production resilience, but they must be included in every storage and cost estimate.</div>
+<table>
+  <tr><th>Cost driver</th><th>Managed domain</th><th>Serverless</th></tr>
+  <tr><td>Compute</td><td>Instance-hours by node type and count</td><td>OCU-hours for indexing and search</td></tr>
+  <tr><td>Storage</td><td>EBS, instance storage, UltraWarm/cold options</td><td>Managed storage</td></tr>
+  <tr><td>High availability</td><td>Replicas, Multi-AZ, dedicated managers</td><td>Redundant capacity model</td></tr>
+  <tr><td>Ingestion</td><td>Cluster indexing capacity plus pipeline service</td><td>Indexing OCUs plus ingestion pipeline if used</td></tr>
+  <tr><td>Data transfer</td><td>Cross-AZ/cross-region patterns can matter</td><td>Still design for locality</td></tr>
+</table>
+<pre><code>Rough sizing checklist:
+1. Estimate daily raw GB ingested.
+2. Estimate indexed expansion factor after mappings and analysis.
+3. Multiply by retention days.
+4. Multiply by replica count plus primaries.
+5. Divide by target shard size to estimate shard count.
+6. Validate against heap, query latency, recovery time, and cost.
+7. Keep raw source in S3 for replay and long-term retention.</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose OpenSearch instead of Redshift, Athena, or Snowflake?</div>
+  <div class="qa-a">A: I would choose OpenSearch when the access pattern is low-latency search, filtering, ranking, and interactive log exploration. I would not choose it for large relational joins, governed warehouse analytics, or cheap historical scans. In a mature data platform, OpenSearch is usually the search-serving layer while S3, Athena, Redshift, or Snowflake remains the analytical source of truth.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you prevent over-sharding in a logging platform?</div>
+  <div class="qa-a">A: I estimate daily data volume, retention, replica count, and target shard size, then use rollover policies so indexes roll by size and age. I avoid creating too many tiny indexes per service or tenant unless isolation is truly needed. I also monitor shard count per node, heap pressure, cluster-state size, and recovery time.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Explain <code>text</code> versus <code>keyword</code> to a production team.</div>
+  <div class="qa-a">A: <code>text</code> is analyzed and used for full-text search, such as messages and descriptions. <code>keyword</code> is exact and used for filters, aggregations, sorting, IDs, service names, regions, statuses, and codes. The mistake is aggregating on analyzed text or searching human sentences as exact keywords.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is your preferred ingestion architecture for critical logs?</div>
+  <div class="qa-a">A: I prefer a replayable pipeline: events flow through Kinesis or Kafka, raw records land in S3, transformed records are bulk-indexed into OpenSearch, and failures go to a DLQ. That way, a mapping bug or failed indexing batch does not destroy the only copy of the data.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you decide between managed OpenSearch and OpenSearch Serverless?</div>
+  <div class="qa-a">A: I use managed domains when I need cluster-level control, specific features, warm/cold tier design, predictable steady workloads, or deep tuning. I use Serverless when scaling simplicity and reduced infrastructure management matter more than low-level control, especially for bursty or newer workloads. I still validate baseline OCU cost before assuming Serverless is cheaper.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What metrics tell you an OpenSearch cluster is in trouble?</div>
+  <div class="qa-a">A: I watch JVM pressure, CPU, free storage, disk watermarks, indexing pressure, rejected thread-pool tasks, search latency, bulk latency, queue depth, cluster status, shard relocation, and GC behavior. For user-facing search, I also track p95/p99 latency and zero-result rate because infrastructure can look healthy while relevance is poor.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Index</div>
+    <div class="cd">Logical collection of documents with mappings, settings, shards, and replicas.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Primary shard</div>
+    <div class="cd">Original shard that receives writes; count is set when the index is created.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Replica shard</div>
+    <div class="cd">Copy of a primary shard used for availability and search parallelism.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Over-sharding</div>
+    <div class="cd">Creating too many small shards, increasing heap, metadata, and coordination overhead.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">text</div>
+    <div class="cd">Analyzed field type for full-text search and relevance scoring.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">keyword</div>
+    <div class="cd">Exact field type for filters, sorting, aggregations, IDs, and dimensions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">BM25</div>
+    <div class="cd">Default relevance scoring model based on term frequency, rarity, and field length.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">bool query</div>
+    <div class="cd">Combines must, should, filter, and must_not clauses for production search logic.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">filter context</div>
+    <div class="cd">Query context for yes/no matching without score calculation; often cache-friendly.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">_bulk</div>
+    <div class="cd">Bulk indexing API; required for efficient high-volume ingestion.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ISM</div>
+    <div class="cd">Index State Management for rollover, warm/cold movement, retention, and deletion.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Rollover</div>
+    <div class="cd">Creates a new write index when age, size, or document-count thresholds are met.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Firehose</div>
+    <div class="cd">AWS-native delivery service commonly used to stream logs into OpenSearch and S3.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Serverless OCU</div>
+    <div class="cd">OpenSearch Compute Unit used by OpenSearch Serverless for indexing and search capacity.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">FGAC</div>
+    <div class="cd">Fine-grained access control for index-level and action-level OpenSearch permissions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">S3 archive</div>
+    <div class="cd">Recommended durable source for replay, compliance, and low-cost historical retention.</div>
+  </div>
+</div>
+</div>
+</body>
+</html>
