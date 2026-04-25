@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Kinesis - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-kinesis.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS Kinesis - Master Engineering Reference
+</div>
+
+<h1>AWS Kinesis</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 9-10 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">Kinesis</span>
+  <span class="tag">Streaming</span>
+  <span class="tag">Data Engineering</span>
+  <span class="tag">Lambda</span>
+  <span class="tag">Firehose</span>
+  <span class="tag">Managed Flink</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-kinesis.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Kinesis Data Streams &mdash; shards, partition keys, retention</a></li>
+    <li><a href="#s2">Shard Sizing &amp; Capacity Math</a></li>
+    <li><a href="#s3">Enhanced Fan-Out vs Standard Polling</a></li>
+    <li><a href="#s4">Kinesis Firehose &mdash; delivery, buffering, format conversion</a></li>
+    <li><a href="#s5">Kinesis Analytics &amp; Managed Flink</a></li>
+    <li><a href="#s6">Kinesis vs Kafka vs SQS &mdash; decision guide</a></li>
+    <li><a href="#s7">Lambda as Consumer &mdash; patterns and gotchas</a></li>
+    <li><a href="#s8">Ordering, Resharding &amp; Hot Shards</a></li>
+    <li><a href="#s9">Monitoring &amp; Cost Model</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Kinesis Data Streams &mdash; shards, partition keys, retention</h2>
+<p>Kinesis Data Streams is the low-latency stream service in the Kinesis family. Producers write records into a stream, each record has a partition key, and Kinesis hashes that key to decide which shard receives the record. Within a shard, records receive sequence numbers and preserve ordering for that shard.</p>
+<p>Shards are both the ordering boundary and the capacity boundary. A user, device, account, sensor, or tenant ID may be a good partition key when you need per-entity ordering, but the same choice can create hot shards if a few entities dominate traffic.</p>
+<div class="hi">Key insight: Kinesis gives strong ordering only within a shard. If two records land in different shards, the service is not promising global ordering.</div>
+<div class="warn">Production gotcha: default retention is commonly treated as short replay storage, not archival storage. Extend retention when downstream consumers may lag, but send durable history to S3 when replay windows matter.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Shard Sizing &amp; Capacity Math</h2>
+<p>Shard sizing starts with throughput, not record count. A provisioned shard supports roughly 1 MB/sec or 1,000 records/sec for writes, and 2 MB/sec for reads with standard consumers. Required shard count is the max of the write-throughput calculation, write-record-rate calculation, and read-throughput calculation.</p>
+<p>For senior-level design, the math must include headroom. Real streams have uneven keys, retry bursts, producer batching behavior, and consumer lag. A stream sized to exactly average traffic is already undersized.</p>
+<pre><code>required_write_shards = max(
+  ceil(write_mb_per_sec / 1),
+  ceil(write_records_per_sec / 1000)
+)
+
+required_read_shards = ceil(total_read_mb_per_sec / 2)
+
+required_shards = max(required_write_shards, required_read_shards)
+# Add headroom for burst, skew, and replay load.</code></pre>
+<div class="hi">A clean sizing estimate uses peak sustained rate, not daily average. Daily average hides traffic spikes and hot partitions.</div>
+<div class="warn">If one partition key exceeds one shard of write capacity, adding more shards may not help until you change or fan out the partition key strategy.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Enhanced Fan-Out vs Standard Polling</h2>
+<p>Standard consumers poll shards using shared read throughput. This is simple and cost-friendly for one or two consumers, but multiple independent consumers compete for the same 2 MB/sec per shard read pool and can increase read latency.</p>
+<p>Enhanced Fan-Out registers consumers and gives each registered consumer dedicated read throughput per shard. It is useful when multiple downstream systems need low-latency reads from the same stream, such as fraud detection, real-time dashboards, lake ingestion, and alerting.</p>
+<table>
+  <tr><th>Mode</th><th>Best fit</th><th>Tradeoff</th></tr>
+  <tr><td>Standard polling</td><td>Few consumers, moderate latency tolerance</td><td>Shared read capacity per shard</td></tr>
+  <tr><td>Enhanced Fan-Out</td><td>Many consumers or low-latency fan-out</td><td>Higher cost and consumer registration</td></tr>
+  <tr><td>Lambda event source</td><td>Serverless processing</td><td>Batch tuning and retry behavior matter</td></tr>
+</table>
+<div class="hi">Enhanced Fan-Out is a latency isolation tool. It prevents one consumer from starving another when both read the same shard set.</div>
+<div class="warn">Do not pay for Enhanced Fan-Out by default. Use it when shared polling is causing measurable contention, lag, or latency problems.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Kinesis Firehose &mdash; delivery, buffering, format conversion</h2>
+<p>Kinesis Data Firehose is the managed delivery service. Instead of writing consumer code, you configure delivery to targets such as S3, Redshift, OpenSearch, or partner destinations. It is a strong fit for data lake ingestion, log delivery, and analytics pipelines where transformation needs are light.</p>
+<p>Firehose buffers records by size and time before delivery. Buffering improves throughput and file sizes, but it also introduces latency. For lakehouse ingestion, Firehose can convert JSON-style input into Parquet and apply compression such as Snappy to reduce storage and scan cost.</p>
+<div class="hi">Firehose is not a general-purpose stream processor. It is a managed delivery pipe with buffering, transformation hooks, compression, and destination handling.</div>
+<div class="warn">Small buffer settings create tiny files in S3. Tiny files punish Athena, Glue, Spark, and downstream compaction jobs.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Kinesis Analytics &amp; Managed Flink</h2>
+<p>Kinesis Data Analytics evolved into Amazon Managed Service for Apache Flink for serious stream processing. This is where windowing, joins, stateful operators, late events, watermarks, and exactly-once-style processing concerns become central design topics.</p>
+<p>Use Managed Flink when the logic is more than delivery: aggregating metrics per sliding window, joining event streams to reference state, detecting patterns, or maintaining keyed state over time. Compared with Lambda, it is heavier operationally but better for continuous stateful computation.</p>
+<div class="hi">Kinesis Streams moves events. Firehose delivers events. Managed Flink computes over events.</div>
+<div class="warn">Stateful streaming failures are rarely just code failures. Check checkpointing, state backend size, watermark strategy, parallelism, and downstream sink idempotency.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Kinesis vs Kafka vs SQS &mdash; decision guide</h2>
+<p>Kinesis and Kafka are stream platforms. SQS is a queue. That distinction matters: streams retain ordered records for replay by multiple consumers, while queues distribute messages for work processing and remove them after successful consumption.</p>
+<p>Kinesis is attractive when AWS-native operations and managed scaling are more important than Kafka ecosystem depth. Kafka or MSK becomes more compelling when you need Kafka protocol compatibility, mature ecosystem tooling, long-standing platform patterns, or portability beyond AWS.</p>
+<table>
+  <tr><th>Choice</th><th>Use when</th><th>Avoid when</th></tr>
+  <tr><td>Kinesis</td><td>AWS-native stream ingestion and replay</td><td>You need Kafka protocol/tooling compatibility</td></tr>
+  <tr><td>Kafka/MSK</td><td>Broad ecosystem, many topics, portable stream platform</td><td>You want the simplest managed AWS ingestion path</td></tr>
+  <tr><td>SQS</td><td>Decoupled work queue and task distribution</td><td>You need replay by multiple independent consumers</td></tr>
+</table>
+<div class="hi">The interview shortcut: Kinesis is for ordered replayable event streams; SQS is for distributing work; Kafka is the larger open stream ecosystem.</div>
+<div class="warn">Choosing SQS because it is simpler can backfire when the real requirement is replay, fan-out, or ordered event history.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Lambda as Consumer &mdash; patterns and gotchas</h2>
+<p>Lambda can consume Kinesis records through an event source mapping. AWS polls the stream, batches records, invokes the function, and checkpoints progress when batches succeed. This is powerful for lightweight enrichment, validation, routing, alerting, and small ETL steps.</p>
+<p>The operational edge is failure handling. A single bad record can block progress for its shard if the batch keeps failing. Tune batch size, maximum batching window, retry behavior, bisect-on-error, partial batch response, and destinations based on the cost of duplication versus delay.</p>
+<pre><code>{
+  "batchSize": 100,
+  "maximumBatchingWindowInSeconds": 5,
+  "bisectBatchOnFunctionError": true,
+  "maximumRetryAttempts": 3,
+  "parallelizationFactor": 2
+}</code></pre>
+<div class="hi">Lambda plus Kinesis is excellent when processing is stateless or lightly stateful and each event can be handled idempotently.</div>
+<div class="warn">Never assume exactly-once side effects. Design writes to S3, DynamoDB, databases, and APIs to tolerate retries and duplicate records.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Ordering, Resharding &amp; Hot Shards</h2>
+<p>Ordering depends on partition-key placement. All records with the same partition key go to the same shard at a point in time, which preserves per-key order but concentrates load. Resharding changes shard topology and capacity, but it does not magically fix a single key that overwhelms one shard.</p>
+<p>Hot shards usually show up as throttled writes, increasing iterator age, uneven consumer lag, or one shard carrying much more traffic than the others. Common remedies include partition-key salting, key redesign, aggregation, producer-side batching, or splitting very large tenants across logical keys.</p>
+<div class="hi">Shard count solves aggregate capacity. Partition-key design solves distribution.</div>
+<div class="warn">Salting improves distribution but weakens simple per-entity ordering. Only salt keys when the downstream design can tolerate or reconstruct order.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Monitoring &amp; Cost Model</h2>
+<p>Production Kinesis monitoring should focus on throughput pressure, throttling, consumer lag, and delivery failures. Watch write throttles, read throttles, iterator age, incoming bytes, incoming records, failed put records, Firehose delivery errors, and downstream sink latency.</p>
+<p>The cost model depends on mode and shape: provisioned shards or on-demand streams, PUT payload units, Enhanced Fan-Out consumers, extended retention, Firehose ingest and conversion, and Managed Flink compute. The cheapest design is usually the one that avoids over-fanning, tiny files, unnecessary retention, and runaway downstream retries.</p>
+<table>
+  <tr><th>Signal</th><th>What it suggests</th><th>Common action</th></tr>
+  <tr><td>Write throttles</td><td>Shard write capacity or hot key issue</td><td>Add shards or redesign partition key</td></tr>
+  <tr><td>Iterator age rising</td><td>Consumer falling behind</td><td>Scale consumer, tune batch, inspect failures</td></tr>
+  <tr><td>Firehose delivery failures</td><td>Destination or transform issue</td><td>Check IAM, schema, target health, error prefix</td></tr>
+  <tr><td>Tiny S3 files</td><td>Buffering too aggressive</td><td>Increase buffer size/time or compact later</td></tr>
+</table>
+<div class="hi">Iterator age is the senior-engineer smoke alarm. It tells you when the stream is becoming a backlog, not just a pipe.</div>
+<div class="warn">Cost surprises often come from fan-out, retries, retained data, and downstream inefficiency rather than the base stream alone.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: How would you choose a partition key for a high-volume Kinesis stream?</div>
+  <div class="qa-a">A: I would start from the ordering requirement, then test distribution. If per-customer order matters, customer ID may be right, but I would inspect whether a few customers dominate traffic. If skew is high, I would consider composite keys, salting, or separating high-volume tenants while being explicit about the ordering tradeoff.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: A Kinesis consumer is falling behind. What do you check first?</div>
+  <div class="qa-a">A: I check iterator age, read throttles, Lambda or consumer errors, batch duration, and downstream sink latency. If the stream is healthy but the consumer is slow, I tune batch size, parallelization, and downstream writes. If one shard is worse than others, I suspect hot partition keys.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When is Enhanced Fan-Out worth the cost?</div>
+  <div class="qa-a">A: It is worth it when multiple consumers need independent low-latency reads from the same stream and standard polling causes contention. I would justify it with observed read throttling, lag, or latency SLO pressure. For one low-volume consumer, standard polling is usually enough.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why might Firehose be better than Data Streams for lake ingestion?</div>
+  <div class="qa-a">A: Firehose removes consumer-code ownership for simple delivery pipelines. It handles buffering, retries, S3 delivery, optional transformation, compression, and format conversion. If the requirement is mostly landing data into S3 or Redshift, Firehose is often cleaner than building and operating custom consumers.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you handle bad records in a Lambda Kinesis consumer?</div>
+  <div class="qa-a">A: The function should validate records, isolate poison messages, and write failures to a durable error location. I would use bisect-on-error or partial batch response where appropriate, cap retries, and make downstream writes idempotent. The key is avoiding one bad record blocking a shard indefinitely.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you explain Kinesis vs SQS to a stakeholder?</div>
+  <div class="qa-a">A: Kinesis is an event stream: records can be replayed and multiple consumers can read the same history. SQS is a work queue: messages are distributed to workers and removed after processing. If they need replay, ordering by key, or independent consumers, I lean Kinesis; if they need task decoupling, I lean SQS.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Shard</div>
+    <div class="cd">Capacity and ordering unit for Kinesis Data Streams.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Partition key</div>
+    <div class="cd">Hashed value that determines shard placement and per-key ordering.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Sequence number</div>
+    <div class="cd">Shard-level record position assigned by Kinesis after ingestion.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">1 MB/s in</div>
+    <div class="cd">Approximate provisioned write throughput per shard.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">2 MB/s out</div>
+    <div class="cd">Approximate shared standard read throughput per shard.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">1,000 rec/s</div>
+    <div class="cd">Approximate provisioned write record-rate limit per shard.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Retention</div>
+    <div class="cd">Replay window for stream records; extend when consumers may lag.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">EFO</div>
+    <div class="cd">Enhanced Fan-Out gives dedicated per-consumer read throughput per shard.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Firehose</div>
+    <div class="cd">Managed delivery service for S3, Redshift, OpenSearch, and partners.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Buffering</div>
+    <div class="cd">Firehose size/time batching; larger buffers reduce tiny-file pressure.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Managed Flink</div>
+    <div class="cd">Stateful stream processing for windows, joins, and continuous computation.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">IteratorAge</div>
+    <div class="cd">Consumer-lag metric showing how far behind processing has fallen.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Hot shard</div>
+    <div class="cd">One shard receives disproportionate traffic, usually from skewed keys.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Idempotency</div>
+    <div class="cd">Required consumer design principle because retries can duplicate side effects.</div>
+  </div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>
