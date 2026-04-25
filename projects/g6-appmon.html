@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G6 Hospitality — Application Performance Monitoring | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/projects/g6-appmon.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; vertical-align:top; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+  <div class="topnav">
+    <a href="https://seanlgirgis.github.io/projects.html">&#128196; Projects Showcase</a> / G6 Hospitality AppMon
+  </div>
+
+  <h1>G6 Hospitality — Application Performance Monitoring Platform</h1>
+  <p class="subtitle">Project deep-dive &middot; Observability &amp; Data Engineering &middot; G6 Hospitality (Motel 6 / Studio 6) &middot; Last updated 2026-04-25</p>
+
+  <div class="tag-row">
+    <span class="tag">Observability</span>
+    <span class="tag">Dynatrace AppMon</span>
+    <span class="tag">Data Pipelines</span>
+    <span class="tag">MySQL</span>
+    <span class="tag">Web Performance</span>
+    <span class="tag">Geo Segmentation</span>
+    <span class="tag">Hospitality</span>
+    <span class="tag">Python</span>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">&#127911; Project Walkthrough — Audio</div>
+    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_g6-appmon.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">Project Context</a></li>
+      <li><a href="#s2">The Monitoring Gap</a></li>
+      <li><a href="#s3">Dynatrace AppMon as Data Source</a></li>
+      <li><a href="#s4">The Extraction Pipeline</a></li>
+      <li><a href="#s5">Artifact Chain Analysis</a></li>
+      <li><a href="#s6">Geographical &amp; Device Segmentation</a></li>
+      <li><a href="#s7">MySQL Data Layer</a></li>
+      <li><a href="#s8">Reporting &amp; Analysis</a></li>
+      <li><a href="#s9">Findings &amp; Recommendations</a></li>
+      <li><a href="#s10">Impact &amp; Outcomes</a></li>
+      <li><a href="#s11">Lessons Learned</a></li>
+      <li><a href="#qa">Interview Q&amp;A</a></li>
+      <li><a href="#cheat">Quick Reference</a></li>
+    </ol>
+  </div>
+
+  <!-- S1 -->
+  <h2 id="s1">Project Context</h2>
+  <p>G6 Hospitality is the parent company of Motel 6 and Studio 6, operating hundreds of locations across the United States. The brand.com direct booking website is a primary revenue channel — customers searching for a room, comparing prices, and completing a reservation online. In the hospitality industry, website performance is directly tied to conversion: a slow, unresponsive booking flow loses customers to competitor sites. Every second of avoidable latency is a missed booking.</p>
+  <p>G6 had invested in Dynatrace AppMon to instrument and monitor brand.com and supporting applications. AppMon was capturing detailed telemetry — response times, error rates, the full chain of web artifact requests — but the analytics and reporting that business stakeholders and the development team needed required a custom layer that went beyond what Dynatrace's built-in dashboards provided.</p>
+  <div class="hi">Direct booking websites in hospitality live and die on responsiveness. A customer deciding between two properties on mobile will not wait for a slow checkout flow. Performance monitoring at this level is a revenue problem, not just an infrastructure concern.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S2 -->
+  <h2 id="s2">The Monitoring Gap</h2>
+  <p>Dynatrace AppMon was doing its job — it instrumented every transaction, captured response times for every artifact in the request waterfall, and surfaced alerts when thresholds were breached. The gap was in the analytics layer above the raw data. The built-in dashboards were rigid: they showed what was monitored but didn't easily support the cross-dimensional queries the team needed.</p>
+  <p>The business questions that drove this project were:</p>
+  <ul>
+    <li>Which pages and which artifacts within those pages are consistently the slowest?</li>
+    <li>Does performance vary by customer geography — are users in certain regions experiencing worse load times?</li>
+    <li>Is mobile performance significantly different from desktop, and if so, where in the artifact chain?</li>
+    <li>How does performance trend over time, and did a recent deployment improve or regress it?</li>
+    <li>Where should the development team focus its next optimization effort for maximum impact?</li>
+  </ul>
+  <p>None of these required replacing Dynatrace. They required extracting Dynatrace's raw data and building a custom analytics and reporting layer on top of it.</p>
+  <div class="warn">A monitoring tool that only generates alerts is reactive. The goal of this project was to make performance monitoring proactive — giving the team a continuous, segmented view of where performance stood before users experienced problems.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S3 -->
+  <h2 id="s3">Dynatrace AppMon as Data Source</h2>
+  <p>Dynatrace AppMon is an enterprise application performance monitoring platform. It instruments web applications at the agent level — capturing every HTTP request, tracing the full request lifecycle from browser initiation through server processing and back, and recording detailed timing data for every artifact in the response chain. For a web application like brand.com, this means AppMon sees every HTML page load, every CSS and JavaScript file request, every image, every third-party script, and every API call the page makes.</p>
+  <p>AppMon also captures session-level metadata: where the request originated geographically, the browser and device type used, the user journey through the application, and any errors encountered. This metadata is what made the segmentation approach possible — the raw data already contained the geography and device dimensions; it just needed to be extracted and structured for analysis.</p>
+
+  <table>
+    <tr><th>AppMon Capability</th><th>How It Was Used</th></tr>
+    <tr><td>Full artifact chain timing</td><td>Captured response times for every element in the page waterfall</td></tr>
+    <tr><td>Session metadata</td><td>Extracted geographic origin and device class for segmentation</td></tr>
+    <tr><td>Transaction tracing</td><td>Mapped customer interactions (search, select, checkout) as named transactions</td></tr>
+    <tr><td>Error tracking</td><td>Identified failed requests and their positions in the artifact chain</td></tr>
+    <tr><td>Data export interface</td><td>Used as the extraction point for the custom analytics pipeline</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S4 -->
+  <h2 id="s4">The Extraction Pipeline</h2>
+  <p>Scripts were built to pull performance data out of AppMon programmatically through its data export interface. The extraction ran on a scheduled basis, pulling response time data and artifact chain breakdowns for all monitored transactions across the defined time window. Each extraction included the full set of dimensional metadata — timestamp, application, transaction type, artifact identifier, geography, and device class.</p>
+  <p>The extracted data was validated for completeness before being loaded into MySQL. Any records with missing dimensional data were flagged rather than silently dropped — dropping incomplete records would have introduced geographic or device-class bias into the reports without any indication that data was missing.</p>
+
+  <pre><code># Extraction pipeline (conceptual structure)
+for each scheduled_run:
+    raw_data = appmon.export_transactions(
+        time_range   = last_period,
+        applications = MONITORED_APPS,
+        dimensions   = ["timestamp", "app", "transaction",
+                        "artifact", "response_ms", "geo_region",
+                        "device_class", "status"]
+    )
+
+    validated = validate_completeness(raw_data)
+    flagged   = [r for r in raw_data if r not in validated]
+
+    if flagged:
+        log_incomplete_records(flagged)
+
+    mysql.load(validated, table="performance_raw")</code></pre>
+
+  <div class="hi">Scheduled extraction meant the MySQL database was continuously updated with fresh performance data. Reports generated against it reflected current conditions, not a static snapshot taken once and never refreshed.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S5 -->
+  <h2 id="s5">Artifact Chain Analysis</h2>
+  <p>The artifact chain is the waterfall of individual HTTP requests a browser makes when loading a web page. For brand.com, a single page load triggers a sequence of requests: the initial HTML document, then CSS stylesheets, JavaScript files, images, fonts, third-party scripts (analytics, chat widgets, tracking pixels), and background API calls for dynamic content like pricing and availability. Each step in this chain has its own response time, and the chain's total length determines what the user experiences as page load time.</p>
+  <p>The key insight from analyzing the chain rather than just the top-level page load time is that different artifact types have different optimization paths. A slow HTML response points to server-side rendering or database performance. Slow CSS or JavaScript points to file size, bundling, or delivery (CDN coverage). Slow third-party scripts are often outside direct control — but knowing which ones are the worst offenders gives the team the data to justify removing or deferring them.</p>
+
+  <table>
+    <tr><th>Artifact Type</th><th>Common Performance Issues</th><th>Optimization Levers</th></tr>
+    <tr><td>HTML</td><td>Server render time, database query latency</td><td>Caching, query optimization, CDN</td></tr>
+    <tr><td>CSS</td><td>File size, render-blocking delivery</td><td>Minification, critical CSS inlining, deferred load</td></tr>
+    <tr><td>JavaScript</td><td>Bundle size, parse and execution time</td><td>Minification, code splitting, deferred/async loading</td></tr>
+    <tr><td>Images</td><td>File size, format, unoptimized delivery</td><td>Compression, WebP format, lazy loading, CDN</td></tr>
+    <tr><td>Third-party scripts</td><td>External dependency latency, blocking behavior</td><td>Audit and remove, defer loading, self-host if possible</td></tr>
+    <tr><td>API calls</td><td>Backend response time, payload size</td><td>Response caching, payload trimming, async loading</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S6 -->
+  <h2 id="s6">Geographical &amp; Device Segmentation</h2>
+  <p>Segmentation was one of the most analytically valuable parts of the project. A national hotel booking site serves customers across every US state, on devices ranging from high-end desktop browsers to older mobile phones on slower connections. Rolling all of that into a single average response time hides more than it reveals — two very different performance problems can cancel each other out in an aggregate metric and appear as "acceptable" when neither individual experience is acceptable.</p>
+  <p>Geographic segmentation revealed where CDN coverage gaps were creating elevated response times for customers in specific regions. Device segmentation revealed where large JavaScript bundles were imposing disproportionate load times on mobile — the parse-and-execute cost of a heavy JS bundle is significantly higher on a mobile CPU than on a desktop, independent of network speed. Together, these dimensions transformed the reporting from "the site has a performance problem" to "mobile users in the midwest have a specific problem in the checkout flow driven by this script."</p>
+
+  <pre><code>-- Example query: artifact chain ranked by response time, mobile only
+SELECT
+    artifact_name,
+    geo_region,
+    device_class,
+    AVG(response_ms)   AS avg_ms,
+    PERCENTILE(response_ms, 95) AS p95_ms,
+    COUNT(*)           AS sample_count
+FROM performance_raw
+WHERE
+    device_class = 'mobile'
+    AND transaction_name = 'checkout_flow'
+    AND recorded_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+GROUP BY artifact_name, geo_region, device_class
+ORDER BY p95_ms DESC
+LIMIT 20;</code></pre>
+
+  <div class="hi">P95 response time — the 95th percentile — was a more useful reporting metric than the average. Averages are dragged down by fast responses and hide the tail of slow experiences. P95 shows what the slowest 5% of users experience, which is where the real problems live.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S7 -->
+  <h2 id="s7">MySQL Data Layer</h2>
+  <p>MySQL served as the aggregation and analytics database. The schema was built around the dimensions needed for reporting: time, application, transaction, artifact, response time, geography, and device. This structure supported both high-granularity queries against individual artifact records and aggregated trend queries across time ranges and segments.</p>
+
+  <pre><code>-- Core performance data table (simplified)
+CREATE TABLE performance_raw (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    recorded_at      DATETIME       NOT NULL,
+    app_name         VARCHAR(100)   NOT NULL,
+    transaction_name VARCHAR(200)   NOT NULL,
+    artifact_name    VARCHAR(500)   NOT NULL,
+    artifact_type    VARCHAR(50),               -- html, css, js, image, api, third_party
+    response_ms      INT            NOT NULL,
+    status_code      SMALLINT,
+    geo_region       VARCHAR(100),
+    device_class     VARCHAR(50),               -- desktop, mobile, tablet
+    INDEX idx_app_tx   (app_name, transaction_name),
+    INDEX idx_time     (recorded_at),
+    INDEX idx_geo_dev  (geo_region, device_class)
+);
+
+-- Pre-aggregated summary table for fast dashboard queries
+CREATE TABLE performance_summary (
+    summary_date     DATE           NOT NULL,
+    app_name         VARCHAR(100)   NOT NULL,
+    transaction_name VARCHAR(200)   NOT NULL,
+    artifact_name    VARCHAR(500)   NOT NULL,
+    geo_region       VARCHAR(100),
+    device_class     VARCHAR(50),
+    avg_ms           DECIMAL(10,2),
+    p95_ms           INT,
+    p99_ms           INT,
+    sample_count     INT,
+    error_count      INT,
+    PRIMARY KEY (summary_date, app_name, transaction_name, artifact_name, geo_region, device_class)
+);</code></pre>
+
+  <p>Pre-aggregated summary tables were computed nightly from the raw data. Reports ran against the summary tables for speed — the raw table was available for drill-down investigation when a summary surfaced an anomaly worth investigating in detail.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S8 -->
+  <h2 id="s8">Reporting &amp; Analysis</h2>
+  <p>The reporting layer produced a set of recurring reports that the development team and business stakeholders used to track performance and prioritize improvement work. Reports were structured around the questions the business actually needed answered, not around the dimensions that happened to be easy to aggregate.</p>
+
+  <table>
+    <tr><th>Report</th><th>Audience</th><th>Purpose</th></tr>
+    <tr><td>Artifact Chain Slowdown Report</td><td>Dev team</td><td>Ranked list of slowest artifacts by transaction — identifies specific files and API calls to optimize</td></tr>
+    <tr><td>Geographic Performance Map</td><td>Infra + Dev</td><td>Response times by US region — surfaces CDN gaps and regionally concentrated issues</td></tr>
+    <tr><td>Mobile vs Desktop Comparison</td><td>Dev team</td><td>Side-by-side response times by device class — highlights where mobile experience diverges</td></tr>
+    <tr><td>Weekly Trend Report</td><td>Management + Dev</td><td>Week-over-week performance trend — shows whether deployments improved or regressed performance</td></tr>
+    <tr><td>Third-Party Script Audit</td><td>Dev + Product</td><td>Response time and error rate for all external scripts — evidence for remove/defer decisions</td></tr>
+    <tr><td>Transaction Flow Report</td><td>Product + Dev</td><td>Per-step response times for search → select → checkout — identifies conversion-critical bottlenecks</td></tr>
+  </table>
+
+  <div class="hi">The weekly trend report was the highest-value recurring output. It created accountability: every deployment was followed by a data-driven answer to "did this make things better or worse?" rather than relying on anecdote or waiting for user complaints.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S9 -->
+  <h2 id="s9">Findings &amp; Recommendations</h2>
+  <p>The artifact chain and segmentation analysis surfaced several categories of performance problems that were not visible in the top-level Dynatrace dashboards alone.</p>
+  <p><strong>JavaScript bundle weight.</strong> Multiple JavaScript files were consistently appearing at the top of the artifact chain slowdown report, particularly on mobile. The recommendation was to audit the JS bundle for unused code, defer non-critical scripts from the initial page load, and consolidate multiple small JS files to reduce the number of round-trip requests. Minification of uncompressed scripts was also identified as a quick win with measurable impact.</p>
+  <p><strong>Third-party script latency.</strong> Several third-party scripts — analytics tags, marketing pixels, and embedded widgets — were loading synchronously in the page head, blocking rendering until their responses completed. The data showed these scripts contributing disproportionately to first-contentful-paint latency. The recommendation was to load all non-critical third-party scripts asynchronously or defer them until after the main content rendered.</p>
+  <p><strong>Regional CDN coverage.</strong> The geographic segmentation showed elevated response times in specific regions relative to others for the same artifact. This pattern is characteristic of CDN PoP gaps — the nearest CDN node is farther away for users in those regions. The finding was surfaced to the infrastructure team as evidence for CDN configuration review.</p>
+  <p><strong>Mobile-specific rendering paths.</strong> Mobile users experienced significantly higher JavaScript execution time on the checkout flow compared to desktop. The recommendation was to review whether the checkout page was serving a mobile-optimized payload or a desktop-equivalent payload on a device with less processing capacity.</p>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S10 -->
+  <h2 id="s10">Impact &amp; Outcomes</h2>
+  <p>Following implementation of the recommended frontend changes, response times improved measurably across the monitored transactions on brand.com. The improvements were visible in the weekly trend reports as a sustained shift in both average and P95 response times for the targeted transactions — not a one-week anomaly but a durable improvement tracked over multiple reporting cycles.</p>
+  <p>The structural outcome was the shift from reactive to proactive performance management. Before the pipeline, performance issues were discovered through Dynatrace alerts or user complaints. After, the development team had a continuous, segmented view of where performance stood and where it was trending. Prioritization decisions — what to optimize next — were driven by ranked data rather than by whoever raised the loudest concern.</p>
+  <p>The reports also created a shared language between the development team, the infrastructure team, and business stakeholders. A geographic performance map is accessible to a VP in a way that a Dynatrace dashboard is not. Translating raw telemetry into business-facing reports is a significant part of the value this kind of analytics layer provides.</p>
+
+  <table>
+    <tr><th>Outcome</th><th>Before</th><th>After</th></tr>
+    <tr><td>Performance visibility</td><td>Alert-driven — issues discovered reactively</td><td>Continuous segmented reporting — proactive visibility</td></tr>
+    <tr><td>Dev team prioritization</td><td>Based on anecdote and user complaints</td><td>Driven by ranked artifact chain data</td></tr>
+    <tr><td>Geographic insight</td><td>Aggregate metrics — regional issues hidden</td><td>Per-region response times surfacing CDN gaps</td></tr>
+    <tr><td>Mobile vs desktop</td><td>Single combined metric</td><td>Device-class segmentation revealing mobile-specific issues</td></tr>
+    <tr><td>Deployment validation</td><td>Manual spot-checks or waiting for alerts</td><td>Weekly trend reports confirming improvement or regression</td></tr>
+    <tr><td>Website response time</td><td>Baseline pre-optimization</td><td>Measurably improved following recommended frontend changes</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S11 -->
+  <h2 id="s11">Lessons Learned</h2>
+  <p><strong>Monitoring tools give you data, not insight.</strong> Dynatrace AppMon was capturing everything needed to answer the business questions. The gap was not in the monitoring tool — it was in the analytics layer that turned raw telemetry into prioritized, segmented, actionable information. Building that layer is an engineering problem separate from the monitoring configuration problem. These two concerns are often conflated: teams assume that purchasing a better monitoring tool will automatically produce better insight. It won't without the analytics layer on top.</p>
+  <p><strong>Segmentation is not optional for distributed user bases.</strong> A national hospitality brand has customers in every state on every device. Rolling all of that into a single average hides more than it reveals. The moment geography and device class were added as dimensions, the data started telling a completely different story from the aggregates. Problems that were averaging out became visible. Root causes that looked identical in the aggregate turned out to be completely different — and requiring completely different fixes — once segmented.</p>
+  <p><strong>P95 is a better metric than average for user-facing performance.</strong> Averages are dominated by the fast majority and understate the slow tail. The slowest 5% of user sessions are often the most impactful on conversion — these are users who are already frustrated, and the average metric gives no visibility into their experience. P95 became the primary reporting metric for exactly this reason.</p>
+  <div class="warn">The same pipeline pattern — extract telemetry from a monitoring system, store it in a structured database, build segmented analytics on top — applies across industries and monitoring tools. Whether the source is Dynatrace, Prometheus, Datadog, or a custom metrics API, the engineering problem is the same.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Q&A -->
+  <h2 id="qa">Interview Q&amp;A</h2>
+
+  <div class="qa">
+    <div class="qa-q">You had Dynatrace AppMon already — why build a custom pipeline on top of it?</div>
+    <div class="qa-a">Dynatrace AppMon was capturing all the right data. The problem was the analytics and reporting layer above it. The built-in dashboards were rigid — they didn't support the cross-dimensional queries the team needed: "which artifacts are slowest on mobile specifically in the midwest?" or "did this week's deployment improve or regress checkout performance?" Answering those questions required extracting AppMon's raw data, storing it in a structured database, and building custom reports against it. The monitoring tool is the data source. The analytics layer is the engineering work that turns raw telemetry into something the business can act on. Those are two separate problems, and solving only the first one leaves the insight gap open.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Why did geographic and device segmentation matter so much for this project?</div>
+    <div class="qa-a">A national hotel booking website serves customers across every US state on devices ranging from high-end desktop browsers to older mobile phones on slower connections. If you aggregate all of that into a single response time metric, very different problems cancel each other out and appear as "acceptable." Geographic segmentation revealed CDN PoP gaps — users in certain regions were getting consistently higher latency because the nearest CDN node was farther away. Device segmentation revealed that heavy JavaScript bundles were imposing disproportionate load times on mobile, where CPU parse-and-execute cost is significantly higher than on desktop. These two problems have completely different fixes. Without segmentation you'd never know which one you were actually dealing with, or which region or device class to prioritize first.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How did the artifact chain analysis work, and why was it more useful than top-level page timing?</div>
+    <div class="qa-a">A page load is a waterfall of individual requests: HTML, CSS, JavaScript files, images, third-party scripts, API calls. Each step has its own response time, and the chain total is what the user experiences. If you only measure the top-level page load time, you know the page is slow but you have no idea where to fix it. Analyzing the chain tells you which specific artifact is the bottleneck. A slow HTML response points to server-side or database issues. Slow JavaScript points to bundle size or CDN delivery. Slow third-party scripts are sometimes outside direct control — but knowing which ones are the worst offenders gives the team evidence to defer, remove, or self-host them. The chain analysis turns "the page is slow" into a ranked, actionable list of specific files and calls to address.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Why MySQL for this use case rather than something like Redshift or a time-series database?</div>
+    <div class="qa-a">MySQL was the right fit for the scale and access patterns of this project. The data volume — scheduled extractions from one monitoring system, covering a handful of web applications — was well within what MySQL handles comfortably. The team was already proficient with SQL, so there was no ramp-up cost. The queries needed — aggregations by dimension, trend analysis over time windows, drill-down from summaries to raw records — are exactly what a relational database is designed for. Pre-aggregated summary tables handled the performance requirements for recurring reports, with the raw table available for investigation. A distributed warehouse like Redshift or a time-series database like InfluxDB would have been over-engineering for this use case — more operational complexity for no additional analytical capability at that scale.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How did the reports translate into actual frontend improvements?</div>
+    <div class="qa-a">The reports created a prioritized, evidence-based action list for the development team. When the artifact chain report showed that specific JavaScript files were consistently at the top of the slowdown ranking — particularly on mobile — the recommendation was concrete: defer non-critical scripts, minify uncompressed bundles, consolidate requests. When the data showed third-party scripts loading synchronously in the page head and blocking rendering, the recommendation was to switch those to async or deferred loading. The key thing is that "advise" here meant presenting the data, the specific files involved, and the measured impact — not a vague suggestion to "optimize performance." The team could see exactly which artifact was costing how many milliseconds, on which device class, in which region. That specificity is what makes a recommendation actionable versus aspirational.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">What's the broader pattern here that applies beyond this specific project?</div>
+    <div class="qa-a">The pattern is: monitoring tools capture telemetry, but insight requires an analytics layer on top. Whether you're working with Dynatrace, Prometheus, Datadog, or a custom metrics API, the engineering problem is the same — extract the raw data, store it in a structure optimized for your analytical queries, add the dimensions that matter for your business (geography, device, customer segment, product line), and build reports that answer the questions stakeholders actually need answered. The specific tools change. The pattern doesn't. I've applied the same thinking in data engineering contexts well beyond web performance — any time a business has a data-generating system and needs insight from it, the problem structure is identical: source, extraction, modeling, analytics, reporting.</div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Cheat Sheet -->
+  <h2 id="cheat">Quick Reference</h2>
+  <div class="cheat">
+    <div class="cheat-row"><span class="ct">Company</span><span class="cd">G6 Hospitality — parent of Motel 6 and Studio 6</span></div>
+    <div class="cheat-row"><span class="ct">Problem</span><span class="cd">AppMon captured raw telemetry; business needed custom segmented analytics</span></div>
+    <div class="cheat-row"><span class="ct">Monitoring tool</span><span class="cd">Dynatrace AppMon — full artifact chain instrumentation, session metadata</span></div>
+    <div class="cheat-row"><span class="ct">Extraction</span><span class="cd">Scripted pulls from AppMon export interface on a scheduled basis</span></div>
+    <div class="cheat-row"><span class="ct">Artifact chain</span><span class="cd">HTML → CSS → JS → images → third-party scripts → API calls — each timed individually</span></div>
+    <div class="cheat-row"><span class="ct">Segmentation dims</span><span class="cd">Geographic region + device class (desktop / mobile / tablet)</span></div>
+    <div class="cheat-row"><span class="ct">Storage</span><span class="cd">MySQL — performance_raw (full detail) + performance_summary (pre-aggregated)</span></div>
+    <div class="cheat-row"><span class="ct">Key metric</span><span class="cd">P95 response time preferred over average — reveals tail latency hidden by fast majority</span></div>
+    <div class="cheat-row"><span class="ct">Reports</span><span class="cd">Artifact chain ranking, geo map, mobile vs desktop, weekly trend, third-party audit</span></div>
+    <div class="cheat-row"><span class="ct">JS finding</span><span class="cd">Heavy bundles blocking mobile render — recommend defer, minify, consolidate</span></div>
+    <div class="cheat-row"><span class="ct">Third-party finding</span><span class="cd">Synchronous head scripts blocking rendering — recommend async/deferred loading</span></div>
+    <div class="cheat-row"><span class="ct">Geo finding</span><span class="cd">Regional P95 gaps indicating CDN PoP coverage issues in specific US regions</span></div>
+    <div class="cheat-row"><span class="ct">Outcome</span><span class="cd">Measurable response time improvement; team shifted from reactive to proactive</span></div>
+    <div class="cheat-row"><span class="ct">Weekly trend report</span><span class="cd">Deployment validation — every release followed by data-driven before/after comparison</span></div>
+    <div class="cheat-row"><span class="ct">Pattern</span><span class="cd">Monitoring tool = data source; analytics layer = engineering problem; same pattern everywhere</span></div>
+    <div class="cheat-row"><span class="ct">Why not Redshift</span><span class="cd">Data volume fit MySQL comfortably; no distributed infra overhead for this scale</span></div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+</div>
+</body>
+</html>
