@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Powered Job Search Pipeline | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/projects/job-search-ai.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; vertical-align:top; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+  <div class="topnav">
+    <a href="https://seanlgirgis.github.io/projects.html">&#128196; Projects Showcase</a> / AI-Powered Job Search Pipeline
+  </div>
+
+  <h1>AI-Powered Job Search Pipeline</h1>
+  <p class="subtitle">Project deep-dive &middot; Agentic AI &middot; Active &middot; Last updated 2026-04-25 &middot; GitHub: <a href="https://github.com/seanlgirgis/jobsearch" target="_blank" style="color:var(--primary);">seanlgirgis/jobsearch</a></p>
+
+  <div class="tag-row">
+    <span class="tag">Agentic AI</span>
+    <span class="tag">xAI Grok</span>
+    <span class="tag">LangChain</span>
+    <span class="tag">FAISS</span>
+    <span class="tag">RAG</span>
+    <span class="tag">Python</span>
+    <span class="tag">GPT-4o TTS</span>
+    <span class="tag">Cloudflare R2</span>
+    <span class="tag">GitHub Pages</span>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">&#127911; Project Walkthrough — Audio</div>
+    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_job-search-ai.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">Why It Was Built</a></li>
+      <li><a href="#s2">Pipeline Mental Model</a></li>
+      <li><a href="#s3">Stage 00 — Duplicate Detection</a></li>
+      <li><a href="#s4">Stage 01 — Job Scoring with RAG</a></li>
+      <li><a href="#s5">Two-Tier Model Strategy</a></li>
+      <li><a href="#s6">OpenAI-Compatible Grok Client</a></li>
+      <li><a href="#s7">Stages 03–05 — Tailoring &amp; Resume</a></li>
+      <li><a href="#s8">Stages 06–08 — Research &amp; Cover Letter</a></li>
+      <li><a href="#s9">Stage 09 — Quality Gate &amp; Tracking</a></li>
+      <li><a href="#s10">UUID-Based Data Model</a></li>
+      <li><a href="#s11">StudyBook — The Interview Prep Extension</a></li>
+      <li><a href="#s12">Engineering Challenges</a></li>
+      <li><a href="#s13">Lessons Learned</a></li>
+      <li><a href="#s14">What's Next</a></li>
+      <li><a href="#qa">Interview Q&amp;A</a></li>
+      <li><a href="#cheat">Quick Reference</a></li>
+    </ol>
+  </div>
+
+  <!-- S1 -->
+  <h2 id="s1">Why It Was Built</h2>
+  <p>Searching for a senior data engineering role means tailoring every resume, every cover letter, and researching every company before applying. Done manually across dozens of applications, that's a full-time job stacked on top of the actual job search. The goal was to build a system that handles the repetitive, mechanical work — so judgment and attention can go to the parts that actually need them: the interview, the conversation, the preparation.</p>
+  <p>The design principle is not "automate the application" in a spray-and-pray sense. It's "automate the craft" — produce tailored, high-quality, grounded documents for each role with the same care a senior engineer would apply manually, just at a fraction of the time cost. Every output is reviewed before submission. The pipeline removes the friction, not the judgment.</p>
+  <div class="hi">The pipeline is not a bot that fires off applications automatically. It produces a production-ready folder — resume, cover letter, company research — and the human decides whether to submit.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S2 -->
+  <h2 id="s2">Pipeline Mental Model</h2>
+  <p>The right mental model is a data pipeline where the input is a raw job posting and the output is a tailored, production-ready application package tracked in a structured system. Ten stages run in sequence, orchestrated by a single Python script. Drop in a job posting URL or text, run one command, and get back a folder with everything needed to apply.</p>
+
+  <table>
+    <tr><th>Stage</th><th>Name</th><th>What It Does</th></tr>
+    <tr><td><code>00</code></td><td>Duplicate Gate</td><td>FAISS semantic similarity check against all previously processed jobs</td></tr>
+    <tr><td><code>01</code></td><td>Job Scoring</td><td>RAG-based match score, skill gap analysis, and recommendation via Grok</td></tr>
+    <tr><td><code>02</code></td><td>Intake Decision</td><td>Accept or reject based on score threshold; rejected jobs are logged but not processed</td></tr>
+    <tr><td><code>03</code></td><td>Job Tailoring</td><td>Extract structured YAML: skills, qualifications, seniority signals, culture indicators</td></tr>
+    <tr><td><code>04</code></td><td>Resume Intermediate</td><td>Generate tailored JSON resume — select and rewrite bullets to match role keywords</td></tr>
+    <tr><td><code>05</code></td><td>Resume Render</td><td>Render JSON to production-ready DOCX + Markdown preview</td></tr>
+    <tr><td><code>06</code></td><td>Company Research</td><td>Grok fetches and summarises company size, culture, tech stack, recent news</td></tr>
+    <tr><td><code>07</code></td><td>Cover Intermediate</td><td>Generate tailored cover letter intermediate JSON with research embedded</td></tr>
+    <tr><td><code>08</code></td><td>Cover Render</td><td>Render cover letter to DOCX; classify employer type (agency vs direct) and adjust tone</td></tr>
+    <tr><td><code>09</code></td><td>Quality Gate + Status</td><td>Validate all outputs exist, meet size requirements, pass content checks; write metadata YAML</td></tr>
+  </table>
+
+  <div class="hi">The orchestrator is <code>scripts/10_auto_pipeline.py</code> — a single script that runs each stage as a subprocess, passes the job UUID as context, and halts immediately on any stage failure.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S3 -->
+  <h2 id="s3">Stage 00 — Duplicate Detection</h2>
+  <p>Before any LLM call is made, the pipeline runs a semantic duplicate check. Companies repost the same role continuously across LinkedIn, Indeed, and their own careers page. Without a gate, the pipeline would consume API credits and processing time on jobs already in the tracker. Stage 00 uses FAISS with locally running sentence-transformer embeddings to compare the incoming job description against every job already in the index.</p>
+  <p>The embedding model is <code>all-MiniLM-L6-v2</code> from the <code>sentence-transformers</code> library, running entirely on-device with no cloud API call. The FAISS index is persisted to disk and rebuilt in seconds whenever a new job is accepted into the pipeline. If the cosine similarity between the new posting and any existing job exceeds the configured threshold, the pipeline blocks at stage 00 and logs the potential duplicate for review.</p>
+
+  <pre><code># Stage 00 — semantic duplicate check (simplified)
+from sentence_transformers import SentenceTransformer
+import faiss, numpy as np
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+index = faiss.read_index("data/faiss/jobs.index")
+
+embedding = model.encode([new_job_text])
+D, I = index.search(np.array(embedding, dtype="float32"), k=1)
+similarity = 1 - D[0][0]   # cosine similarity
+
+if similarity > DUPLICATE_THRESHOLD:
+    raise DuplicateJobError(f"Similarity {similarity:.2f} — possible duplicate")</code></pre>
+
+  <div class="warn">Running embeddings locally is a deliberate choice: every job description contains sensitive company and role details. Keeping the embedding step local means no job text is sent to any external API at this stage.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S4 -->
+  <h2 id="s4">Stage 01 — Job Scoring with RAG</h2>
+  <p>Stage 01 is where the RAG pattern is applied. The pipeline retrieves the master career profile — a structured YAML file containing all skills, roles, experience summaries, and competency indicators — and injects it alongside the full job description into a structured prompt. Grok analyzes the pair and returns a structured response containing a match score (0–100), a skill gap analysis listing missing or weak areas, and an accept/reject recommendation.</p>
+  <p>The first live run scored an 85% match on a Collective Health Senior Data Engineer role. That score is not fabricated — it's the output of the RAG scoring chain against the actual job description. The score drives whether the pipeline continues: below the threshold, the job is logged as "passed" and no further API calls are made.</p>
+
+  <table>
+    <tr><th>Output Field</th><th>Type</th><th>Example</th></tr>
+    <tr><td><code>match_score</code></td><td>integer 0–100</td><td><code>85</code></td></tr>
+    <tr><td><code>skill_gaps</code></td><td>list[str]</td><td><code>["dbt", "Terraform IaC"]</code></td></tr>
+    <tr><td><code>recommendation</code></td><td>ACCEPT / PASS</td><td><code>ACCEPT</code></td></tr>
+    <tr><td><code>reasoning</code></td><td>string</td><td>Summary of fit vs. gaps</td></tr>
+  </table>
+
+  <div class="hi">The master career profile is the single source of truth. All downstream stages — resume bullets, cover letter content, skill highlights — are grounded in this profile. The LLM cannot invent experience that isn't in the profile YAML.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S5 -->
+  <h2 id="s5">Two-Tier Model Strategy</h2>
+  <p>The pipeline uses two different Grok models depending on the task. The split is intentional: not every stage needs the same reasoning depth, and routing lighter tasks to a smaller model reduces cost without sacrificing quality where quality matters.</p>
+
+  <table>
+    <tr><th>Model</th><th>Used For</th><th>Reason</th></tr>
+    <tr><td><code>grok-3-mini</code></td><td>Scoring, parsing, classification, company research</td><td>Sufficient reasoning at lower cost; these are structured extraction tasks</td></tr>
+    <tr><td><code>grok-3</code></td><td>Resume tailoring, cover letter generation</td><td>Full model reasoning for generation work that goes in front of a hiring manager</td></tr>
+  </table>
+
+  <p>The model is a configuration parameter, not a hard-coded string in each script. Every stage reads its model from a central config, which means switching the entire pipeline to a different model (or falling back to OpenAI) is a single environment variable change.</p>
+  <div class="warn">Over-using the full model on lightweight tasks is a common cost trap in LLM pipelines. Scoring a job posting doesn't require the same reasoning capacity as generating a tailored executive summary. The tier split cut per-job cost significantly without degrading output quality.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S6 -->
+  <h2 id="s6">OpenAI-Compatible Grok Client</h2>
+  <p>xAI's Grok exposes an OpenAI-compatible REST API. The client in this pipeline is the standard <code>openai</code> Python library, pointed at <code>https://api.x.ai/v1</code> instead of OpenAI's endpoint. No custom HTTP client was required. Every LangChain chain, every prompt template, and every tool built for OpenAI works with Grok without code changes.</p>
+
+  <pre><code># src/ai/grok_client.py (simplified)
+from openai import OpenAI
+
+class GrokClient:
+    def __init__(self):
+        self.client = OpenAI(
+            api_key=os.environ["XAI_API_KEY"],
+            base_url="https://api.x.ai/v1",
+        )
+        self.mini_model  = "grok-3-mini"
+        self.heavy_model = "grok-3"
+
+    def complete(self, messages, heavy=False):
+        model = self.heavy_model if heavy else self.mini_model
+        return self.client.chat.completions.create(
+            model=model,
+            messages=messages,
+        )</code></pre>
+
+  <div class="hi">The OpenAI-compatible interface means the entire pipeline could switch to GPT-4o or any other OpenAI-compatible provider by changing <code>base_url</code> and <code>api_key</code>. The model layer is fully decoupled from the business logic.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S7 -->
+  <h2 id="s7">Stages 03–05 — Tailoring and Resume Generation</h2>
+  <p><strong>Stage 03</strong> extracts structured information from the job posting: required skills, preferred qualifications, seniority signals, and company culture indicators. The output is a structured YAML file that all downstream stages consume as their primary input — rather than re-parsing the raw job text repeatedly.</p>
+  <p><strong>Stage 04</strong> generates the resume intermediate — a tailored JSON resume that selects the most relevant bullet points from the master profile and rewrites them to match the role's keyword signals. The rewriting is grounded: Grok is instructed to select and sharpen existing experience, not to invent achievements. The master profile YAML is the hard boundary for what can appear in the output.</p>
+  <p><strong>Stage 05</strong> renders the JSON resume into two formats: an ATS-safe DOCX file ready to attach and submit, and a Markdown preview for quick human review before submission. The DOCX uses <code>python-docx</code> with templated section ordering and consistent font/spacing — no custom formatting that might confuse ATS parsers.</p>
+
+  <pre><code># Stage 05 output layout per job
+data/jobs/{uuid}/
+├── raw/          # original job posting text
+├── score/        # stage 01 scoring YAML
+├── tailored/     # stage 03 structured job YAML
+├── generated/
+│   ├── resume_{uuid}.json      # stage 04 intermediate
+│   ├── resume_{uuid}.docx      # stage 05 render
+│   ├── resume_{uuid}.md        # stage 05 preview
+│   ├── research_{uuid}.md      # stage 06 company notes
+│   ├── cover_{uuid}.json       # stage 07 intermediate
+│   └── cover_{uuid}.docx       # stage 08 render
+└── metadata_{uuid}.yaml        # status and audit trail</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S8 -->
+  <h2 id="s8">Stages 06–08 — Company Research and Cover Letter</h2>
+  <p><strong>Stage 06</strong> runs company research: Grok fetches and summarises publicly available information about the employer — size, funding stage, recent news, engineering culture signals, tech stack indicators from job postings, and leadership context. This research is saved as a Markdown summary that feeds directly into stage 07. The goal is to give the cover letter generator enough context to reference specific, real things about the company rather than producing generic filler.</p>
+  <p><strong>Stage 07</strong> generates a cover letter intermediate in JSON format. The structure separates the opening hook, the experience alignment section, the company-specific section (which references the stage 06 research), and the closing. Separating these into structured fields makes it easier to regenerate individual sections without rerunning the full cover letter generation.</p>
+  <p><strong>Stage 08</strong> classifies the target employer as either an agency or a direct employer, then renders the cover letter to DOCX with tone adjusted accordingly. Agency letters are more concise and skills-forward. Direct employer letters are more narrative and culture-aligned. The classification is automatic — Grok determines the employer type from the job posting content.</p>
+
+  <div class="hi">The agency vs. direct employer classification is one of the highest-signal design decisions. Sending a narrative culture-alignment letter to a staffing agency wastes their time. Sending a bullet-list skills sheet to a direct employer misses the relationship-building opportunity. The classifier handles this automatically.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S9 -->
+  <h2 id="s9">Stage 09 — Quality Gate and Status Tracking</h2>
+  <p>The final stage is a blocking quality gate before any application is marked as submitted. It confirms that all required output files exist in the job folder, meet minimum size thresholds (ruling out truncated or empty outputs), and pass basic content checks (ruling out malformed documents). Only after all checks pass does the pipeline write the application record to the job's <code>metadata_{uuid}.yaml</code> with date, method, status, and score.</p>
+  <p>If any check fails, the pipeline raises an error and the job status remains in-progress. Nothing is marked as applied. The human must investigate, fix, and rerun. This is the same quality gate principle from production data pipelines: a pipeline that completes silently but produces wrong output is more dangerous than one that fails loudly.</p>
+
+  <pre><code># Stage 09 quality checks (simplified)
+REQUIRED_FILES = ["resume_{uuid}.docx", "cover_{uuid}.docx", "research_{uuid}.md"]
+MIN_SIZES      = {"resume": 8_000, "cover": 3_000, "research": 1_000}  # bytes
+
+for f in REQUIRED_FILES:
+    path = job_dir / "generated" / f.format(uuid=uuid)
+    if not path.exists():
+        raise QualityGateError(f"Missing: {path.name}")
+    if path.stat().st_size < MIN_SIZES[f.split("_")[0]]:
+        raise QualityGateError(f"Too small ({path.stat().st_size}B): {path.name}")
+
+# All checks passed — write status
+metadata["status"]       = "applied"
+metadata["applied_date"] = datetime.utcnow().isoformat()
+write_yaml(metadata_path, metadata)</code></pre>
+
+  <div class="warn">Marking a job as "applied" when documents aren't ready means you might not realize the application didn't go through. The quality gate forces review before the status is written — there's no silent success state.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S10 -->
+  <h2 id="s10">UUID-Based Data Model</h2>
+  <p>Each job processed by the pipeline gets a UUID at intake. All data, intermediates, and outputs for that job live under <code>data/jobs/{uuid}/</code> — a self-contained folder that can be inspected, regenerated, or archived independently of every other job. The UUID also serves as the foreign key for the FAISS index entry and the status registry.</p>
+  <p>The status registry is a lightweight YAML file (<code>data/registry.yaml</code>) that maps UUIDs to top-level metadata: company, role title, date processed, score, and status. This is what the pipeline queries for reporting — "how many jobs accepted this week," "which jobs are pending submission" — without scanning individual job folders.</p>
+
+  <table>
+    <tr><th>Layer</th><th>File / Structure</th><th>Purpose</th></tr>
+    <tr><td>Career profile</td><td><code>data/profile/career_profile.yaml</code></td><td>Single source of truth for all experience and skills</td></tr>
+    <tr><td>Job registry</td><td><code>data/registry.yaml</code></td><td>UUID → metadata index for fast status queries</td></tr>
+    <tr><td>FAISS index</td><td><code>data/faiss/jobs.index</code></td><td>Semantic duplicate detection across all processed jobs</td></tr>
+    <tr><td>Per-job folder</td><td><code>data/jobs/{uuid}/</code></td><td>All raw, intermediate, and generated files for one job</td></tr>
+    <tr><td>Job metadata</td><td><code>data/jobs/{uuid}/metadata_{uuid}.yaml</code></td><td>Full audit trail: scores, status, timestamps, decisions</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S11 -->
+  <h2 id="s11">StudyBook — The Interview Prep Extension</h2>
+  <p>Once the application pipeline was running, the other half of the problem became clear: getting the application is only useful if you can win the interview. Building a parallel pipeline for interview preparation followed the same logic. StudyBook is that pipeline — it generates structured audio learning scripts for technical topics, converts them to MP3 using GPT-4o text-to-speech, hosts the audio on Cloudflare R2, and generates complete HTML reference pages that go live on GitHub Pages.</p>
+  <p>The learning pages cover 21+ technical topics: AWS services, data engineering patterns, system design, pipeline design, and project deep-dives like this one. Each page has audio, code examples, tables, interview Q&amp;A, and a cheat sheet. Claude Code orchestrates quality review, gap analysis, and HTML regeneration. ChatGPT Project 1 generates audio scripts. ChatGPT Project 2 generates HTML pages. The result is a living, self-updating interview preparation library maintained entirely through automation.</p>
+
+  <pre><code># StudyBook pipeline (conceptual)
+1. Identify topic gap (gap analysis vs. target JD requirements)
+2. ChatGPT Project 1 → structured HOST/SEAN audio script (.md)
+3. run_mission_audio.ps1 → GPT-4o TTS → chunked MP3s → stitched final MP3
+4. Upload final_{slug}.mp3 to Cloudflare R2 bucket
+5. ChatGPT Project 2 → full HTML reference page
+6. Save to seanlgirgis.github.io/learning/{slug}.html
+7. git push → GitHub Pages → live in 30 seconds</code></pre>
+
+  <div class="hi">The page you're reading right now was built by this pipeline. The audio walkthrough above is GPT-4o TTS output hosted on Cloudflare R2 and served over CDN. The HTML was generated by ChatGPT with Claude Code orchestrating quality review.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S12 -->
+  <h2 id="s12">Engineering Challenges</h2>
+  <h3>Structured Output Reliability</h3>
+  <p>Language models don't always return the YAML or JSON structure the prompt asks for. Sometimes the model returns well-formed JSON. Sometimes it wraps the JSON in markdown code fences. Sometimes it returns free-form prose with the structured data buried inside. Each variation breaks a naive <code>json.loads()</code> call. The fix was a two-layer approach: prompt templates that include concrete output format examples, and a regex-based extraction fallback that attempts to recover structured data from improperly formatted responses before raising an error.</p>
+
+  <pre><code># Structured output extraction with fallback
+import re, json
+
+def extract_json(raw: str) -> dict:
+    # Try direct parse first
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+    # Fallback: extract from markdown code fence
+    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw, re.DOTALL)
+    if match:
+        return json.loads(match.group(1))
+    # Last resort: find first {...} block
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if match:
+        return json.loads(match.group(0))
+    raise ValueError("No extractable JSON found in model response")</code></pre>
+
+  <h3>Windows Encoding in Subprocess Pipelines</h3>
+  <p>The auto-pipeline script runs each stage as a Python subprocess to keep stages isolated and independently restartable. On Windows, when a job description or a status message contains Unicode — which they do, because the scripts use emoji for status output — the default encoding for subprocess stdout/stderr is not UTF-8. This causes encoding errors that silently truncate subprocess output or crash the stage entirely, with error messages that don't make the root cause obvious.</p>
+  <p>The fix was two-part: enforce <code>PYTHONUTF8=1</code> in the environment dictionary passed to every <code>subprocess.run()</code> call, and add explicit <code>encoding="utf-8"</code> on every file open. Once both were in place, all Unicode handling became consistent across the pipeline regardless of Windows system locale.</p>
+
+  <pre><code># Subprocess call with UTF-8 enforcement
+import subprocess, os
+
+env = os.environ.copy()
+env["PYTHONUTF8"] = "1"
+
+result = subprocess.run(
+    ["python", stage_script, "--uuid", job_uuid],
+    capture_output=True,
+    text=True,
+    encoding="utf-8",
+    env=env,
+)
+if result.returncode != 0:
+    raise StageError(f"Stage failed:\n{result.stderr}")</code></pre>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S13 -->
+  <h2 id="s13">Lessons Learned</h2>
+  <p>Local JSON and YAML storage works fine for an MVP — it's zero infrastructure, zero cost, and immediately inspectable. But it starts to show friction when you want to query across jobs. "Show me all roles where I scored above 80%" requires scanning every metadata YAML file rather than running a single query. The fix is SQLite from the start: it's still a local file, still zero infra, but you get full SQL query capability without changing the deployment model.</p>
+  <p>Building the Streamlit UI earlier would have paid off. The CLI is great for automation but reviewing outputs before submission is awkward without a proper interface. A simple Streamlit app that shows each job's score, status, and generated documents side by side would cut review time significantly and reduce the chance of missing a quality issue in the generated content.</p>
+  <p>Defining the data contract between pipeline stages more formally from day one would have prevented several rounds of refactoring. The YAML structures evolved organically as new stages were added — field names changed, optional fields became required, and new stages expected keys that earlier stages didn't always produce. A shared schema file (Pydantic models or a JSON Schema) for each stage's input and output would have caught contract violations at stage boundaries rather than buried inside downstream parsing errors.</p>
+
+  <div class="hi">The most satisfying moment was the first live run: feeding in the Collective Health job description, watching all ten stages complete, and getting back a folder with an 85% match score, a tailored resume, company research, and a cover letter that referenced specific things about the company. That was when it stopped being a project and became a tool.</div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- S14 -->
+  <h2 id="s14">What's Next</h2>
+  <p>Three features are actively in progress. The Gmail scanner will automatically detect new job alert emails, extract the job URL or posting text, and feed it into the pipeline without manual input — making the intake step fully automated. The search integration will allow querying the job registry with natural language ("show me all roles at Series B companies where I scored above 80%") backed by SQLite. The Streamlit interface will provide a proper review dashboard for generated documents, status tracking, and rerun controls without needing to navigate the CLI.</p>
+  <p>On the StudyBook side, the gap analysis automation is next: a script that compares the current page inventory against a target job description, identifies under-covered topics, and generates prompt files for the ChatGPT workflow automatically. The system already does this manually — the goal is to make it self-reporting.</p>
+
+  <table>
+    <tr><th>Feature</th><th>Status</th><th>Purpose</th></tr>
+    <tr><td>Gmail scanner</td><td>In progress</td><td>Auto-intake from job alert emails — zero manual input</td></tr>
+    <tr><td>SQLite registry</td><td>Planned</td><td>Replace file-scan queries with proper SQL across job history</td></tr>
+    <tr><td>Streamlit UI</td><td>Planned</td><td>Review dashboard for generated documents and application status</td></tr>
+    <tr><td>Gap analysis automation</td><td>Planned</td><td>Auto-identify StudyBook topic gaps vs. target JDs</td></tr>
+    <tr><td>LinkedIn integration</td><td>Researching</td><td>Direct job search and posting ingestion via API or scraping</td></tr>
+  </table>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Q&A -->
+  <h2 id="qa">Interview Q&amp;A</h2>
+
+  <div class="qa">
+    <div class="qa-q">Walk me through the architecture of this pipeline end to end.</div>
+    <div class="qa-a">The pipeline is a ten-stage sequential data pipeline where the input is a raw job posting and the output is a production-ready application package. Stage zero runs a semantic duplicate check using FAISS and local embeddings — no API call, no cost, no processing time wasted on reposted roles. Stage one uses RAG to score the job against my career profile and returns a match score, skill gap analysis, and an accept/reject recommendation. If accepted, stages three through five extract structured job data, generate a tailored JSON resume, and render it to a DOCX. Stages six through eight run company research and generate a tailored cover letter with automatic agency vs. direct employer tone adjustment. Stage nine is a blocking quality gate that validates all outputs before writing the "applied" status to the job record. The whole pipeline runs from a single orchestrator script — drop in a posting, run one command, get back a folder ready to review and submit.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">Why did you choose Grok over OpenAI for the primary LLM?</div>
+    <div class="qa-a">The decision came down to two things: API compatibility and the two-tier model economics. Grok exposes an OpenAI-compatible endpoint, which means the entire pipeline uses the standard OpenAI Python library pointed at x.ai instead of OpenAI. No custom client, no LangChain adapter changes, and no lock-in — switching to GPT-4o is one environment variable change. On the economics side, grok-3-mini handles all the light tasks — scoring, parsing, classification, research — at significantly lower cost per call. grok-3, the full model, is reserved for the generation work that ends up in front of a hiring manager. That tier split means you get the reasoning quality you need where you need it without paying full-model rates for every API call in the pipeline.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How does the FAISS duplicate detection work and why run it locally?</div>
+    <div class="qa-a">Stage zero embeds the incoming job description using the all-MiniLM-L6-v2 sentence transformer model, running entirely on-device with no API call. It then searches the FAISS index — a flat index of all previously processed job embeddings — for the nearest neighbor using cosine similarity. If similarity exceeds the threshold, the pipeline blocks and logs the potential duplicate. Running this step locally was the right call for three reasons: it's fast (milliseconds, not seconds), it's free (no API cost on every single intake), and it's private (job descriptions contain sensitive company and role details that don't need to leave the machine for an embedding operation). The index rebuilds in seconds whenever a new job is accepted, so it stays current without maintenance overhead.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">How did you handle structured output reliability from the LLM?</div>
+    <div class="qa-a">The problem is that language models don't always return the exact JSON or YAML structure the prompt requests — you might get well-formed JSON, or JSON wrapped in markdown code fences, or free-form prose with the data buried inside it. A naive json.loads() call fails on all but the first case. The solution was a layered extraction approach: prompt templates include concrete output format examples with actual field names, which reduces off-format responses significantly. For the cases that still slip through, a regex-based extraction fallback attempts to recover structured data from the raw response before raising an error — it tries direct parse, then code fence extraction, then raw JSON block extraction. Combined, these two layers dropped the structured output failure rate to near zero in production.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">What is the quality gate and why is it a blocking step?</div>
+    <div class="qa-a">The quality gate at stage nine is a validation check that confirms all required output files exist in the job folder, meet minimum byte-size thresholds ruling out truncated or empty outputs, and pass basic content checks. Only after all checks pass does the pipeline write "applied" to the job's metadata. If any check fails, the job status stays in-progress and the human must investigate and rerun. It's blocking by design — the same principle that applies in production data pipelines: a pipeline that completes silently but produces wrong output is more dangerous than one that fails loudly. In this context, marking a job as applied when the resume or cover letter isn't actually ready means you might not realize the application didn't go through correctly, and you lose the window to fix it.</div>
+  </div>
+
+  <div class="qa">
+    <div class="qa-q">What would you build differently if you started over?</div>
+    <div class="qa-a">Three things. First, SQLite from day one instead of YAML files for the job registry. Local YAML is fine for an MVP but cross-job queries — show me all roles above 80% this month, show me pending submissions — require scanning files rather than running a SQL query. SQLite is still a single local file with zero infrastructure overhead, but you get full query capability. Second, I'd build the Streamlit review interface earlier. The CLI is great for automation but reviewing generated documents before submission is awkward without a proper interface. Third, I'd define the data contracts between pipeline stages formally — Pydantic models or JSON Schema for each stage's input and output — from the start. The YAML structures evolved organically as the pipeline grew, which caused several rounds of refactoring when downstream stages expected fields that upstream stages didn't consistently produce.</div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+  <!-- Cheat Sheet -->
+  <h2 id="cheat">Quick Reference</h2>
+  <div class="cheat">
+    <div class="cheat-row"><span class="ct">Stage 00</span><span class="cd">Duplicate gate — FAISS cosine similarity vs. all previous jobs</span></div>
+    <div class="cheat-row"><span class="ct">Stage 01</span><span class="cd">RAG scoring — career profile + JD → match score + skill gaps</span></div>
+    <div class="cheat-row"><span class="ct">Stage 02</span><span class="cd">Intake decision — accept or pass based on score threshold</span></div>
+    <div class="cheat-row"><span class="ct">Stage 03</span><span class="cd">Job tailoring — extract structured YAML from posting</span></div>
+    <div class="cheat-row"><span class="ct">Stage 04</span><span class="cd">Resume intermediate — JSON resume with tailored bullets</span></div>
+    <div class="cheat-row"><span class="ct">Stage 05</span><span class="cd">Resume render — DOCX (ATS-safe) + Markdown preview</span></div>
+    <div class="cheat-row"><span class="ct">Stage 06</span><span class="cd">Company research — size, culture, tech stack, recent news</span></div>
+    <div class="cheat-row"><span class="ct">Stage 07</span><span class="cd">Cover letter intermediate — JSON with research embedded</span></div>
+    <div class="cheat-row"><span class="ct">Stage 08</span><span class="cd">Cover render — DOCX; agency vs. direct employer tone auto-classified</span></div>
+    <div class="cheat-row"><span class="ct">Stage 09</span><span class="cd">Quality gate + status — validate all outputs; write metadata YAML</span></div>
+    <div class="cheat-row"><span class="ct">Embedding model</span><span class="cd">all-MiniLM-L6-v2 via sentence-transformers — runs fully local</span></div>
+    <div class="cheat-row"><span class="ct">FAISS index</span><span class="cd">Flat index on disk — rebuilt on every new accepted job</span></div>
+    <div class="cheat-row"><span class="ct">grok-3-mini</span><span class="cd">Light tasks: scoring, parsing, classification, research</span></div>
+    <div class="cheat-row"><span class="ct">grok-3</span><span class="cd">Heavy generation: resume tailoring, cover letter writing</span></div>
+    <div class="cheat-row"><span class="ct">Grok API</span><span class="cd">OpenAI-compatible — standard openai library, base_url=https://api.x.ai/v1</span></div>
+    <div class="cheat-row"><span class="ct">Data model</span><span class="cd">data/jobs/{uuid}/ — raw/, score/, tailored/, generated/, metadata YAML</span></div>
+    <div class="cheat-row"><span class="ct">Career profile</span><span class="cd">data/profile/career_profile.yaml — single source of truth for all content</span></div>
+    <div class="cheat-row"><span class="ct">Orchestrator</span><span class="cd">scripts/10_auto_pipeline.py — runs all stages as subprocesses</span></div>
+    <div class="cheat-row"><span class="ct">PYTHONUTF8=1</span><span class="cd">Enforced in every subprocess env — prevents Windows encoding errors</span></div>
+    <div class="cheat-row"><span class="ct">First live run</span><span class="cd">Collective Health Senior DE — 85% match score on first RAG scoring run</span></div>
+    <div class="cheat-row"><span class="ct">StudyBook</span><span class="cd">Parallel pipeline: audio scripts → GPT-4o TTS → R2 → HTML → GitHub Pages</span></div>
+    <div class="cheat-row"><span class="ct">GitHub</span><span class="cd">github.com/seanlgirgis/jobsearch — public, actively evolving</span></div>
+  </div>
+
+  <a href="#top" class="back-top">&#8593; Top</a>
+
+</div>
+</body>
+</html>
