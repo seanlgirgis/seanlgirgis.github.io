@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/git-data-engineering.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Git for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Git for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Git</span>
+  <span class="tag">Data Engineering</span>
+  <span class="tag">CI/CD</span>
+  <span class="tag">GitLab</span>
+  <span class="tag">Branching</span>
+  <span class="tag">Release Management</span>
+  <span class="tag">Pipeline Code</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_git-data-engineering.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">The Four Zones &amp; The Commit Model</a></li>
+    <li><a href="#s2">Branching Strategy — feature branches vs trunk-based</a></li>
+    <li><a href="#s3">Merge vs Rebase — when to use each</a></li>
+    <li><a href="#s4">Pull Request Workflow &amp; Conflict Resolution</a></li>
+    <li><a href="#s5">.gitignore for Data Engineering</a></li>
+    <li><a href="#s6">Tagging Releases &amp; Semantic Versioning</a></li>
+    <li><a href="#s7">GitLab CI/CD Integration</a></li>
+    <li><a href="#s8">Debugging with git log &amp; git bisect</a></li>
+    <li><a href="#s9">Protecting Main &amp; Pre-commit Hooks</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">The Four Zones &amp; The Commit Model</h2>
+<p>Git work moves through four zones: the working tree, the staging area, the local repository, and the remote repository. The working tree is the actual files on disk; the staging area, also called the index, is the intentional set of changes selected for the next commit; the local repository stores committed history; and the remote repository, usually <code>origin</code>, is the shared team copy.</p>
+<p>A commit is best understood as a snapshot, not a patch file. Git stores relationships between snapshots in a directed acyclic graph, where <code>HEAD</code> points to the current commit, branch names point to commits, and new commits move the active branch pointer forward. Detached <code>HEAD</code> means you are looking directly at a commit instead of standing on a branch.</p>
+<pre><code>working tree --git add--&gt; staging area --git commit--&gt; local repo --git push--&gt; remote repo
+
+# inspect each zone
+git status
+git diff              # working tree vs staging area
+git diff --staged     # staging area vs last commit
+git log --oneline --graph --decorate --all</code></pre>
+<div class="hi">Key insight: <code>git add</code> is not just a mechanical step. It is where you choose the logical unit of change that will become reviewable, reversible history.</div>
+<div class="warn">Production gotcha: committing generated data, secrets, checkpoints, or local environment files pollutes history. Even after deletion, those objects may remain reachable unless history is rewritten carefully.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Branching Strategy — feature branches vs trunk-based</h2>
+<p>Feature branches isolate work until it is ready for review. They are useful when changes need collaboration, testing, or staged rollout before landing in <code>main</code>. The tradeoff is drift: the longer a branch lives, the more likely it conflicts with schema changes, DAG updates, SQL refactors, or shared library changes.</p>
+<p>Trunk-based development keeps branches short-lived and merges small changes frequently into a protected mainline. At scale, this usually beats heavyweight GitFlow for data engineering because pipelines, Airflow DAGs, dbt models, and deployment automation benefit from fast integration and early CI feedback.</p>
+<table>
+  <tr><th>Strategy</th><th>Best fit</th><th>Main risk</th></tr>
+  <tr><td>Feature branch</td><td>Medium changes, review-heavy teams, risky migrations</td><td>Long-lived drift and late conflicts</td></tr>
+  <tr><td>Trunk-based</td><td>High-velocity teams with strong tests and feature flags</td><td>Weak CI can let broken code reach main</td></tr>
+  <tr><td>GitFlow</td><td>Packaged products with formal release trains</td><td>Often too much ceremony for pipeline repos</td></tr>
+</table>
+<div class="hi">For data teams, the winning pattern is usually short branches, protected main, required CI, and small PRs. That gives review without turning Git into paperwork theater.</div>
+<div class="warn">Avoid using branches as deployment environments forever. A branch named <code>prod</code> or <code>qa</code> can drift from reality; tags, protected branches, and deployment metadata are cleaner release signals.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Merge vs Rebase — when to use each</h2>
+<p>A merge combines two histories and preserves the fact that parallel work happened. This is safest for shared branches because it does not rewrite commits other people may already have. The cost is a noisier graph, especially when every small update from <code>main</code> creates another merge commit.</p>
+<p>A rebase replays your commits on top of a new base, creating a cleaner linear story. It is excellent for cleaning up your private branch before opening or updating a PR. The golden rule is simple: do not rebase commits that other people may have already pulled and built work on.</p>
+<pre><code># safe private-branch cleanup
+git fetch origin
+git switch feature/pipeline-retry
+git rebase origin/main
+
+# shared branch integration
+git switch main
+git pull --ff-only
+git merge --no-ff feature/pipeline-retry</code></pre>
+<div class="hi">Use rebase to polish your own unpublished history. Use merge when preserving shared history matters more than a perfectly straight graph.</div>
+<div class="warn">Rebase rewrites commit IDs. If a branch is shared, rebasing it can make teammates reconcile duplicate-looking commits and broken ancestry. Tiny command, very large foot-gun.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Pull Request Workflow &amp; Conflict Resolution</h2>
+<p>A pull request is a review package: code, tests, intent, risk, and deployment impact. For senior data engineers, a good PR explains data contract changes, migration impact, backfill needs, observability additions, and rollback strategy. The reviewer should be able to answer: what changes, how was it tested, and what breaks if this is wrong?</p>
+<p>Conflict resolution happens when Git cannot safely combine edits. Conflict markers show the current branch, incoming branch, and the disputed block. Resolve the file intentionally, run the relevant tests, then commit the resolution; do not blindly accept one side unless the change is truly disposable.</p>
+<table>
+  <tr><th>PR merge style</th><th>Use when</th><th>Tradeoff</th></tr>
+  <tr><td>Squash merge</td><td>Small PR should become one clean commit</td><td>Loses individual branch commit detail</td></tr>
+  <tr><td>Merge commit</td><td>You want to preserve branch context</td><td>Graph becomes more complex</td></tr>
+  <tr><td>Rebase merge</td><td>Team wants linear main history</td><td>Requires discipline around conflict handling</td></tr>
+</table>
+<div class="hi">A clean PR is not just fewer lines. It is a change set with one reason to exist, visible test evidence, and a reviewer path that does not require archaeology.</div>
+<div class="warn">Conflict markers in committed code are a real production hazard. Add CI checks or pre-commit hooks that fail on <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">.gitignore for Data Engineering</h2>
+<p>Data engineering repos attract large local artifacts: raw extracts, Parquet test outputs, model checkpoints, credentials, virtual environments, and notebook caches. A strong <code>.gitignore</code> keeps the repository focused on source code, configuration templates, tests, and documentation.</p>
+<p>The rule is not simply "ignore all data." Keep tiny deterministic fixtures that make tests meaningful, but exclude bulk data, generated outputs, local secrets, and environment-specific files. For large required assets, use object storage, package registries, or documented bootstrap scripts instead of Git history.</p>
+<pre><code># Python and local environments
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+
+# data engineering artifacts
+data/raw/
+data/tmp/
+*.parquet
+*.orc
+*.avro
+*.csv.gz
+*.duckdb
+
+# notebooks and generated output
+.ipynb_checkpoints/
+reports/generated/
+models/checkpoints/</code></pre>
+<div class="hi">Good repositories version the recipe, not the kitchen mess: pipeline code, schema definitions, sample fixtures, config templates, and deployment files belong in Git.</div>
+<div class="warn">Never rely on <code>.gitignore</code> after a secret has already been committed. Ignoring prevents future adds; it does not remove sensitive data from existing history.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Tagging Releases &amp; Semantic Versioning</h2>
+<p>Tags give names to important commits: release points, production deployments, rollback anchors, or data contract versions. Lightweight tags are simple pointers; annotated tags include metadata and are better for releases because they carry author, date, and message.</p>
+<p>Semantic versioning uses <code>MAJOR.MINOR.PATCH</code>. In data engineering, a major bump can mean a breaking schema or contract change, a minor bump can add a new field or pipeline capability, and a patch can fix logic without changing the interface. The important part is consistency between Git tags, CI artifacts, deployment records, and pipeline metadata.</p>
+<pre><code># release tag with metadata
+git tag -a v2.3.0 -m "Release v2.3.0: add customer enrichment pipeline"
+git push origin v2.3.0
+
+# inspect deployment anchor
+git show v2.3.0
+git describe --tags --always</code></pre>
+<div class="hi">For pipeline operations, tags answer the rollback question fast: exactly which code produced the currently deployed job, container, SQL package, or dbt artifact?</div>
+<div class="warn">Do not move published release tags casually. If the tag was used by CI/CD or deployed to production, changing it destroys trust in the audit trail.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">GitLab CI/CD Integration</h2>
+<p>GitLab CI/CD turns Git events into automated checks and deployments. For data engineering, the pipeline should usually validate formatting, linting, unit tests, SQL checks, DAG import tests, schema checks, package builds, and environment-specific deploy steps. The goal is not fancy YAML; the goal is preventing broken pipeline code from reaching main.</p>
+<p>Keep CI fast at the PR stage and deeper at scheduled or deployment stages. Run small deterministic tests on every merge request, then run integration tests, container builds, dbt docs, or Airflow DAG validation where they make sense. Expensive data validation belongs behind clear triggers, not every tiny documentation edit.</p>
+<pre><code>stages: [validate, test]
+
+lint:
+  stage: validate
+  script:
+    - python -m ruff check .
+    - python -m compileall src dags
+
+test:
+  stage: test
+  script:
+    - pytest -q --tb=short
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'</code></pre>
+<div class="hi">CI is the executable definition of "safe to merge." For data repos, include pipeline import checks and contract checks, not only Python unit tests.</div>
+<div class="warn">Avoid CI jobs that depend on mutable local state or live production data by default. Flaky pipelines teach engineers to ignore red builds, which is worse than no CI.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Debugging with git log &amp; git bisect</h2>
+<p><code>git log</code> is the first tool for understanding how the repository got here. Use graph view for branch structure, path filtering for a specific DAG or SQL file, and pickaxe search when you need to find when a string, function, metric, or column name was introduced or removed.</p>
+<p><code>git bisect</code> is the sharper tool for regressions. Mark a known bad commit and a known good commit, then Git performs a binary search through history while you test each candidate. It is powerful for failures like "this backfill used to pass," "this DAG started failing imports," or "this metric changed after a refactor."</p>
+<pre><code># focused history
+git log --oneline --graph --decorate --all -- dags/customer_pipeline.py
+git log -S "customer_id" -- src/ sql/
+
+# binary search a regression
+git bisect start
+git bisect bad HEAD
+git bisect good v2.2.0
+# run test, then: git bisect good OR git bisect bad
+git bisect reset</code></pre>
+<div class="hi"><code>git bisect</code> turns blame into evidence. Instead of arguing about who changed what, you find the exact commit that changed behavior.</div>
+<div class="warn">Bisect only works well when commits are reasonably small and tests are repeatable. Giant commits and environment-dependent failures make the search noisy.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Protecting Main &amp; Pre-commit Hooks</h2>
+<p>Protected main branches enforce team rules: no direct pushes, required reviews, required CI, signed commits if needed, and restricted force-push behavior. This matters in data engineering because one accidental merge can break schedules, corrupt downstream expectations, or deploy bad SQL into a shared environment.</p>
+<p>Pre-commit hooks catch local problems before they become PR noise. Useful hooks include formatters, linters, secret scanners, YAML validators, SQL formatters, notebook output stripping, and conflict-marker checks. Hooks should be fast and deterministic; anything slow belongs in CI.</p>
+<pre><code>repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: detect-private-key
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff</code></pre>
+<div class="hi">Protecting main is not bureaucracy. It is production risk management encoded into the repo.</div>
+<div class="warn">Do not make hooks depend on tools nobody has installed or credentials only one engineer owns. The fastest way to kill adoption is a hook that breaks clean machines.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Explain the four Git zones and why the staging area matters.</div>
+  <div class="qa-a">A: The working tree is files on disk, the staging area is the selected next snapshot, the local repo stores commits, and the remote repo shares history with the team. The staging area matters because it lets you separate unrelated edits into clean commits. That makes reviews, rollbacks, and debugging much easier.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose trunk-based development over feature branches?</div>
+  <div class="qa-a">A: I choose trunk-based when the team has strong automated tests, short-lived changes, and frequent integration. It reduces branch drift and catches integration problems early. For risky migrations, I still use small branches plus feature flags or staged deployment controls.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the practical difference between merge and rebase?</div>
+  <div class="qa-a">A: Merge preserves the true branch structure and creates a commit that joins histories. Rebase rewrites local commits so they appear on top of a new base, giving a cleaner linear history. I rebase private branches but avoid rebasing shared branches because it changes commit IDs teammates may depend on.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What should a senior data engineer look for when reviewing a pipeline PR?</div>
+  <div class="qa-a">A: I look for correctness, data contract changes, schema compatibility, idempotency, observability, test evidence, and rollback impact. I also check whether the change affects scheduling, cost, downstream consumers, or backfill behavior. A good PR makes those risks visible before merge.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you keep large data artifacts out of Git without weakening tests?</div>
+  <div class="qa-a">A: I keep tiny deterministic fixtures in the repo and ignore bulk data, generated outputs, local databases, and checkpoints. Large assets should live in object storage or controlled test environments. Tests should validate logic with representative samples, not depend on a full production extract.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you find the commit that introduced a regression in a data pipeline?</div>
+  <div class="qa-a">A: First I inspect focused history with <code>git log</code>, path filters, and string search. If the breaking point is unclear, I use <code>git bisect</code> between a known good tag and the current bad commit. A repeatable failing test makes bisect extremely effective.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">git status</div>
+    <div class="cd">Shows working tree, staging area, branch, and sync state.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">git add -p</div>
+    <div class="cd">Stage changes interactively so commits stay logical and reviewable.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">git diff --staged</div>
+    <div class="cd">Review exactly what will go into the next commit.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">HEAD</div>
+    <div class="cd">Pointer to the currently checked-out commit; usually reached through a branch.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">origin/main</div>
+    <div class="cd">Your local tracking reference for the remote main branch.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">merge</div>
+    <div class="cd">Combines histories without rewriting existing commits; safest for shared branches.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">rebase</div>
+    <div class="cd">Replays commits onto a new base; clean for private branches, dangerous for shared ones.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">squash merge</div>
+    <div class="cd">Turns a PR into one clean mainline commit; useful for noisy branch history.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">.gitignore</div>
+    <div class="cd">Prevents local/generated files from being added; does not remove already committed files.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">git tag -a</div>
+    <div class="cd">Creates an annotated release marker with metadata and message.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SemVer</div>
+    <div class="cd">MAJOR for breaking contracts, MINOR for compatible capability, PATCH for fixes.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">git log -S</div>
+    <div class="cd">Finds commits that added or removed a specific string.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">git bisect</div>
+    <div class="cd">Binary-searches history to locate the commit that introduced a regression.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">protected main</div>
+    <div class="cd">Blocks direct risky changes by requiring review, CI, and controlled merge behavior.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pre-commit</div>
+    <div class="cd">Runs fast local checks before commit: linting, secrets, YAML, conflict markers.</div>
+  </div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>
