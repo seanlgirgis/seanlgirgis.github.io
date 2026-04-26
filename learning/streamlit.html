@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Streamlit for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/streamlit.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Streamlit for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Streamlit for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 9-10 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">Streamlit</span>
+  <span class="tag">Data Apps</span>
+  <span class="tag">Dashboards</span>
+  <span class="tag">pandas</span>
+  <span class="tag">Plotly</span>
+  <span class="tag">Caching</span>
+  <span class="tag">Deployment</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_streamlit.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Streamlit Is &amp; The Execution Model</a></li>
+    <li><a href="#s2">Core Display Elements</a></li>
+    <li><a href="#s3">Input Widgets &amp; The Standard Filtering Pattern</a></li>
+    <li><a href="#s4">Charts &mdash; st.line_chart vs Plotly</a></li>
+    <li><a href="#s5">st.cache_data &amp; st.cache_resource</a></li>
+    <li><a href="#s6">Layout &mdash; sidebar, columns, tabs, expander</a></li>
+    <li><a href="#s7">st.session_state &mdash; persisting state across reruns</a></li>
+    <li><a href="#s8">st.data_editor &mdash; editable DataFrames</a></li>
+    <li><a href="#s9">Deployment &amp; Security</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Streamlit Is &amp; The Execution Model</h2>
+<p>Streamlit turns a Python script into an interactive internal data app without requiring HTML, JavaScript, or a frontend framework. For data engineers, that makes it useful for operational dashboards, pipeline monitors, data quality consoles, forecast review screens, and lightweight tools that would otherwise become spreadsheet chaos.</p>
+<p>The most important mental model is rerun behavior: every widget interaction reruns the script from top to bottom. That is simple and productive, but it changes how you think about side effects, expensive queries, API calls, and mutable state.</p>
+<div class="hi">Key insight: a Streamlit app is not an event-driven web app in the React sense. It is a Python script that repeatedly re-executes and rebuilds the page.</div>
+<div class="warn">Production gotcha: never put database writes, emails, job launches, or expensive refresh logic at top level unless guarded by a button, form, cache, or state check.</div>
+<pre><code>import streamlit as st
+
+st.title("Pipeline Health")
+region = st.selectbox("Region", ["ALL", "US", "EU", "APAC"])
+
+if st.button("Run validation"):
+    st.write(f"Running validation for {region}")
+
+st.caption("Changing the selectbox reruns this script.")</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Core Display Elements</h2>
+<p>The core Streamlit display functions cover most internal data tools. <code>st.write()</code> is the universal renderer for text, DataFrames, objects, and charts; <code>st.dataframe()</code> is best for interactive tables; <code>st.metric()</code> gives executive-style KPI cards; and <code>st.json()</code> is excellent for nested API responses, configuration payloads, and debug output.</p>
+<p>For senior data engineering work, the question is not whether Streamlit can display something. The better question is whether the display makes operational state obvious: counts, freshness, null rates, failed partitions, late files, retry status, and SLA risk should be visible without scrolling through raw logs.</p>
+<table>
+  <tr><th>Element</th><th>Best use</th><th>Watch for</th></tr>
+  <tr><td><code>st.write()</code></td><td>Fast mixed output</td><td>Can become vague in production apps</td></tr>
+  <tr><td><code>st.dataframe()</code></td><td>Read-only interactive tables</td><td>Large data needs filtering first</td></tr>
+  <tr><td><code>st.metric()</code></td><td>KPI cards and deltas</td><td>Needs clear units and time window</td></tr>
+  <tr><td><code>st.json()</code></td><td>Nested configs and API responses</td><td>Avoid exposing secrets</td></tr>
+</table>
+<div class="hi">Key insight: Streamlit is strongest when the app reduces operational ambiguity, not when it simply dumps a DataFrame onto a page.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Input Widgets &amp; The Standard Filtering Pattern</h2>
+<p>Input widgets such as <code>st.selectbox</code>, <code>st.multiselect</code>, <code>st.slider</code>, <code>st.text_input</code>, and <code>st.date_input</code> become normal Python variables after each rerun. The standard pattern is simple: collect filter values at the top, apply them to a DataFrame or SQL query, then render the filtered result.</p>
+<p>For small and medium datasets, filtering in pandas is fine. At scale, push filters into SQL, DuckDB, Athena, Snowflake, or the warehouse layer; otherwise the app quietly becomes a memory-heavy extract job pretending to be a dashboard.</p>
+<pre><code>import streamlit as st
+import pandas as pd
+
+df = pd.DataFrame({
+    "region": ["US", "EU", "US"],
+    "status": ["OK", "FAILED", "OK"],
+    "records": [1000, 80, 1200]
+})
+
+regions = st.multiselect("Region", sorted(df["region"].unique()))
+status = st.selectbox("Status", ["ALL", "OK", "FAILED"])
+
+filtered = df.copy()
+if regions:
+    filtered = filtered[filtered["region"].isin(regions)]
+if status != "ALL":
+    filtered = filtered[filtered["status"] == status]
+
+st.dataframe(filtered)</code></pre>
+<div class="warn">Production gotcha: do not pull 50 million rows into pandas just because Streamlit makes the UI easy. Filter close to the data.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Charts &mdash; st.line_chart vs Plotly</h2>
+<p><code>st.line_chart</code> and <code>st.bar_chart</code> are excellent for quick trend visibility: row counts over time, latency by hour, error counts by pipeline, or forecast vs actual at a basic level. They keep the app short and readable, which matters for internal tools that should be maintained by data engineers, not frontend specialists.</p>
+<p>Use <code>st.plotly_chart</code> when the chart needs precision: custom hover text, annotations, dual axes, confidence bands, thresholds, color control, or multiple traces. Plotly is the better choice for executive dashboards and model review screens where misreading a chart can trigger the wrong operational decision.</p>
+<table>
+  <tr><th>Choice</th><th>Use when</th><th>Tradeoff</th></tr>
+  <tr><td><code>st.line_chart</code></td><td>Fast time-series view</td><td>Limited formatting control</td></tr>
+  <tr><td><code>st.bar_chart</code></td><td>Simple category comparison</td><td>Not ideal for dense labels</td></tr>
+  <tr><td><code>st.plotly_chart</code></td><td>Production-grade interactive chart</td><td>More code and chart config</td></tr>
+</table>
+<pre><code>import plotly.express as px
+import streamlit as st
+
+fig = px.line(
+    df,
+    x="run_date",
+    y="records_out",
+    color="pipeline_name",
+    title="Pipeline Output Trend"
+)
+st.plotly_chart(fig, use_container_width=True)</code></pre>
+<div class="hi">Key insight: quick charts are for exploration; Plotly charts are for decisions.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">st.cache_data &amp; st.cache_resource</h2>
+<p><code>st.cache_data</code> caches data-returning functions such as file reads, SQL result sets, API responses, and expensive transformations. It is ideal when the same inputs should return the same data, and the result can be safely copied between reruns. The <code>ttl</code> parameter controls staleness for dashboards where freshness matters.</p>
+<p><code>st.cache_resource</code> is for shared long-lived objects such as database connections, ML models, embedding clients, or API SDK clients. Treat it as the resource singleton layer; use it carefully because the object can be reused across sessions and reruns.</p>
+<pre><code>import streamlit as st
+import pandas as pd
+from sqlalchemy import create_engine
+
+@st.cache_resource
+def get_engine():
+    return create_engine(st.secrets["warehouse_url"])
+
+@st.cache_data(ttl=300)
+def load_runs(region: str) -&gt; pd.DataFrame:
+    sql = "select * from pipeline_runs where region = %(region)s"
+    return pd.read_sql(sql, get_engine(), params={"region": region})
+
+runs = load_runs("US")
+st.dataframe(runs)</code></pre>
+<div class="warn">Production gotcha: caching stale operational data can hide failures. Put freshness timestamps on the page and set TTL intentionally.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Layout &mdash; sidebar, columns, tabs, expander</h2>
+<p>Streamlit layout primitives are simple but powerful. Use <code>st.sidebar</code> for persistent filters, <code>st.columns</code> for KPI rows, <code>st.tabs</code> for separating views, and <code>st.expander</code> for details that matter during debugging but should not dominate the default screen.</p>
+<p>A strong data engineering layout usually has filters on the left, KPIs at the top, status tables in the middle, and raw diagnostics tucked away. The goal is not visual flash; it is fast triage when a pipeline, SLA, or data product is unhealthy.</p>
+<pre><code>import streamlit as st
+
+with st.sidebar:
+    region = st.selectbox("Region", ["US", "EU", "APAC"])
+    days = st.slider("Lookback days", 1, 30, 7)
+
+c1, c2, c3 = st.columns(3)
+c1.metric("Failed runs", 3, "+1")
+c2.metric("Freshness lag", "12 min", "-4 min")
+c3.metric("Rows loaded", "8.2M", "+6%")
+
+tab1, tab2 = st.tabs(["Runs", "Diagnostics"])</code></pre>
+<div class="hi">Key insight: layout should mirror the operational workflow: detect, narrow, inspect, then act.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">st.session_state &mdash; persisting state across reruns</h2>
+<p><code>st.session_state</code> stores values across reruns for a single user session. It is the right place for multi-step workflows, selected row IDs, temporary form inputs, confirmation flags, and values that should survive widget interactions without being written to a database.</p>
+<p>Use session state deliberately. It is not a durable store, not shared state across all users, and not a substitute for an audit table. For production tools that approve data changes or trigger jobs, persist the final action to a database with user, timestamp, input, and result.</p>
+<pre><code>import streamlit as st
+
+if "approved_ids" not in st.session_state:
+    st.session_state.approved_ids = set()
+
+candidate_id = st.text_input("Candidate run ID")
+if st.button("Approve") and candidate_id:
+    st.session_state.approved_ids.add(candidate_id)
+
+st.write("Approved this session:", sorted(st.session_state.approved_ids))</code></pre>
+<div class="warn">Production gotcha: session state disappears when the session resets. Anything audit-worthy belongs in a real persistence layer.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">st.data_editor &mdash; editable DataFrames</h2>
+<p><code>st.data_editor</code> allows users to edit tabular data directly in the app. For data engineers, this is useful for mapping tables, exception queues, manual overrides, threshold tuning, reference data, and small control tables that business users should manage without touching SQL.</p>
+<p>The dangerous part is treating edited grid data as automatically trustworthy. Validate schema, allowed values, uniqueness, numeric ranges, referential integrity, and authorization before writing changes back to a database.</p>
+<pre><code>import streamlit as st
+import pandas as pd
+
+rules = pd.DataFrame({
+    "source_system": ["billing", "crm"],
+    "max_null_rate": [0.01, 0.03],
+    "enabled": [True, True]
+})
+
+edited = st.data_editor(rules, num_rows="dynamic")
+
+if st.button("Save rules"):
+    if edited["source_system"].duplicated().any():
+        st.error("source_system must be unique")
+    else:
+        st.success("Validated; ready to persist")</code></pre>
+<div class="hi">Key insight: editable DataFrames turn Streamlit from dashboard into control plane. That means validation and audit become mandatory.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Deployment &amp; Security</h2>
+<p>Streamlit apps can run locally, in containers, on internal servers, behind a reverse proxy, or on managed platforms. For enterprise data engineering, the safest pattern is usually containerized deployment behind SSO, network controls, secrets management, and read-only default permissions.</p>
+<p>Security deserves real attention because Streamlit apps often connect directly to warehouses, object stores, APIs, and operational databases. Use <code>st.secrets</code> or platform secret injection, avoid hardcoded credentials, limit database roles, and log user actions for anything that changes data or triggers jobs.</p>
+<table>
+  <tr><th>Concern</th><th>Good default</th><th>Why it matters</th></tr>
+  <tr><td>Secrets</td><td>Secret manager or <code>st.secrets</code></td><td>Prevents credential leaks in Git</td></tr>
+  <tr><td>Database access</td><td>Least-privilege service role</td><td>Limits blast radius</td></tr>
+  <tr><td>Authentication</td><td>SSO or reverse proxy auth</td><td>Streamlit alone is not enterprise IAM</td></tr>
+  <tr><td>Network</td><td>Private subnets or allowlists</td><td>Keeps internal tools internal</td></tr>
+  <tr><td>Audit</td><td>Write action log table</td><td>Supports incident review</td></tr>
+</table>
+<div class="warn">Production gotcha: an internal app can still be a production system. If it writes data or triggers jobs, treat it like one.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why does Streamlit rerun the whole script, and why does that matter?</div>
+  <div class="qa-a">A: Streamlit uses a top-to-bottom script execution model, so every widget interaction rebuilds the app state from Python code. This keeps development simple, but it means expensive queries and side effects must be controlled. In production, I use caching, forms, buttons, and session state to avoid accidental repeated work.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you use Streamlit instead of a BI tool?</div>
+  <div class="qa-a">A: I use Streamlit when the tool needs Python logic, model outputs, custom validation, operational controls, or workflow-specific interaction. BI tools are better for governed reporting and broad dashboard consumption. Streamlit is strongest for internal data apps that sit close to engineering workflows.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do <code>st.cache_data</code> and <code>st.cache_resource</code> differ?</div>
+  <div class="qa-a">A: <code>st.cache_data</code> caches returned data values like query results or transformed DataFrames. <code>st.cache_resource</code> caches shared objects like database engines, ML models, or API clients. The distinction matters because data should usually be copied safely, while resources are long-lived shared objects.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you prevent a Streamlit app from overloading a warehouse?</div>
+  <div class="qa-a">A: I would push filters into SQL, use caching with a sensible TTL, limit default date ranges, and avoid loading large raw tables into pandas. I would also add query timeouts, warehouse resource limits, and clear freshness indicators. For high-traffic apps, I would pre-aggregate data upstream.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are the risks of using <code>st.data_editor</code> in a production workflow?</div>
+  <div class="qa-a">A: The grid makes edits easy, but the edited data is still user input and must be validated. I would check schema, ranges, uniqueness, allowed values, and authorization before persisting. Any write-back should also produce an audit record with user, timestamp, old value, and new value.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you deploy Streamlit securely in an enterprise environment?</div>
+  <div class="qa-a">A: I would containerize the app, place it behind SSO or a reverse proxy, inject secrets through the platform, and use least-privilege database credentials. Network access should be restricted to internal users or private subnets. If the app can modify data or trigger pipelines, I would add audit logging and approval controls.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">st.write()</div>
+    <div class="cd">Universal renderer for text, objects, DataFrames, and quick output.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.dataframe()</div>
+    <div class="cd">Interactive read-only table; filter large data before rendering.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.metric()</div>
+    <div class="cd">KPI card for counts, freshness, latency, SLA, or trend deltas.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.selectbox()</div>
+    <div class="cd">Single-value filter widget commonly used for region, status, or environment.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.multiselect()</div>
+    <div class="cd">Multi-value filter that maps naturally to pandas <code>isin</code> or SQL <code>IN</code>.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.line_chart()</div>
+    <div class="cd">Fast default time-series chart for lightweight exploration.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.plotly_chart()</div>
+    <div class="cd">Use for production-grade charts with annotations, traces, thresholds, and hover detail.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.cache_data</div>
+    <div class="cd">Cache query results, file reads, API responses, and deterministic transforms.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.cache_resource</div>
+    <div class="cd">Cache shared resources such as database engines, clients, and ML models.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ttl=300</div>
+    <div class="cd">Cache expiry control; critical for balancing performance and freshness.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.sidebar</div>
+    <div class="cd">Best place for persistent filters and app-level controls.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.columns()</div>
+    <div class="cd">Horizontal layout for KPI rows and compact status summaries.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.session_state</div>
+    <div class="cd">Per-user session memory across reruns; not durable persistence.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.data_editor</div>
+    <div class="cd">Editable table for control data; validate before writing back.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">st.secrets</div>
+    <div class="cd">Local or platform-managed secret access; never hardcode credentials.</div>
+  </div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>
