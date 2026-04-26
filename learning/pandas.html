@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandas for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/pandas.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Pandas for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Pandas for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">Pandas</span>
+  <span class="tag">ETL</span>
+  <span class="tag">DataFrames</span>
+  <span class="tag">Parquet</span>
+  <span class="tag">SQL</span>
+  <span class="tag">Time Series</span>
+  <span class="tag">Performance</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_pandas.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">DataFrames &amp; Series</a></li>
+    <li><a href="#s2">Reading Data</a></li>
+    <li><a href="#s3">Selection &amp; Filtering</a></li>
+    <li><a href="#s4">Merge &amp; Join</a></li>
+    <li><a href="#s5">GroupBy</a></li>
+    <li><a href="#s6">dtypes &amp; Memory Optimization</a></li>
+    <li><a href="#s7">Method Chaining &amp; Missing Data</a></li>
+    <li><a href="#s8">Time Series Operations</a></li>
+    <li><a href="#s9">Performance Pitfalls &amp; Scale Limits</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">DataFrames &amp; Series &mdash; structure and index</h2>
+<p>A <code>Series</code> is a one-dimensional labeled array; a <code>DataFrame</code> is a two-dimensional collection of aligned Series sharing an index. For data engineers, the index is not decoration: it controls alignment, joins, reindexing, time-window behavior, and many silent data-shape outcomes.</p>
+<p>The default integer index is fine for many ETL tasks, but explicit indexes matter when joining time series, reconciling entity snapshots, or aligning feature sets. Treat the index like a hidden key: useful when intentional, dangerous when accidental.</p>
+<div class="hi">Key insight: Pandas aligns by labels before it aligns by position. That is powerful for reconciliation work, but it can create unexpected nulls when indexes do not match.</div>
+<pre><code>import pandas as pd
+
+s1 = pd.Series([10, 20], index=["A", "B"])
+s2 = pd.Series([1, 2], index=["B", "C"])
+
+aligned = s1 + s2
+# A = NaN, B = 21, C = NaN
+</code></pre>
+<div class="warn">Production gotcha: after filtering, sorting, or concatenating, call <code>reset_index(drop=True)</code> when row position should become the new truth. Old indexes leak into later joins and comparisons.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Reading Data &mdash; CSV, Parquet, SQL</h2>
+<p>Pandas is often the first landing zone for ad hoc data engineering: CSV from vendors, Parquet from a lake, and SQL extracts from warehouses. The ingestion call is where you either preserve types and push work down, or accidentally create slow object-heavy frames that break later.</p>
+<p>For CSV, specify <code>dtype</code>, <code>parse_dates</code>, <code>usecols</code>, and <code>chunksize</code> when the file is large. For Parquet, use column projection and filters where supported. For SQL, prefer <code>read_sql_query</code> with a SQLAlchemy engine and push filtering, joins, and aggregation into the database when practical.</p>
+<div class="hi">Key insight: reading less data beats optimizing after the fact. Column pruning, predicate filtering, and SQL pushdown are the cheapest performance wins.</div>
+<pre><code>df = pd.read_csv(
+    "events.csv",
+    usecols=["event_id", "region", "event_ts", "amount"],
+    dtype={"event_id": "string", "region": "category"},
+    parse_dates=["event_ts"]
+)
+
+lake_df = pd.read_parquet(
+    "s3://bucket/events/",
+    columns=["event_id", "region", "amount"],
+    filters=[("region", "=", "US")]
+)
+</code></pre>
+<div class="warn">Production gotcha: CSV inference is optimistic and inconsistent across files. One bad row can turn numeric columns into <code>object</code>, inflate memory, and poison downstream comparisons.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Selection &amp; Filtering &mdash; loc, iloc, boolean masks</h2>
+<p>Use <code>loc</code> for label-based access and <code>iloc</code> for position-based access. Senior-level Pandas bugs often come from mixing these mental models, especially after filtering a DataFrame whose index no longer matches row position.</p>
+<p>Boolean masks are the workhorse for ETL filtering. Each condition must be wrapped in parentheses because <code>&amp;</code> and <code>|</code> are bitwise operators with different precedence than Python's <code>and</code> and <code>or</code>.</p>
+<div class="hi">Key insight: <code>loc</code> reads like SQL WHERE plus column projection; <code>iloc</code> reads like array slicing. Keep that distinction clean.</div>
+<pre><code>active_us = df.loc[
+    (df["status"] == "ACTIVE") &amp; (df["region"] == "US"),
+    ["customer_id", "event_ts", "amount"]
+]
+
+first_ten_rows = df.iloc[:10, :]
+</code></pre>
+<div class="warn">Production gotcha: avoid chained assignment like <code>df[df["x"] &gt; 0]["flag"] = 1</code>. Use <code>loc</code> so Pandas updates the intended frame instead of a temporary copy.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Merge &amp; Join &mdash; parameters and gotchas</h2>
+<p><code>pd.merge</code> is the explicit relational join tool: choose <code>how</code>, <code>on</code>, <code>left_on</code>, <code>right_on</code>, and cardinality expectations. <code>DataFrame.join</code> is convenient when joining on indexes, but it is less explicit and can hide assumptions.</p>
+<p>The most important production habit is validating join cardinality. Use <code>validate</code> to catch accidental many-to-many explosions and <code>indicator=True</code> to debug unmatched rows during reconciliation.</p>
+<table>
+  <tr><th>Join option</th><th>Use when</th><th>Risk</th></tr>
+  <tr><td><code>inner</code></td><td>Only matched records are valid</td><td>Drops unmatched rows silently</td></tr>
+  <tr><td><code>left</code></td><td>Preserve the driving dataset</td><td>Nulls may hide missing dimensions</td></tr>
+  <tr><td><code>outer</code></td><td>Reconciliation and audit</td><td>Output can grow quickly</td></tr>
+  <tr><td><code>validate</code></td><td>Enforce expected cardinality</td><td>Requires knowing the grain</td></tr>
+</table>
+<pre><code>joined = orders.merge(
+    customers,
+    how="left",
+    left_on="customer_id",
+    right_on="id",
+    validate="many_to_one",
+    indicator=True
+)
+</code></pre>
+<div class="warn">Production gotcha: duplicate keys in a dimension table can multiply fact rows. Always know the grain before joining.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">GroupBy &mdash; agg vs transform vs apply</h2>
+<p><code>groupby</code> follows split-apply-combine: split rows into groups, apply logic, and combine the result. The choice between <code>agg</code>, <code>transform</code>, and <code>apply</code> determines both output shape and performance.</p>
+<p>Use <code>agg</code> when collapsing groups to summary rows, <code>transform</code> when returning same-shape values aligned to original rows, and <code>apply</code> only as an escape hatch for logic that cannot be expressed with vectorized operations.</p>
+<div class="hi">Key insight: <code>transform</code> is the clean Pandas answer for window-like features such as percent of group, group mean comparison, or entity-level normalization.</div>
+<pre><code>summary = df.groupby("region", as_index=False).agg(
+    orders=("order_id", "nunique"),
+    revenue=("amount", "sum"),
+    avg_amount=("amount", "mean")
+)
+
+df["region_revenue"] = df.groupby("region")["amount"].transform("sum")
+df["pct_of_region"] = df["amount"] / df["region_revenue"]
+</code></pre>
+<div class="warn">Production gotcha: <code>groupby.apply</code> often runs Python-level code per group. It is flexible, but it can collapse performance on high-cardinality datasets.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">dtypes &amp; Memory Optimization</h2>
+<p>Data types are not a cleanup detail; they control memory footprint, arithmetic behavior, null semantics, and IO compatibility. The biggest offender is usually <code>object</code>, which can mean strings, mixed types, Python objects, or accidental type inference failure.</p>
+<p>Prefer <code>StringDtype</code> for text with missing values, nullable integer types such as <code>Int64</code> when integers can be null, and <code>category</code> for low-cardinality dimensions. Downcast numeric columns where precision allows, especially before joins or groupbys over large frames.</p>
+<div class="hi">Key insight: at 65K rows, bad dtypes are annoying; at 65M rows, bad dtypes are the pipeline. Memory pressure turns simple transforms into paging, crashes, or silent slowdowns.</div>
+<pre><code>df = df.astype({
+    "customer_id": "string",
+    "region": "category",
+    "status": "category",
+    "quantity": "Int64"
+})
+
+df["amount"] = pd.to_numeric(df["amount"], downcast="float")
+</code></pre>
+<div class="warn">Production gotcha: nullable <code>Int64</code> is not the same as NumPy <code>int64</code>. It supports missing values, but some libraries and exports may handle it differently.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Method Chaining &amp; Missing Data</h2>
+<p>Method chaining keeps transformations readable by expressing the pipeline top-to-bottom. <code>assign</code>, <code>pipe</code>, and <code>query</code> reduce temporary variables and make each step composable, testable, and easier to move into production code.</p>
+<p>Missing data needs explicit semantics. <code>NaN</code>, <code>None</code>, and <code>pd.NA</code> can behave differently across numeric, object, string, and nullable extension types. Decide whether null means unknown, not applicable, late-arriving, or failed parse before filling it.</p>
+<div class="hi">Key insight: good Pandas pipelines look like small ETL DAGs: each transformation has one purpose, clear inputs, and predictable output shape.</div>
+<pre><code>clean = (
+    raw
+    .rename(columns=str.lower)
+    .assign(amount=lambda d: pd.to_numeric(d["amount"], errors="coerce"))
+    .query("amount &gt;= 0")
+    .pipe(lambda d: d.drop_duplicates(["order_id"]))
+    .fillna({"region": "UNKNOWN"})
+)
+</code></pre>
+<div class="warn">Production gotcha: blanket <code>fillna(0)</code> can corrupt metrics. Missing revenue, zero revenue, and not-yet-received revenue are different business facts.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Time Series Operations</h2>
+<p>Pandas is strong for timestamp-heavy engineering work: parsing datetimes, setting a datetime index, resampling, rolling windows, and aligning irregular feeds. For telemetry, finance, and event pipelines, time zone handling is where correctness usually gets tested.</p>
+<p>Use timezone-aware timestamps when data crosses systems. Normalize ingestion to UTC, preserve source time zone if the business needs it, and be careful with daylight saving transitions during hourly or daily aggregations.</p>
+<div class="hi">Key insight: time series correctness starts at ingestion. A clean datetime dtype and explicit time zone policy prevent downstream reporting fights.</div>
+<pre><code>events["event_ts"] = pd.to_datetime(events["event_ts"], utc=True)
+
+hourly = (
+    events
+    .set_index("event_ts")
+    .groupby("endpoint_id")
+    .resample("1h")["cpu_pct"]
+    .mean()
+    .reset_index()
+)
+</code></pre>
+<div class="warn">Production gotcha: resampling requires a datetime-like index or explicit time grouper. Also confirm whether buckets should be left-closed, right-closed, local time, or UTC.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Performance Pitfalls &amp; Scale Limits</h2>
+<p>Pandas runs in one process and usually holds data in memory. That makes it excellent for local analysis, medium-sized transforms, validation, sampling, and glue code, but it is not a distributed processing engine like Spark.</p>
+<p>The common performance killers are row-wise loops, <code>apply(axis=1)</code>, object dtypes, unnecessary copies, reading entire files, and joining without reducing columns first. When data grows beyond comfortable memory, chunking, Parquet pushdown, DuckDB, Polars, Spark, or warehouse SQL may be better tools.</p>
+<div class="hi">Key insight: Pandas is often best at the edge of the pipeline: inspect, validate, reconcile, prototype, and handle medium-sized transforms. Do not force it to be your cluster.</div>
+<table>
+  <tr><th>Pattern</th><th>Better choice</th><th>Why</th></tr>
+  <tr><td>Row loop</td><td>Vectorized operation</td><td>Runs in optimized array code</td></tr>
+  <tr><td>Huge CSV load</td><td>Chunks or Parquet</td><td>Controls memory and IO</td></tr>
+  <tr><td>Large join</td><td>Pre-project columns</td><td>Reduces copy and hash cost</td></tr>
+  <tr><td>Cluster-scale ETL</td><td>Spark or SQL engine</td><td>Distributed execution</td></tr>
+</table>
+<div class="warn">Production gotcha: a notebook that works on a sample can fail catastrophically in production because Pandas copies data during many operations. Leave memory headroom.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: When would you use Pandas in a production data engineering workflow instead of Spark?</div>
+  <div class="qa-a">A: I would use Pandas for small-to-medium transforms, validation, reconciliation, file inspection, and orchestration-side data shaping where the data comfortably fits in memory. Spark is the better choice when the workload needs distributed execution, fault tolerance across partitions, or large shuffles. The decision is less about preference and more about data size, memory, latency, and operational simplicity.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between <code>merge</code> and <code>join</code>?</div>
+  <div class="qa-a">A: <code>merge</code> is the explicit relational join API and is usually clearer for joining on columns with specified keys and cardinality validation. <code>join</code> is convenient for index-based joins. In production code, I prefer <code>merge</code> when the join logic needs to be obvious and auditable.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you prevent a Pandas join from accidentally multiplying rows?</div>
+  <div class="qa-a">A: I first confirm the grain of both datasets and check key uniqueness on the dimension side. Then I use <code>validate</code>, such as <code>many_to_one</code>, to make Pandas fail fast if the cardinality assumption is violated. During reconciliation, I also use <code>indicator=True</code> to inspect unmatched rows.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why are dtypes important in Pandas?</div>
+  <div class="qa-a">A: dtypes control memory usage, null behavior, comparison semantics, and interoperability with files and databases. An accidental <code>object</code> column can make operations slower and less predictable. Choosing <code>category</code>, nullable integers, proper datetime types, and downcast numerics can materially improve reliability and performance.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between <code>agg</code>, <code>transform</code>, and <code>apply</code> in GroupBy?</div>
+  <div class="qa-a">A: <code>agg</code> collapses each group into summary rows. <code>transform</code> returns values aligned to the original row shape, which is useful for group-level features. <code>apply</code> is the flexible escape hatch, but it is often slower and should not be the default.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are the signs that a Pandas job should be moved to another engine?</div>
+  <div class="qa-a">A: Warning signs include memory pressure, long single-machine runtimes, heavy shuffles or joins, repeated chunking complexity, and data sizes that keep growing. If most work is SQL-like, push it into the database or DuckDB. If it needs distributed compute, move it to Spark, Glue, EMR, or Databricks.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Series</div>
+    <div class="cd">One-dimensional labeled array; often one column of a DataFrame.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">DataFrame</div>
+    <div class="cd">Two-dimensional table of aligned Series with row index and columns.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Index</div>
+    <div class="cd">Label axis used for alignment, joins, time operations, and reindexing.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">read_csv</div>
+    <div class="cd">Use <code>dtype</code>, <code>usecols</code>, <code>parse_dates</code>, and <code>chunksize</code> to control inference and memory.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">read_parquet</div>
+    <div class="cd">Use <code>columns</code> and <code>filters</code> to reduce IO through projection and pushdown.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">loc / iloc</div>
+    <div class="cd"><code>loc</code> is label-based; <code>iloc</code> is position-based.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">boolean mask</div>
+    <div class="cd">Filter rows with vectorized conditions; wrap each condition in parentheses.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">merge(validate)</div>
+    <div class="cd">Enforces join cardinality such as <code>many_to_one</code> and catches row explosions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">indicator=True</div>
+    <div class="cd">Adds merge lineage column for matched, left-only, and right-only rows.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">groupby.agg</div>
+    <div class="cd">Collapses groups into summary rows with named aggregations.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">transform</div>
+    <div class="cd">Returns same-shape group results aligned back to original rows.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">category</div>
+    <div class="cd">Efficient dtype for repeated low-cardinality string-like values.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pd.NA</div>
+    <div class="cd">Modern missing-value marker for nullable extension dtypes.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">resample</div>
+    <div class="cd">Time-bucket aggregation over a datetime index or time grouper.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">apply(axis=1)</div>
+    <div class="cd">Usually a performance smell; prefer vectorized operations where possible.</div>
+  </div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>
