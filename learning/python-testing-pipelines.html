@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Testing for Data Pipelines - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/python-testing-pipelines.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Python Testing for Data Pipelines - Master Engineering Reference
+</div>
+
+<h1>Python Testing for Data Pipelines</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 9-11 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">pytest</span>
+  <span class="tag">ETL</span>
+  <span class="tag">Data Quality</span>
+  <span class="tag">PySpark</span>
+  <span class="tag">CI/CD</span>
+  <span class="tag">Mocking</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_python-testing-pipelines.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Why Pipeline Testing Is Hard</a></li>
+    <li><a href="#s2">pytest Fundamentals</a></li>
+    <li><a href="#s3">Fixtures &amp; Parametrize</a></li>
+    <li><a href="#s4">Mocking &mdash; patch, MagicMock, monkeypatch</a></li>
+    <li><a href="#s5">Testing ETL Transformations</a></li>
+    <li><a href="#s6">Testing Data Quality &amp; Enrichment Logic</a></li>
+    <li><a href="#s7">Testing Idempotency</a></li>
+    <li><a href="#s8">PySpark Test Fixtures</a></li>
+    <li><a href="#s9">Coverage &amp; CI Integration</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Why Pipeline Testing Is Hard</h2>
+<p>Data pipeline testing is harder than normal app testing because the inputs are unstable. Source systems change schemas, late files arrive, APIs retry, S3 keys duplicate, timestamps shift by timezone, and a job that passed yesterday can fail today with no code change.</p>
+<p>The unit under test is also fuzzy. A pipeline step may depend on a database, object storage, secrets, a scheduler, partition layout, file naming conventions, and data volume too large to load in a test run. Good tests isolate the deterministic logic while using small, meaningful samples for edge cases.</p>
+<div class="hi">Senior-level pipeline testing is about reducing uncertainty: schema contracts, deterministic transforms, controlled dependencies, and repeatable failure cases.</div>
+<div class="warn">Do not test only the happy path. Most production pipeline incidents come from empty inputs, duplicate runs, late-arriving data, schema drift, bad joins, or partial writes.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">pytest Fundamentals</h2>
+<p><code>pytest</code> discovers files named <code>test_*.py</code> or <code>*_test.py</code>, then runs functions named <code>test_*</code>. Unlike heavy testing frameworks, it uses plain <code>assert</code> statements and gives readable failure output without boilerplate.</p>
+<p>For data engineering, the useful daily commands are <code>pytest -v</code> for readable test names, <code>pytest -k transform</code> to run a slice, and <code>pytest --tb=short</code> to avoid drowning in stack traces. Keep tests fast enough that you actually run them before committing.</p>
+<pre><code># common test runs
+pytest -v
+pytest tests/test_transform_orders.py -v
+pytest -k "schema or quality" --tb=short
+pytest --maxfail=1 --disable-warnings</code></pre>
+<div class="hi">A good pipeline test name reads like a contract: <code>test_transform_rejects_null_customer_id</code> tells future you exactly what behavior must survive refactoring.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Fixtures &amp; Parametrize</h2>
+<p>Fixtures create reusable setup: sample DataFrames, temp folders, fake clients, database connections, or config objects. Scope matters: <code>function</code> is safest, <code>module</code> is faster for shared data, and <code>session</code> is useful for expensive containers or Spark sessions.</p>
+<p><code>conftest.py</code> shares fixtures across test files without import noise. <code>@pytest.mark.parametrize</code> lets one test cover many input cases, which is perfect for null handling, allowed status values, date parsing, threshold logic, and file naming rules.</p>
+<pre><code>import pytest
+import pandas as pd
+
+@pytest.fixture
+def orders_df():
+    return pd.DataFrame({
+        "order_id": [1, 2],
+        "amount": [25.0, 40.0],
+        "status": ["PAID", "REFUNDED"],
+    })
+
+@pytest.mark.parametrize("status,expected", [
+    ("PAID", True),
+    ("PENDING", True),
+    ("BROKEN", False),
+])
+def test_status_allowed(status, expected):
+    assert (status in {"PAID", "PENDING", "REFUNDED"}) is expected</code></pre>
+<div class="warn">Avoid giant golden files as your first instinct. They are painful to review and often hide the real behavior being tested.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Mocking &mdash; patch, MagicMock, monkeypatch</h2>
+<p>Mocking replaces slow or unstable dependencies with controlled fakes. Use <code>unittest.mock.patch</code> when you need to replace a function or class at the import location used by the code. Use <code>MagicMock</code> when you need a fake object with tracked calls and return values.</p>
+<p><code>monkeypatch</code> is pytest's lightweight tool for environment variables, module attributes, and temporary behavior changes. It is especially useful for pipelines that read <code>os.environ</code>, secret names, S3 buckets, or runtime flags.</p>
+<pre><code>from unittest.mock import MagicMock, patch
+
+@patch("pipeline.extract.boto3.client")
+def test_extract_reads_expected_key(mock_client):
+    s3 = MagicMock()
+    s3.get_object.return_value = {"Body": MagicMock(read=lambda: b"id\n1\n")}
+    mock_client.return_value = s3
+
+    body = read_s3_text("raw-bucket", "orders/2026-04-25.csv")
+
+    assert "id" in body
+    s3.get_object.assert_called_once()</code></pre>
+<div class="hi">Mock boundaries, not business logic. Mock S3, APIs, clocks, and database clients; test transformation and validation code directly.</div>
+<div class="warn">Patch where the object is looked up, not where it was originally defined. This is the classic mocking foot-gun.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Testing ETL Transformations</h2>
+<p>The best ETL transform test calls the transform function directly with a tiny DataFrame. Assert schema, row count, key values, type conversions, and whether invalid rows are dropped, quarantined, or rejected.</p>
+<p>Keep extraction and loading outside the transform unit test. A transform function that accepts a DataFrame and returns a DataFrame is easy to test, easy to reason about, and easy to move from Pandas to Spark later.</p>
+<pre><code>def test_transform_orders_adds_net_amount():
+    raw = pd.DataFrame({
+        "order_id": [1],
+        "gross_amount": [100.0],
+        "discount": [15.0],
+    })
+
+    out = transform_orders(raw)
+
+    assert list(out.columns) == ["order_id", "gross_amount", "discount", "net_amount"]
+    assert len(out) == 1
+    assert out.loc[0, "net_amount"] == 85.0</code></pre>
+<div class="hi">Small input, precise assertion. A five-row DataFrame with edge cases beats a 50,000-row fixture that nobody understands.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Testing Data Quality &amp; Enrichment Logic</h2>
+<p>Data quality tests protect contracts: required columns, non-null keys, row-count ranges, unique business keys, valid enum values, and expected date windows. Decide whether a failure should raise an exception, return a failed result object, or route records to quarantine.</p>
+<p>Enrichment joins need extra attention because they can silently damage data. Assert join coverage, duplicate expansion, unmatched rows, and whether fallback values are acceptable. A left join that multiplies rows is a production-grade villain wearing a polite hat.</p>
+<table>
+  <tr><th>Check</th><th>What It Catches</th><th>Typical Assertion</th></tr>
+  <tr><td>Schema</td><td>Missing or renamed columns</td><td>Expected columns subset exists</td></tr>
+  <tr><td>Null key</td><td>Broken joins and orphan records</td><td>No nulls in business key</td></tr>
+  <tr><td>Uniqueness</td><td>Duplicate source records</td><td>Key count equals distinct key count</td></tr>
+  <tr><td>Coverage</td><td>Weak enrichment match rate</td><td>Match rate above threshold</td></tr>
+  <tr><td>Row count</td><td>Empty or exploding outputs</td><td>Output within expected bounds</td></tr>
+</table>
+<pre><code>def test_customer_enrichment_coverage():
+    out = enrich_orders(orders_df, customers_df)
+    coverage = out["customer_segment"].notna().mean()
+
+    assert coverage &gt;= 0.98
+    assert len(out) == len(orders_df)</code></pre>
+<div class="warn">Never trust row count alone after a join. Always check duplicate expansion and unmatched rate.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Testing Idempotency</h2>
+<p>Idempotency means rerunning the same pipeline for the same input does not create duplicate facts, corrupt state, or publish conflicting outputs. It matters because schedulers retry, operators rerun failed jobs, and upstream files may be resent.</p>
+<p>Useful idempotency tests run the same operation twice against a temp location or test database and assert that the final state is identical. For batch pipelines, favor deterministic output paths, atomic writes, merge keys, and explicit run metadata.</p>
+<pre><code>def test_load_is_idempotent(tmp_path):
+    output = tmp_path / "orders.parquet"
+
+    load_orders(sample_orders(), output)
+    first = read_orders(output)
+
+    load_orders(sample_orders(), output)
+    second = read_orders(output)
+
+    assert len(second) == len(first)
+    assert second["order_id"].is_unique</code></pre>
+<div class="hi">Retry-safe pipelines are cheaper to operate. Idempotency tests turn painful incident lessons into executable guardrails.</div>
+<div class="warn">Appending blindly is almost never idempotent. Use partition overwrite, merge semantics, or deduplication keyed by business identity and batch date.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">PySpark Test Fixtures</h2>
+<p>PySpark tests are slower than Pandas tests, so use them selectively for Spark-specific behavior: distributed joins, window logic, schema enforcement, null semantics, UDF behavior, and partition-sensitive code. Keep pure business transforms testable outside Spark when possible.</p>
+<p>Create one Spark session fixture for the test session and stop it at teardown. Use tiny DataFrames with explicit schemas so type mismatches fail early instead of being inferred differently across environments.</p>
+<pre><code>import pytest
+from pyspark.sql import SparkSession
+from pyspark.sql import types as T
+
+@pytest.fixture(scope="session")
+def spark():
+    session = (
+        SparkSession.builder
+        .master("local[2]")
+        .appName("pipeline-tests")
+        .getOrCreate()
+    )
+    yield session
+    session.stop()
+
+def test_spark_transform_adds_flag(spark):
+    schema = T.StructType([T.StructField("amount", T.DoubleType())])
+    df = spark.createDataFrame([(125.0,), (20.0,)], schema)
+    out = add_high_value_flag(df)
+    assert out.filter("is_high_value = true").count() == 1</code></pre>
+<div class="warn">Spark DataFrame equality is not simple. Sort deterministically, compare schemas, and collect only tiny test outputs.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Coverage &amp; CI Integration</h2>
+<p>Coverage is useful when it shows untested risk, not when it becomes a vanity percentage. For pipeline code, prioritize coverage around transforms, validation rules, retry decisions, idempotency, and failure handling before chasing every logging branch.</p>
+<p>CI should run fast unit tests on every commit and heavier integration tests on a schedule or protected branch. Mark slow tests explicitly, separate tests that need Docker or cloud credentials, and fail early on formatting, import errors, and schema-contract breaks.</p>
+<pre><code># pyproject.toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+markers = [
+  "integration: requires database, Spark, or external service",
+  "slow: longer-running pipeline tests",
+]
+
+# examples
+pytest -m "not integration"
+pytest --cov=pipeline --cov-report=term-missing</code></pre>
+<div class="hi">CI should answer one question quickly: did this change break the pipeline contract?</div>
+<div class="warn">Do not put real cloud credentials into CI tests. Use local fakes, scoped test accounts, or explicit integration environments.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: How is testing a data pipeline different from testing a web service?</div>
+  <div class="qa-a">A: A web service usually has stable request and response contracts, while a pipeline has unstable data, external storage, batch timing, and volume constraints. Pipeline tests must verify schema, data quality, idempotency, join behavior, and failure recovery. The hard part is not just whether code runs, but whether the output remains trustworthy under messy inputs.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What should be unit tested in an ETL pipeline?</div>
+  <div class="qa-a">A: Unit test deterministic transformation logic, validation rules, parsing logic, enrichment decisions, and idempotency helpers. Do not unit test the real S3 service, real database, or scheduler. Those belong in integration tests with controlled environments.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you test a transformation that joins orders to customers?</div>
+  <div class="qa-a">A: I would create tiny order and customer inputs covering matched rows, unmatched rows, duplicate customer keys, and null join keys. I would assert row count, match coverage, duplicate expansion, and specific enriched values. The goal is to catch silent data corruption, not just syntax errors.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you use mocks versus integration tests?</div>
+  <div class="qa-a">A: I use mocks for unstable boundaries such as APIs, S3 clients, clocks, and secrets. I use integration tests when behavior depends on the real engine, such as SQL transactions, Spark execution, file formats, or database constraints. Mocking business logic is usually a smell.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you test idempotency?</div>
+  <div class="qa-a">A: Run the same load twice with the same input and assert that the final state is unchanged. For a table, that means no duplicate business keys and no unexpected row growth. For files, that means deterministic output paths or safe overwrite semantics.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What belongs in CI for data pipeline projects?</div>
+  <div class="qa-a">A: CI should run fast unit tests, schema checks, linting, import validation, and coverage reporting. Slow Spark, Docker, or cloud integration tests should be marked separately and run on schedule or before release. The CI design should protect the core contracts without making every commit painfully slow.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">pytest -v</div>
+    <div class="cd">Verbose test output; useful for reading behavior-focused test names.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pytest -k</div>
+    <div class="cd">Runs tests matching an expression, such as schema, join, or transform.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">--tb=short</div>
+    <div class="cd">Short traceback format; keeps pipeline failures readable.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">@pytest.fixture</div>
+    <div class="cd">Reusable setup and teardown for sample data, temp paths, clients, or Spark sessions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">conftest.py</div>
+    <div class="cd">Shared pytest fixtures available across test files without explicit imports.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">parametrize</div>
+    <div class="cd">Runs one test across multiple inputs; ideal for edge cases and validation rules.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">patch</div>
+    <div class="cd">Replaces a dependency at the lookup location used by the code under test.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">MagicMock</div>
+    <div class="cd">Fake object with return values and call assertions for clients and services.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">monkeypatch</div>
+    <div class="cd">Temporarily changes environment variables, attributes, or functions in pytest.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">tmp_path</div>
+    <div class="cd">Temporary filesystem path for safe file output and idempotency tests.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">schema test</div>
+    <div class="cd">Verifies required columns and expected types before downstream logic runs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">coverage rate</div>
+    <div class="cd">Measures enrichment match success; protects joins from silent data loss.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">idempotency</div>
+    <div class="cd">Same input plus same run target produces the same final state without duplicates.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pytest-cov</div>
+    <div class="cd">Coverage plugin; use it to find risky untested branches, not to chase vanity numbers.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
