@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apache Flink - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/apache-flink.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Apache Flink - Master Engineering Reference
+</div>
+
+<h1>Apache Flink</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated April 26, 2026 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Stream Processing</span>
+  <span class="tag">Event Time</span>
+  <span class="tag">Stateful Compute</span>
+  <span class="tag">Kafka</span>
+  <span class="tag">Exactly Once</span>
+  <span class="tag">AWS MSF</span>
+  <span class="tag">SQL</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_apache-flink.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Flink Is For</a></li>
+    <li><a href="#s2">Runtime Architecture</a></li>
+    <li><a href="#s3">Event Time, Watermarks, and Windows</a></li>
+    <li><a href="#s4">State, Checkpoints, and Savepoints</a></li>
+    <li><a href="#s5">Exactly-Once Semantics</a></li>
+    <li><a href="#s6">APIs and Development Model</a></li>
+    <li><a href="#s7">Kafka and Lakehouse Integration</a></li>
+    <li><a href="#s8">Operations on AWS and Kubernetes</a></li>
+    <li><a href="#s9">Performance and Backpressure</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Flink Is For</h2>
+<p>Apache Flink is a distributed stream processing engine for low-latency, stateful computation over unbounded and bounded data. It is strongest when pipelines need event-time correctness, large keyed state, exactly-once processing, and continuous results instead of periodic batch refreshes.</p>
+<p>In a modern data platform, Flink usually sits between ingestion systems such as Kafka or Kinesis and serving or storage systems such as Iceberg, S3, OpenSearch, Redis, or analytical warehouses. It is commonly used for enrichment, sessionization, fraud detection, CDC processing, real-time aggregates, alerting, and streaming ETL.</p>
+<div class="hi">Flink is not just "Spark Streaming but faster." Its core abstraction is a continuously running stateful dataflow with checkpointed state, event-time timers, and restartable operators.</div>
+<div class="warn">Do not choose Flink only because a dashboard needs fresher data. If the logic is stateless, latency tolerance is minutes, and replay cost is low, simpler batch or micro-batch systems may be cheaper to operate.</div>
+<table>
+  <tr><th>Use case</th><th>Why Flink fits</th><th>Alternative</th></tr>
+  <tr><td>Fraud signals</td><td>Low latency, keyed state, timers</td><td>Kafka Streams</td></tr>
+  <tr><td>CDC normalization</td><td>Ordered updates, exactly-once sinks</td><td>Debezium plus batch merge</td></tr>
+  <tr><td>Real-time aggregates</td><td>Event-time windows and late data</td><td>Spark Structured Streaming</td></tr>
+  <tr><td>Streaming lake writes</td><td>Continuous files with checkpoint commits</td><td>Managed warehouse ingestion</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Runtime Architecture</h2>
+<p>A Flink application is compiled into a job graph of sources, transformations, shuffles, and sinks. The JobManager coordinates scheduling, checkpoints, failover, and metadata, while TaskManagers execute parallel subtasks and hold working state.</p>
+<p>Parallelism controls how many subtasks run for each operator. Keyed streams are partitioned by key-group, which allows Flink to rescale state across different parallelism levels as long as state descriptors and serializers remain compatible.</p>
+<div class="hi">Think in terms of operator chains and key groups. The code reads like a pipeline, but production behavior is shaped by partitions, network shuffles, state locality, and checkpoint barriers.</div>
+<div class="warn">Changing parallelism, serializers, operator UIDs, or state names without planning can break restore from savepoints. Assign stable operator UIDs for long-lived production jobs.</div>
+<pre><code>env.enableCheckpointing(60000);
+
+DataStream&lt;Order&gt; orders = env
+    .fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "orders")
+    .uid("orders-source");
+
+orders
+    .keyBy(Order::customerId)
+    .process(new CustomerRiskFunction())
+    .uid("customer-risk")
+    .sinkTo(alertSink)
+    .uid("alert-sink");</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Event Time, Watermarks, and Windows</h2>
+<p>Flink separates processing time from event time. Processing time is when the job sees the record; event time is when the business event occurred. Event time is what you want for financial periods, customer sessions, IoT readings, CDC ordering, and analytics that must remain correct after retries or late arrivals.</p>
+<p>Watermarks are Flink's estimate of event-time progress. A window can close when the watermark passes the window end, optionally allowing late records for a controlled period.</p>
+<div class="hi">Watermarks are a correctness contract with the data. Conservative watermarks improve completeness but add latency; aggressive watermarks reduce latency but increase late-data handling.</div>
+<div class="warn">A single idle Kafka partition can hold back watermarks for the whole downstream operator unless idleness is configured. This is a common cause of windows that appear to stop firing.</div>
+<table>
+  <tr><th>Concept</th><th>Production meaning</th></tr>
+  <tr><td>Tumbling window</td><td>Fixed, non-overlapping aggregation period</td></tr>
+  <tr><td>Sliding window</td><td>Overlapping period for moving metrics</td></tr>
+  <tr><td>Session window</td><td>Gap-based grouping for user activity</td></tr>
+  <tr><td>Allowed lateness</td><td>Grace period after watermark passes window end</td></tr>
+  <tr><td>Side output</td><td>Path for records too late for the main result</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">State, Checkpoints, and Savepoints</h2>
+<p>State is Flink's main differentiator. Operators can keep keyed state, operator state, timers, and accumulators that survive failures through checkpointing. Large Flink jobs often have terabytes of RocksDB-backed state and still maintain second-level processing latency when tuned carefully.</p>
+<p>Checkpoints are automatic recovery snapshots. Savepoints are manually triggered, portable snapshots used for upgrades, migrations, and controlled rollback. Treat savepoints as part of release management, not just emergency recovery.</p>
+<div class="hi">A reliable Flink deployment is a state management system as much as a compute system. Backup location, state backend, serializer evolution, and savepoint discipline matter as much as business code.</div>
+<div class="warn">State TTL is not a substitute for business deletion logic unless the semantics match. TTL cleanup is lazy in many cases, so stale state may remain until touched or compacted.</div>
+<table>
+  <tr><th>Mechanism</th><th>Purpose</th><th>Typical trigger</th></tr>
+  <tr><td>Checkpoint</td><td>Failure recovery</td><td>Automatic interval</td></tr>
+  <tr><td>Savepoint</td><td>Upgrade or migration</td><td>Manual release step</td></tr>
+  <tr><td>Externalized checkpoint</td><td>Recovery after cancellation</td><td>Operational setting</td></tr>
+  <tr><td>State TTL</td><td>Bound state growth</td><td>Application design</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Exactly-Once Semantics</h2>
+<p>Exactly-once in Flink means that after a failure and restart, the final committed result is equivalent to processing each input record once. It does not mean every external system is magically idempotent or that every downstream reader sees no intermediate state.</p>
+<p>End-to-end exactly-once requires aligned source offsets, checkpointed operator state, and a sink that can commit transactionally or idempotently. Kafka transactions, Iceberg commits, and two-phase commit sinks are common patterns.</p>
+<div class="hi">Exactly-once is an end-to-end property. Flink can coordinate it, but the source, sink, checkpoint storage, and deployment lifecycle must all participate.</div>
+<div class="warn">At-least-once plus non-idempotent writes creates duplicate money, duplicate notifications, or inflated aggregates. For external side effects, design idempotency keys before writing code.</div>
+<table>
+  <tr><th>Sink pattern</th><th>Semantics</th><th>Tradeoff</th></tr>
+  <tr><td>Transactional</td><td>Strong exactly-once</td><td>Higher latency and complexity</td></tr>
+  <tr><td>Idempotent upsert</td><td>Effectively once by key</td><td>Requires stable primary key</td></tr>
+  <tr><td>Append only</td><td>Often at-least-once</td><td>Needs dedupe downstream</td></tr>
+  <tr><td>External API call</td><td>Usually unsafe by default</td><td>Requires idempotency token</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">APIs and Development Model</h2>
+<p>Flink supports DataStream APIs for custom event processing, Table API and SQL for relational streaming, and connectors for common sources and sinks. Senior teams often standardize on SQL for common ETL and reserve DataStream for custom state machines, timers, or complex enrichment.</p>
+<p>The SQL model is powerful because it makes streaming tables, changelogs, and windows declarative. The DataStream model gives more control but creates more room for lifecycle, serialization, and state compatibility mistakes.</p>
+<div class="hi">Use the highest-level API that preserves the required semantics. SQL is easier to review and govern; DataStream is better for custom stateful behavior.</div>
+<div class="warn">Mixing APIs is valid, but schema conversion, changelog mode, and event-time attributes must be explicit. Hidden append-versus-update assumptions cause painful sink failures.</div>
+<pre><code>CREATE TABLE orders (
+  order_id STRING,
+  customer_id STRING,
+  amount DECIMAL(12,2),
+  event_time TIMESTAMP(3),
+  WATERMARK FOR event_time AS event_time - INTERVAL '30' SECOND
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'orders',
+  'format' = 'json'
+);</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Kafka and Lakehouse Integration</h2>
+<p>Kafka is the most common operational source for Flink because partitions map naturally to parallel source readers and offsets can be checkpointed. For lakehouse targets, Flink commonly writes to Apache Iceberg, Hudi, Delta Lake, or file sinks on object storage.</p>
+<p>The main architectural decision is whether Flink owns real-time transformation and storage commits, or whether it publishes clean events for downstream warehouse ingestion. Owning commits gives lower latency and stronger control, but increases operational coupling to table format semantics.</p>
+<div class="hi">For lakehouse pipelines, align checkpoint interval, file rolling policy, table commit frequency, and compaction strategy. Small files are a streaming tax that must be managed deliberately.</div>
+<div class="warn">Kafka ordering is only guaranteed within a partition. If CDC or account-level ordering matters, partition by the same key used for downstream state and upsert semantics.</div>
+<table>
+  <tr><th>Integration</th><th>Design concern</th></tr>
+  <tr><td>Kafka source</td><td>Partition count bounds source parallelism</td></tr>
+  <tr><td>Kinesis source</td><td>Shard limits and enhanced fan-out cost</td></tr>
+  <tr><td>Iceberg sink</td><td>Commit coordination and small files</td></tr>
+  <tr><td>JDBC sink</td><td>Batching, retries, idempotent keys</td></tr>
+  <tr><td>Redis sink</td><td>TTL, hot keys, overwrite semantics</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Operations on AWS and Kubernetes</h2>
+<p>On AWS, Flink is commonly deployed with Amazon Managed Service for Apache Flink, self-managed Kubernetes, or EMR. Managed service reduces cluster operations, while Kubernetes provides deeper control over versions, plugins, networking, autoscaling, and custom deployment workflows.</p>
+<p>Object storage is typically used for checkpoints and savepoints, and IAM boundaries must cover source reads, sink writes, checkpoint paths, metrics, and secret access. For private networking, plan connectivity to MSK, RDS, OpenSearch, S3 endpoints, and any cross-account data targets.</p>
+<div class="hi">The operational unit is the job, not just the cluster. Release strategy, savepoint automation, alerting, and rollback procedures should be defined per production job.</div>
+<div class="warn">Checkpoint storage must be durable, isolated, and lifecycle-managed. Accidentally deleting checkpoint or savepoint prefixes can turn a routine restart into a full replay or data loss incident.</div>
+<table>
+  <tr><th>Platform</th><th>Best fit</th><th>Tradeoff</th></tr>
+  <tr><td>Managed Flink</td><td>Fast AWS-native operations</td><td>Less runtime control</td></tr>
+  <tr><td>Kubernetes</td><td>Custom platform engineering</td><td>More ownership</td></tr>
+  <tr><td>EMR</td><td>Mixed big-data stack</td><td>Cluster lifecycle complexity</td></tr>
+  <tr><td>Local mini cluster</td><td>Development and tests</td><td>Not production-like</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Performance and Backpressure</h2>
+<p>Flink performance tuning starts with backpressure. A slow sink, skewed key, undersized state backend, blocked checkpoint, or network shuffle can propagate upstream and make a healthy-looking source lag dramatically.</p>
+<p>Important metrics include checkpoint duration, checkpoint alignment time, busy time, backpressured time, source lag, RocksDB read/write latency, garbage collection, and sink commit latency. For large state jobs, incremental checkpoints and RocksDB tuning often matter more than raw CPU.</p>
+<div class="hi">Tuning Flink is mostly bottleneck isolation: source ingestion, network shuffle, state access, user code, serialization, checkpointing, or sink commit. Guessing usually wastes days.</div>
+<div class="warn">Hot keys defeat parallelism. If one customer, account, device, or tenant dominates the stream, repartitioning alone will not fix the bottleneck without a salting or two-stage aggregation strategy.</div>
+<table>
+  <tr><th>Symptom</th><th>Likely cause</th><th>First check</th></tr>
+  <tr><td>Growing Kafka lag</td><td>Downstream backpressure</td><td>Task backpressure metrics</td></tr>
+  <tr><td>Slow checkpoints</td><td>Large state or slow storage</td><td>Checkpoint duration and alignment</td></tr>
+  <tr><td>Uneven subtasks</td><td>Key skew</td><td>Records per subtask</td></tr>
+  <tr><td>High GC</td><td>Heap pressure or serialization</td><td>Heap, managed memory, object churn</td></tr>
+  <tr><td>Small files</td><td>Frequent commits</td><td>Sink rolling and compaction settings</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose Flink over Spark Structured Streaming?</div>
+  <div class="qa-a">A: Choose Flink when the workload is truly continuous, latency-sensitive, and heavily stateful with event-time correctness. Spark Structured Streaming is often simpler for micro-batch ETL, warehouse-centric pipelines, and teams already standardized on Spark. The deciding factors are usually state size, latency target, operational maturity, and sink semantics.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What does exactly-once mean in a Flink pipeline?</div>
+  <div class="qa-a">A: It means the final committed output after failure recovery is equivalent to each input being processed once. Flink achieves this through checkpointed source offsets, state snapshots, and compatible sink commit protocols. It is not guaranteed if the sink performs non-idempotent side effects outside checkpoint coordination.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do watermarks affect correctness and latency?</div>
+  <div class="qa-a">A: Watermarks decide when Flink believes event time has advanced enough to close windows or fire timers. A conservative watermark waits longer and captures more late events, but increases output latency. An aggressive watermark lowers latency but pushes more records into late-data handling or correction paths.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you upgrade a stateful Flink job safely?</div>
+  <div class="qa-a">A: Assign stable operator UIDs, trigger a savepoint, deploy the new version, and restore from that savepoint. Validate serializer compatibility, state schema changes, connector versions, and parallelism changes before rollout. Keep rollback instructions and the previous artifact available until the new job is stable.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are common causes of Flink backpressure?</div>
+  <div class="qa-a">A: Common causes include slow sinks, hot keys, expensive user code, slow RocksDB access, network shuffles, and checkpoint alignment delays. The right response is to identify the constrained operator from metrics, not blindly increase cluster size. Scaling helps only if the bottleneck can actually be parallelized.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you prevent unbounded state growth?</div>
+  <div class="qa-a">A: Use state TTL, clear state when business sessions end, compact aggregations, and avoid storing raw event history unless required. Monitor state size per operator and per key group, not just total job memory. For regulated or customer-facing data, align cleanup logic with business retention requirements rather than relying only on lazy TTL cleanup.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">JobManager</div>
+    <div class="cd">Coordinates scheduling, checkpoints, failover, and job metadata.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TaskManager</div>
+    <div class="cd">Executes parallel subtasks and hosts operator state during runtime.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Parallelism</div>
+    <div class="cd">Number of subtasks for an operator; bounded by source partitions and downstream design.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Keyed state</div>
+    <div class="cd">Partitioned state scoped by key, used for counters, sessions, joins, and timers.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Checkpoint</div>
+    <div class="cd">Automatic snapshot used for failure recovery and exactly-once coordination.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Savepoint</div>
+    <div class="cd">Manual, portable state snapshot used for upgrades, migrations, and rollback.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Watermark</div>
+    <div class="cd">Event-time progress signal that controls window firing and timer execution.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Allowed lateness</div>
+    <div class="cd">Grace period for records that arrive after a window's watermark trigger.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Operator UID</div>
+    <div class="cd">Stable identifier used to map saved state back to operators during restore.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">RocksDB</div>
+    <div class="cd">Common state backend for large durable keyed state with incremental checkpoints.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Backpressure</div>
+    <div class="cd">Upstream slowdown caused by a constrained downstream operator or sink.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Two-phase sink</div>
+    <div class="cd">Commit protocol that ties external writes to successful checkpoints.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Hot key</div>
+    <div class="cd">A dominant key that overloads one subtask and limits horizontal scaling.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Side output</div>
+    <div class="cd">Secondary stream for late events, errors, or records needing separate handling.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
