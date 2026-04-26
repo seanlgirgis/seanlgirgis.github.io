@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NumPy for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/numpy.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / NumPy for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>NumPy for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 9-11 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">NumPy</span>
+  <span class="tag">Data Engineering</span>
+  <span class="tag">Vectorization</span>
+  <span class="tag">Pandas</span>
+  <span class="tag">Memory</span>
+  <span class="tag">ML Features</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_numpy.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">ndarray &amp; Why It's Fast</a></li>
+    <li><a href="#s2">dtypes &mdash; choosing the right type</a></li>
+    <li><a href="#s3">Array Creation &amp; Indexing</a></li>
+    <li><a href="#s4">Broadcasting &mdash; the rules</a></li>
+    <li><a href="#s5">Vectorized Ops &amp; ufuncs</a></li>
+    <li><a href="#s6">np.where &amp; Conditionals</a></li>
+    <li><a href="#s7">Aggregation Along Axes</a></li>
+    <li><a href="#s8">Reshaping, np.percentile &amp; Pipeline Use Cases</a></li>
+    <li><a href="#s9">NumPy &amp; Pandas &mdash; when to drop down</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">ndarray &amp; Why It's Fast</h2>
+<p>The core NumPy object is the <code>ndarray</code>: a contiguous or strided block of typed memory plus metadata for shape, dtype, and strides. A Python list stores references to Python objects; a NumPy array stores raw values in a compact buffer. That difference is why numeric operations often move from interpreter loops into compiled C loops.</p>
+<p>For data engineers, this matters when profiling feature generation, quality checks, bucketing, statistical summaries, and array-heavy transformations before loading results back into Pandas, Parquet, or a model input table. NumPy is not a distributed engine, but it is extremely effective inside one process when the data fits memory.</p>
+<div class="hi">Key insight: NumPy speed comes from dense typed memory plus vectorized C execution, not from magic Python syntax.</div>
+<div class="warn">Production gotcha: contiguous memory is fast, but a copy of a huge array can double memory pressure instantly. Watch whether operations return views or copies.</div>
+<pre><code>import numpy as np
+
+values = np.array([10.0, 20.0, 30.0], dtype=np.float64)
+print(values.shape)    # (3,)
+print(values.dtype)    # float64
+print(values.strides)  # bytes to step across each dimension
+
+scaled = values * 1.08  # vectorized C loop, not a Python for-loop
+</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">dtypes &mdash; choosing the right type</h2>
+<p>A dtype is a contract: how many bytes each value uses, how the bits are interpreted, and what range or precision is available. Choosing <code>float32</code> instead of <code>float64</code> can cut memory in half for ML features; choosing <code>int32</code> instead of <code>int64</code> can help large ID-like arrays if the range is safe.</p>
+<p>Do not downcast blindly. Percentages may fit in <code>uint8</code>, but nulls, negative values, and overflow can break assumptions. Pipeline code should make dtype choices explicit at ingestion boundaries and after feature generation, especially before writing Parquet where schema drift becomes visible downstream.</p>
+<table>
+  <tr><th>dtype</th><th>Typical use</th><th>Tradeoff</th></tr>
+  <tr><td><code>float64</code></td><td>Default numeric precision</td><td>Safe but memory-heavy</td></tr>
+  <tr><td><code>float32</code></td><td>ML features, large matrices</td><td>Lower precision, half memory</td></tr>
+  <tr><td><code>int64</code></td><td>Large counters, timestamps</td><td>Safe range, bigger footprint</td></tr>
+  <tr><td><code>int32</code></td><td>Bounded IDs, counts</td><td>Overflow if range grows</td></tr>
+  <tr><td><code>uint8</code></td><td>Flags, bounded scores, percentages</td><td>No negatives or null sentinel</td></tr>
+</table>
+<div class="warn">Gotcha: NumPy integer overflow does not behave like Python's arbitrary-size integers. If the dtype is too small, results can wrap.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Array Creation &amp; Indexing</h2>
+<p>Use creation functions to communicate intent. <code>np.zeros</code> and <code>np.ones</code> initialize known shapes; <code>np.arange</code> is useful for integer positions; <code>np.linspace</code> is safer for evenly spaced numeric ranges; <code>np.random.default_rng()</code> gives a modern random generator that is easier to seed and pass through pipeline code.</p>
+<p>Indexing is where shape discipline starts. Basic slicing usually returns views; boolean indexing and fancy integer indexing usually allocate new arrays. In production transformations, that distinction affects both performance and whether a downstream mutation changes the original data.</p>
+<pre><code>rng = np.random.default_rng(42)
+
+x = np.arange(12).reshape(3, 4)
+rows = x[:, 0] &gt;= 4          # boolean mask over rows
+filtered = x[rows, :]        # rows where first column &gt;= 4
+picked = x[[0, 2], [1, 3]]   # fancy indexing: values at (0,1), (2,3)
+features = rng.normal(size=(1000, 8)).astype(np.float32)
+</code></pre>
+<div class="hi">Key insight: slicing is cheap when it is a view; boolean and fancy indexing are powerful but usually create new arrays.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Broadcasting &mdash; the rules</h2>
+<p>Broadcasting lets NumPy operate on arrays with different shapes without manually expanding data. Dimensions are compared from the right; two dimensions are compatible when they are equal or one of them is <code>1</code>. This is why a feature matrix shaped <code>(N, M)</code> can be centered by subtracting a vector shaped <code>(M,)</code>.</p>
+<p>The dangerous case is accidental shape. <code>(N,)</code>, <code>(N, 1)</code>, and <code>(1, N)</code> are not interchangeable. A wrong reshape can silently create a large outer operation instead of a row-wise or column-wise operation.</p>
+<div class="warn">Production gotcha: broadcasting can create a huge logical result. Even when inputs are small, the output shape may explode memory.</div>
+<pre><code>X = np.array([[10, 20, 30], [40, 50, 60]], dtype=np.float32)
+col_mean = X.mean(axis=0)       # shape (3,)
+centered = X - col_mean         # broadcast across rows
+
+row_scale = np.array([[10], [20]], dtype=np.float32)  # shape (2, 1)
+scaled = X / row_scale          # broadcast across columns per row
+</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Vectorized Ops &amp; ufuncs</h2>
+<p>Vectorized operations move element-wise work into optimized compiled loops. Universal functions, or ufuncs, such as <code>np.add</code>, <code>np.multiply</code>, <code>np.exp</code>, and <code>np.log</code> apply the same operation over arrays and support broadcasting. Replacing Python loops with ufuncs is often the first performance win on medium-size data, even around 65K rows.</p>
+<p>This does not mean every problem should be forced into one giant expression. Readability, temporary arrays, and numerical stability still matter. In feature pipelines, vectorize the hot path, name intermediate arrays when they clarify business logic, and profile before getting clever.</p>
+<pre><code>amount = np.array([100, 250, 400], dtype=np.float32)
+risk = np.array([0.10, 0.30, 0.80], dtype=np.float32)
+
+score = np.log1p(amount) * np.exp(-risk)
+score = np.clip(score, 0, 10)
+</code></pre>
+<div class="hi">Key insight: ufuncs reduce Python interpreter overhead and make numeric transformations predictable at batch scale.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">np.where &amp; Conditionals</h2>
+<p><code>np.where</code> is the standard vectorized conditional: choose one value where a condition is true and another where it is false. It is clean for flags, buckets, simple rule-based labels, and null-like substitutions before handing data to Pandas or a downstream model.</p>
+<p>For multi-branch rules, chained <code>np.where</code> can become unreadable quickly. Prefer <code>np.select</code> for several conditions, or move complex business logic into a tested function that operates on batches rather than rows.</p>
+<pre><code>latency_ms = np.array([80, 250, 900, 1200])
+severity = np.where(latency_ms &gt;= 1000, "critical", "normal")
+
+conditions = [latency_ms &lt; 200, latency_ms &lt; 800, latency_ms &gt;= 800]
+choices = ["green", "yellow", "red"]
+health = np.select(conditions, choices, default="unknown")
+</code></pre>
+<div class="warn">Gotcha: both result branches should be dtype-compatible. Mixing strings and numbers can force object or string arrays and hurt performance.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Aggregation Along Axes</h2>
+<p>Axis semantics are central to NumPy. For a 2D array shaped <code>(rows, columns)</code>, <code>axis=0</code> aggregates down rows and returns one result per column; <code>axis=1</code> aggregates across columns and returns one result per row. Getting this wrong is one of the most common bugs in feature engineering.</p>
+<p>Aggregations such as <code>np.sum</code>, <code>np.mean</code>, <code>np.std</code>, <code>np.min</code>, and <code>np.max</code> are fast, but missing values require deliberate handling. Use <code>np.nanmean</code> and related functions only when NaN semantics are intentional; otherwise, find the dirty data earlier in the pipeline.</p>
+<pre><code>X = np.array([[10, 20, 30], [40, 50, 60]], dtype=np.float32)
+
+per_column_mean = X.mean(axis=0)  # [25, 35, 45]
+per_row_sum = X.sum(axis=1)       # [60, 150]
+per_column_std = X.std(axis=0)
+</code></pre>
+<div class="hi">Key insight: always read axis operations as the dimension being collapsed, not the dimension being kept.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Reshaping, np.percentile &amp; Pipeline Use Cases</h2>
+<p><code>reshape</code>, <code>ravel</code>, <code>flatten</code>, <code>transpose</code>, and <code>expand_dims</code> are shape tools used to prepare arrays for models, statistics, and matrix-style transformations. Reshape is often metadata-only when memory layout allows it; otherwise NumPy may need a copy. In ETL code, shape should be treated like schema.</p>
+<p><code>np.percentile</code> is useful for robust thresholds: latency p95, transaction outlier cutoffs, feature clipping bounds, and quality rules less sensitive to extremes than averages. Percentiles are local-memory operations, so apply them after sampling, partition-level processing, or after collecting a bounded batch from a larger system.</p>
+<pre><code>latency = np.array([45, 50, 55, 80, 120, 900], dtype=np.float32)
+p95 = np.percentile(latency, 95)
+clipped = np.clip(latency, None, p95)
+
+features = latency.reshape(-1, 1)  # model-friendly column vector
+</code></pre>
+<div class="warn">Production gotcha: percentile logic over a local batch is not the same as a global percentile over a lake or warehouse table.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">NumPy &amp; Pandas &mdash; when to drop down</h2>
+<p>Pandas gives labels, indexes, joins, groupby operations, IO, and tabular ergonomics. NumPy gives compact numeric arrays and fast element-wise math. Drop down to NumPy when the work is numeric, shape-stable, and hot enough that Pandas overhead or row-wise <code>apply</code> becomes a bottleneck.</p>
+<p>The clean pattern is to use Pandas for data alignment and IO, convert selected columns to NumPy arrays for dense numeric work, then assign the result back with clear column names. Avoid breaking index alignment accidentally: once you call <code>to_numpy()</code>, you are operating by position, not label.</p>
+<pre><code>amount = df["amount"].to_numpy(dtype=np.float32)
+risk = df["risk_score"].to_numpy(dtype=np.float32)
+
+adjusted = np.where(risk &gt; 0.7, amount * 0.8, amount)
+df["adjusted_amount"] = adjusted
+</code></pre>
+<div class="hi">Key insight: Pandas is the table layer; NumPy is the numeric engine. Use each where its model is strongest.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why is NumPy usually faster than a Python list for numeric operations?</div>
+  <div class="qa-a">A: A Python list stores references to Python objects, so arithmetic requires interpreter-level object handling. NumPy stores typed values in dense memory and applies operations in compiled loops. The speedup comes from fewer Python calls, better cache locality, and vectorized execution.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you decide between <code>float32</code> and <code>float64</code> in a data pipeline?</div>
+  <div class="qa-a">A: Use <code>float64</code> when precision is important, especially for finance, scientific calculations, or cumulative operations. Use <code>float32</code> for large ML feature matrices when the precision loss is acceptable and memory pressure matters. The decision should be tested against downstream model or metric sensitivity.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What broadcasting bug have you seen in production-style code?</div>
+  <div class="qa-a">A: The classic bug is confusing <code>(N,)</code>, <code>(N, 1)</code>, and <code>(1, N)</code>. A developer expects row-wise scaling but accidentally creates an outer operation with a much larger output. Shape assertions near critical transformations prevent this class of issue.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you use <code>np.where</code> instead of Pandas <code>apply</code>?</div>
+  <div class="qa-a">A: Use <code>np.where</code> when the conditional is simple, column-based, and can be expressed as vectorized array logic. It avoids row-wise Python execution and is easier to scale inside a batch. If the business rule is complex or stateful, readability and testability may matter more than forcing it into one expression.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between a view and a copy, and why does it matter?</div>
+  <div class="qa-a">A: A view references the same underlying memory with different metadata, while a copy owns a new buffer. Views are fast and memory-efficient, but mutations can affect the original array. Copies are safer for isolation but expensive on large arrays.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How does NumPy fit into a modern data engineering stack with Spark, Pandas, and Parquet?</div>
+  <div class="qa-a">A: Spark handles distributed processing, Pandas handles local tabular work, Parquet handles efficient storage, and NumPy handles dense numeric computation inside a process. NumPy is best after data has been reduced to a bounded batch or feature matrix. It is not a replacement for distributed execution, but it is often the fastest local compute layer.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">ndarray</div>
+    <div class="cd">Typed multidimensional array backed by dense memory plus shape, dtype, and stride metadata.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">dtype</div>
+    <div class="cd">Controls memory size, numeric range, precision, and overflow behavior.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">shape</div>
+    <div class="cd">Tuple describing dimensions; treat it like schema for array pipelines.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">strides</div>
+    <div class="cd">Byte steps NumPy uses to move through each dimension without necessarily copying data.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">axis=0</div>
+    <div class="cd">Collapse rows in a 2D array, usually producing one result per column.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">axis=1</div>
+    <div class="cd">Collapse columns in a 2D array, usually producing one result per row.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">broadcasting</div>
+    <div class="cd">Rules for operating across compatible shapes where dimensions match or one side is 1.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ufunc</div>
+    <div class="cd">Compiled element-wise operation such as <code>np.add</code>, <code>np.exp</code>, or <code>np.log</code>.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">np.where</div>
+    <div class="cd">Vectorized two-branch conditional for labels, flags, substitutions, and simple rules.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">np.select</div>
+    <div class="cd">Cleaner multi-condition alternative to deeply nested <code>np.where</code> expressions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">reshape</div>
+    <div class="cd">Change array dimensions when element count is compatible; may be view or copy depending on layout.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">np.percentile</div>
+    <div class="cd">Robust thresholding for p95 latency, clipping, outlier rules, and quality checks.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">to_numpy()</div>
+    <div class="cd">Pandas escape hatch to positional NumPy arrays; label alignment is no longer automatic.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">view vs copy</div>
+    <div class="cd">Views share memory; copies isolate data but can double memory usage on large arrays.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
