@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Logging and Pipeline Observability - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/python-logging-observability.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Python Logging and Pipeline Observability - Master Engineering Reference
+</div>
+
+<h1>Python Logging and Pipeline Observability</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">Logging</span>
+  <span class="tag">Observability</span>
+  <span class="tag">ETL</span>
+  <span class="tag">CloudWatch</span>
+  <span class="tag">JSON Logs</span>
+  <span class="tag">Data Pipelines</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_python-logging-observability.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">The logging Module</a></li>
+    <li><a href="#s2">Log Levels</a></li>
+    <li><a href="#s3">Structured Logging</a></li>
+    <li><a href="#s4">Contextual Fields</a></li>
+    <li><a href="#s5">Pipeline Observability Metrics</a></li>
+    <li><a href="#s6">CloudWatch Integration &amp; Alarms</a></li>
+    <li><a href="#s7">Pipeline Run Tracking Table</a></li>
+    <li><a href="#s8">Exception Logging &amp; Silent Success</a></li>
+    <li><a href="#s9">Monitoring vs Logging</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">The logging Module — loggers, handlers, formatters</h2>
+<p>Python's <code>logging</code> module separates three jobs: loggers decide what event happened, handlers decide where the event goes, and formatters decide how it looks. In production data pipelines, that separation matters because the same event may need to go to console logs, a file, CloudWatch, or a centralized log platform without rewriting pipeline logic.</p>
+<p>Use module-level loggers with <code>logging.getLogger(__name__)</code> instead of printing. That keeps logs tied to the package path, allows level control by namespace, and avoids the painful pattern where every library writes unstructured text to stdout like it is 2009.</p>
+<pre><code>import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter(
+    "%(asctime)s %(levelname)s %(name)s %(message)s"
+))
+logger.addHandler(handler)
+
+logger.info("pipeline stage started")</code></pre>
+<div class="hi">Key insight: application code should emit events; deployment configuration should decide routing, format, and retention.</div>
+<div class="warn">Avoid configuring logging repeatedly inside reusable library modules. Duplicate handlers create duplicate log lines and make incident timelines look haunted.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Log Levels — when to use each</h2>
+<p>Log levels are not decoration; they are operational contracts. <code>DEBUG</code> is for deep troubleshooting, <code>INFO</code> is for normal lifecycle milestones, <code>WARNING</code> means something degraded but continued, <code>ERROR</code> means a unit of work failed, and <code>CRITICAL</code> means the system cannot safely continue.</p>
+<p>For data engineering, the biggest mistake is logging everything as <code>INFO</code>. A healthy run should be readable from a small number of high-signal milestones: started, extracted count, validation result, loaded count, duration, and final status. Everything else should be debug detail or structured fields attached to those milestones.</p>
+<table>
+  <tr><th>Level</th><th>Use in pipelines</th><th>Example</th></tr>
+  <tr><td>DEBUG</td><td>Temporary diagnosis</td><td>SQL text, API page token, sample schema</td></tr>
+  <tr><td>INFO</td><td>Normal milestones</td><td>Stage completed, row counts, elapsed time</td></tr>
+  <tr><td>WARNING</td><td>Recoverable issue</td><td>Late file, partial API response, low match rate</td></tr>
+  <tr><td>ERROR</td><td>Failed work item</td><td>Batch failed, validation failed, write rejected</td></tr>
+  <tr><td>CRITICAL</td><td>Unsafe continuation</td><td>Credential failure, corrupt checkpoint, missing contract</td></tr>
+</table>
+<div class="warn">Do not use <code>ERROR</code> for expected business rejects. A rejected record can be normal; a failed pipeline stage is operationally different.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Structured Logging — JSON logs with python-json-logger</h2>
+<p>Plain text logs are good for humans and bad for machines. Structured JSON logs make fields queryable: <code>run_id</code>, <code>stage</code>, <code>dataset</code>, <code>rows_written</code>, and <code>duration_ms</code> become dimensions you can filter, aggregate, and alarm on.</p>
+<p><code>python-json-logger</code> is a common lightweight formatter for emitting JSON to stdout. In containerized jobs, that is usually enough: Docker, ECS, Lambda, Kubernetes, or Airflow workers can collect stdout and ship it to the platform logging backend.</p>
+<pre><code>import logging
+from pythonjsonlogger import jsonlogger
+
+logger = logging.getLogger("pipeline")
+handler = logging.StreamHandler()
+handler.setFormatter(jsonlogger.JsonFormatter(
+    "%(asctime)s %(levelname)s %(name)s %(message)s %(run_id)s %(stage)s"
+))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+logger.info(
+    "stage completed",
+    extra={"run_id": "20260425-001", "stage": "extract"}
+)</code></pre>
+<div class="hi">JSON logs turn observability from grep archaeology into indexed queries. That is the difference between guessing and operating.</div>
+<div class="warn">Never log secrets, raw tokens, full connection strings, or sensitive payloads. Structured logging makes leaks easier to search, which is great until the leaked thing is a password.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Contextual Fields — run_id, stage, source_system</h2>
+<p>Context is what lets one log line join the rest of the story. A pipeline should stamp every event with stable identifiers such as <code>run_id</code>, <code>job_name</code>, <code>stage</code>, <code>source_system</code>, <code>dataset</code>, and <code>environment</code>. Without these fields, a production incident becomes a scavenger hunt across unrelated text.</p>
+<p>For larger codebases, use <code>LoggerAdapter</code>, a custom filter, or a logging wrapper to avoid passing the same <code>extra</code> dictionary everywhere. The goal is boring consistency: every extract, transform, load, validation, and publish event should carry the same correlation spine.</p>
+<pre><code>class ContextAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        extra = kwargs.setdefault("extra", {})
+        extra.update(self.extra)
+        return msg, kwargs
+
+base = logging.getLogger("pipeline.orders")
+log = ContextAdapter(base, {
+    "run_id": "20260425-001",
+    "source_system": "salesforce",
+    "dataset": "orders"
+})
+
+log.info("validation completed", extra={"stage": "validate"})</code></pre>
+<div class="hi">A good <code>run_id</code> behaves like a distributed trace ID for batch work: every event, metric, table row, and alert points back to one execution.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Pipeline Observability Metrics — what to log at each stage</h2>
+<p>Logging is not just about failure messages. A pipeline should emit operational facts that prove work happened correctly: input files seen, rows read, rows rejected, rows written, duplicate count, schema version, watermark, elapsed time, and output location.</p>
+<p>The best observability pattern is stage-level accounting. Each stage logs a start event, a completion event, and a small set of counters. That makes a run auditable even when no exception occurs, which is exactly where many bad data incidents hide.</p>
+<table>
+  <tr><th>Stage</th><th>Useful fields</th><th>Why it matters</th></tr>
+  <tr><td>Extract</td><td>source, file_count, rows_read, watermark</td><td>Confirms input coverage</td></tr>
+  <tr><td>Validate</td><td>bad_rows, schema_version, null_rate</td><td>Separates data quality from system failure</td></tr>
+  <tr><td>Transform</td><td>rows_in, rows_out, join_match_rate</td><td>Finds silent row loss</td></tr>
+  <tr><td>Load</td><td>target, rows_written, partitions_touched</td><td>Proves output landed</td></tr>
+  <tr><td>Publish</td><td>checkpoint, manifest_path, consumers_notified</td><td>Tracks handoff to downstream systems</td></tr>
+</table>
+<div class="warn">A pipeline can succeed technically and fail analytically. If row counts drop from 10 million to 10 thousand and no one alarms, the job did not really succeed.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">CloudWatch Integration &amp; Alarms</h2>
+<p>On AWS, most Python jobs can rely on stdout logging and let the runtime ship logs to CloudWatch: Lambda does this natively, ECS uses the <code>awslogs</code> driver, and Glue/EMR have their own log paths. Once logs are centralized, CloudWatch Logs Insights can query fields, and metric filters can convert specific events into metrics.</p>
+<p>For alarms, prefer metrics over raw log scanning when possible. Emit counts and durations as metrics using CloudWatch Embedded Metric Format, a library, or a sidecar pattern. Alert on symptoms that matter: failed runs, zero rows written, late completion, validation failure rate, or duration above normal.</p>
+<pre><code># CloudWatch Logs Insights examples
+fields @timestamp, levelname, message, run_id, stage, rows_written
+| filter job_name = "orders_daily" and levelname in ["ERROR", "CRITICAL"]
+| sort @timestamp desc
+| limit 50
+
+fields @timestamp, run_id, stage, duration_ms
+| filter message = "stage completed"
+| stats max(duration_ms) by stage</code></pre>
+<div class="hi">CloudWatch is strongest when logs carry consistent fields. Without structure, Logs Insights becomes expensive text searching with nicer furniture.</div>
+<div class="warn">Do not alarm on every <code>ERROR</code> log blindly. Alarm on failed pipeline outcomes or sustained error rates, otherwise alert fatigue will quietly murder the process.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Pipeline Run Tracking Table</h2>
+<p>Logs are event streams; a run tracking table is the durable summary. For serious data platforms, store one row per pipeline execution with status, timestamps, inputs, outputs, row counts, error category, and retry metadata. This table becomes the operational source of truth for dashboards, SLAs, and incident review.</p>
+<p>The table should be updated at key transitions: started, stage completed, failed, retried, succeeded. Keep it small and queryable. Large detailed diagnostics belong in logs or object storage, while the tracking table answers the executive question: what ran, did it finish, and should anyone care?</p>
+<pre><code>CREATE TABLE pipeline_run (
+    run_id          VARCHAR PRIMARY KEY,
+    job_name        VARCHAR NOT NULL,
+    status          VARCHAR NOT NULL,
+    started_at      TIMESTAMP NOT NULL,
+    finished_at     TIMESTAMP,
+    rows_read       BIGINT DEFAULT 0,
+    rows_written    BIGINT DEFAULT 0,
+    bad_rows        BIGINT DEFAULT 0,
+    error_category  VARCHAR,
+    error_message   VARCHAR,
+    output_path     VARCHAR
+);</code></pre>
+<div class="hi">Logs explain the movie; the run table is the scoreboard. You need both.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Exception Logging &amp; The Silent Success Anti-Pattern</h2>
+<p>Use <code>logger.exception()</code> inside an exception handler when you want the traceback included automatically. The traceback matters because production failures often depend on the exact call path, not just the final error message.</p>
+<p>The silent success anti-pattern happens when a job catches an exception, logs a warning, and exits with success. Schedulers, dashboards, and downstream jobs then believe the pipeline completed. That is worse than a loud failure because it creates false confidence and corrupts downstream assumptions.</p>
+<pre><code>try:
+    load_partition(df, target_path)
+except ValidationError:
+    logger.exception("validation failed", extra={"stage": "load"})
+    mark_run_failed(run_id, "validation")
+    raise
+except Exception:
+    logger.exception("unexpected pipeline failure", extra={"stage": "load"})
+    mark_run_failed(run_id, "system")
+    raise</code></pre>
+<div class="warn">Logging an exception is not handling it. If the job cannot safely continue, update status and re-raise so the scheduler sees failure.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Monitoring vs Logging — knowing the difference</h2>
+<p>Logging records events. Monitoring evaluates system health. A log line can say a stage wrote zero rows; monitoring decides whether zero rows is acceptable for that dataset on that date. Good platforms convert logs and run tables into metrics, alarms, dashboards, and SLA checks.</p>
+<p>For senior engineers, the design question is not "do we have logs?" It is "can we detect bad outcomes quickly, explain root cause, and prove data completeness?" That usually requires logs for detail, metrics for alerting, traces or correlation IDs for causality, and data quality checks for correctness.</p>
+<table>
+  <tr><th>Signal</th><th>Best for</th><th>Pipeline example</th></tr>
+  <tr><td>Logs</td><td>Detailed event history</td><td>Validation failed for partition date</td></tr>
+  <tr><td>Metrics</td><td>Trend and alarm</td><td>Rows written, runtime, failure count</td></tr>
+  <tr><td>Run table</td><td>Execution audit</td><td>Daily job succeeded with output path</td></tr>
+  <tr><td>Data checks</td><td>Correctness</td><td>Null rate, duplicate keys, referential coverage</td></tr>
+  <tr><td>Dashboards</td><td>Operational view</td><td>SLA status across pipelines</td></tr>
+</table>
+<div class="hi">The best observability systems answer three questions fast: what happened, how bad is it, and where should I look next?</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why is <code>print()</code> not enough for production data pipelines?</div>
+  <div class="qa-a">A: <code>print()</code> has no severity, namespace, routing, structured fields, or consistent formatting. Logging lets you attach context, control verbosity, and integrate with platforms like CloudWatch or Datadog. In production, the difference shows up during incidents when you need to filter by run, stage, and failure type.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What fields should every batch pipeline log?</div>
+  <div class="qa-a">A: At minimum: <code>run_id</code>, <code>job_name</code>, <code>stage</code>, <code>source_system</code>, <code>dataset</code>, <code>environment</code>, status, row counts, and duration. For load stages, include target table or output path. For validation, include bad row counts and rule identifiers.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you avoid noisy alerts from pipeline logs?</div>
+  <div class="qa-a">A: Alert on business-relevant outcomes, not raw log volume. Failed run count, zero-row output, SLA miss, high bad-row rate, or repeated retries are better signals than every single <code>ERROR</code>. Logs should support investigation; metrics and run status should drive alarms.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the value of JSON logging in a data platform?</div>
+  <div class="qa-a">A: JSON logging makes operational fields queryable and aggregatable. Instead of parsing text, the platform can filter on <code>stage="load"</code>, group by <code>source_system</code>, or calculate max <code>duration_ms</code>. It also standardizes logs across services and schedulers.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How should exception logging behave in a pipeline?</div>
+  <div class="qa-a">A: Capture the traceback with <code>logger.exception()</code>, update the run tracking table to failed, classify the failure, and re-raise if the job cannot safely continue. Swallowing exceptions creates false success and can poison downstream jobs. Recovery should be explicit, not accidental.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between logging and observability?</div>
+  <div class="qa-a">A: Logging is one signal: detailed event records. Observability is the broader ability to understand system behavior from logs, metrics, run metadata, traces, dashboards, and data quality checks. A pipeline with many logs but no alerts, counters, or run state is still poorly observable.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">getLogger(__name__)</div>
+    <div class="cd">Creates a namespace-aware logger tied to the module path.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Handler</div>
+    <div class="cd">Routes log records to stdout, file, HTTP, syslog, or platform collector.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Formatter</div>
+    <div class="cd">Controls text or JSON shape of each emitted log record.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">DEBUG</div>
+    <div class="cd">High-detail troubleshooting; usually disabled in normal production runs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">INFO</div>
+    <div class="cd">Normal lifecycle milestone: stage started, completed, counts, duration.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">WARNING</div>
+    <div class="cd">Recoverable degradation such as late data, retries, or low match rate.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ERROR</div>
+    <div class="cd">Failed unit of work that needs operational attention or retry.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">logger.exception()</div>
+    <div class="cd">Logs an error with traceback inside an exception handler.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">extra={...}</div>
+    <div class="cd">Attaches contextual fields such as run_id, stage, dataset, and source.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">run_id</div>
+    <div class="cd">Correlation key linking logs, metrics, run table rows, and alerts.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">JSON logs</div>
+    <div class="cd">Machine-queryable logs for CloudWatch Logs Insights and centralized platforms.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Run table</div>
+    <div class="cd">Durable execution summary with status, timestamps, counts, and output path.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Metric alarm</div>
+    <div class="cd">Alert based on measurable bad outcomes, not random text patterns.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Silent success</div>
+    <div class="cd">Anti-pattern where a job logs a failure but exits successfully.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
