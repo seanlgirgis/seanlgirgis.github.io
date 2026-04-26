@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polars for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/polars.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Polars for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Polars for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 9-10 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Polars</span>
+  <span class="tag">DataFrames</span>
+  <span class="tag">Rust</span>
+  <span class="tag">Apache Arrow</span>
+  <span class="tag">Lazy Execution</span>
+  <span class="tag">Parquet</span>
+  <span class="tag">Python</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_polars.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Polars Is &amp; Why It's Faster Than Pandas</a></li>
+    <li><a href="#s2">Eager vs Lazy API</a></li>
+    <li><a href="#s3">Query Optimization</a></li>
+    <li><a href="#s4">Expressions</a></li>
+    <li><a href="#s5">GroupBy, Aggregations &amp; Window Functions</a></li>
+    <li><a href="#s6">Joins &amp; String / Datetime Operations</a></li>
+    <li><a href="#s7">Arrow Integration &amp; Interop</a></li>
+    <li><a href="#s8">Polars vs Pandas</a></li>
+    <li><a href="#s9">Polars in a Data Pipeline</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Polars Is &amp; Why It's Faster Than Pandas</h2>
+<p>Polars is a DataFrame library built in Rust on top of the Apache Arrow memory model. For data engineers, the important point is not just "faster Pandas"; it is a query engine with DataFrame ergonomics, columnar memory, multi-threaded execution, and native support for analytics-style workloads.</p>
+<p>Polars is often faster than Pandas because it avoids Python-level row loops, uses vectorized column operations, parallelizes work across cores, and can optimize lazy query plans before execution. Pandas is excellent for interactive analysis, but Polars is designed more like a local analytical execution engine.</p>
+<div class="hi">Key insight: Polars shines when the workload looks like SQL analytics: scan, filter, project, join, aggregate, window, and write.</div>
+<div class="warn">Production gotcha: Polars will not magically fix bad data layout. Tiny files, unpartitioned object storage, skewed joins, and unnecessary columns still hurt.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Eager vs Lazy API</h2>
+<p>The eager API uses <code>pl.DataFrame</code> and executes operations immediately. It feels close to Pandas and is useful for small data, debugging, notebook exploration, or transformations where optimization does not matter much.</p>
+<p>The lazy API uses <code>pl.LazyFrame</code>. It builds a logical query plan first, then optimizes and executes only when <code>.collect()</code> is called. For repeatable pipelines, prefer lazy mode because it enables predicate pushdown, projection pushdown, streaming execution opportunities, and better plan inspection.</p>
+<pre><code>import polars as pl
+
+lf = (
+    pl.scan_parquet("s3://lake/orders/date=*/part-*.parquet")
+      .filter(pl.col("order_date") &gt;= pl.date(2026, 1, 1))
+      .select(["customer_id", "order_id", "amount"])
+      .group_by("customer_id")
+      .agg(pl.sum("amount").alias("total_amount"))
+)
+
+result = lf.collect()</code></pre>
+<div class="hi">Lazy mode lets Polars answer: "What is the minimum work required to produce this result?" before touching the data.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Query Optimization — predicate, projection, slice pushdown</h2>
+<p>Predicate pushdown means filters are applied as close to the data source as possible. When reading Parquet, this can skip row groups using statistics, reducing I/O before rows reach the CPU.</p>
+<p>Projection pushdown means only the requested columns are read. Slice pushdown pushes limits into the scan when possible. Together, these optimizations make lazy Polars especially strong for wide Parquet datasets where only a few columns and filtered partitions are needed.</p>
+<table>
+  <tr><th>Optimization</th><th>What it saves</th><th>Typical win</th></tr>
+  <tr><td>Predicate pushdown</td><td>Rows / row groups</td><td>Faster filtered reads</td></tr>
+  <tr><td>Projection pushdown</td><td>Columns</td><td>Less memory and I/O</td></tr>
+  <tr><td>Slice pushdown</td><td>Unneeded rows after limit</td><td>Faster sampling and previews</td></tr>
+  <tr><td>Common subplan reuse</td><td>Repeated work</td><td>Cheaper shared branches</td></tr>
+</table>
+<div class="warn">Gotcha: pushdown works best when the source format exposes metadata. CSV has much weaker pruning potential than Parquet.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Expressions — the core building block</h2>
+<p>Polars transformations are built from expressions such as <code>pl.col()</code>, <code>pl.lit()</code>, <code>pl.when().then().otherwise()</code>, string expressions, datetime expressions, and aggregation expressions. Expressions describe computation without immediately executing it, which makes them optimizer-friendly.</p>
+<p>This is the mental shift from Pandas: avoid row-wise <code>apply</code> as a default habit. In Polars, most production transformations should be written as expressions so they can run in Rust, parallelize, and stay visible to the query planner.</p>
+<pre><code>clean = df.with_columns([
+    pl.col("email").str.to_lowercase().str.strip_chars(),
+    pl.when(pl.col("amount") &gt; 0)
+      .then(pl.lit("valid"))
+      .otherwise(pl.lit("review"))
+      .alias("amount_status"),
+    pl.col("event_ts").dt.date().alias("event_date")
+])</code></pre>
+<div class="hi">Expressions are to Polars what SQL expressions are to a database engine: declarative, composable, and optimizable.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">GroupBy, Aggregations &amp; Window Functions</h2>
+<p>Polars aggregation uses <code>group_by().agg()</code>, where each aggregation is an expression. This makes multi-aggregate summaries concise and efficient: one grouping operation can calculate counts, sums, averages, min/max values, and conditional metrics.</p>
+<p>Window functions use <code>.over()</code>, which applies an expression over a partition while preserving row-level shape. Think of it as SQL window behavior without writing a separate <code>OVER (PARTITION BY ...)</code> clause.</p>
+<pre><code>features = df.with_columns([
+    pl.sum("amount").over("customer_id").alias("customer_total"),
+    pl.col("amount").rank("dense", descending=True)
+      .over("customer_id")
+      .alias("customer_amount_rank")
+])</code></pre>
+<div class="warn">Aggregation changes row shape; window expressions preserve row shape. Mixing those two concepts casually is a common source of wrong pipeline output.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Joins &amp; String / Datetime Operations</h2>
+<p>Polars supports common joins such as inner, left, full, semi, anti, cross, and as-of joins. For data engineering, semi and anti joins are especially useful for existence checks, dedup filters, and finding records missing from a dimension or reference table.</p>
+<p>String and datetime operations are expression-based, so cleanup and feature extraction can stay inside the optimized plan. This matters when normalizing messy source data before joins: casing, trimming, parsing dates, extracting buckets, and deriving partition columns should be vectorized, not handled row by row.</p>
+<table>
+  <tr><th>Join type</th><th>Use case</th></tr>
+  <tr><td>left</td><td>Preserve fact rows while adding dimension attributes</td></tr>
+  <tr><td>inner</td><td>Keep only matched records</td></tr>
+  <tr><td>semi</td><td>Filter left rows that have a match</td></tr>
+  <tr><td>anti</td><td>Find left rows with no match</td></tr>
+  <tr><td>asof</td><td>Match nearest prior timestamp for time-series data</td></tr>
+</table>
+<div class="hi">For pipeline quality checks, anti joins are gold: they expose orphan keys, missing reference data, and broken enrichment logic.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Arrow Integration &amp; Interop</h2>
+<p>Polars uses the Apache Arrow memory model, which makes it a natural fit beside Parquet, DuckDB, PyArrow, and modern analytics systems. Arrow provides typed, columnar memory, reducing the impedance mismatch between file formats, query engines, and DataFrame libraries.</p>
+<p>Interop matters in real pipelines: you may read Parquet with Polars, pass Arrow data to another engine, convert to Pandas only for a library that requires it, or write the output back to Parquet. The best pattern is to keep data columnar as long as possible and avoid unnecessary Python object conversion.</p>
+<pre><code>import polars as pl
+
+arrow_table = df.to_arrow()
+pandas_df = df.to_pandas()      # use only when needed
+polars_df = pl.from_arrow(arrow_table)
+
+polars_df.write_parquet("curated/orders.parquet")</code></pre>
+<div class="warn">Converting to Pandas can erase much of the performance advantage, especially if strings become Python objects or data no longer fits comfortably in memory.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Polars vs Pandas — when to switch and when not to</h2>
+<p>Switch to Polars when datasets are large enough that Pandas is slow or memory-heavy, when your work is mostly columnar transformations, or when your pipeline already uses Parquet and Arrow-friendly tooling. Polars is also a strong choice when you want local performance without moving to Spark.</p>
+<p>Stay with Pandas when the dataset is small, the team is deeply invested in Pandas APIs, the downstream libraries require Pandas, or the work is highly exploratory and compatibility matters more than speed. The right answer is not ideology; it is throughput, maintainability, and ecosystem fit.</p>
+<table>
+  <tr><th>Scenario</th><th>Better fit</th><th>Reason</th></tr>
+  <tr><td>Small notebook analysis</td><td>Pandas</td><td>Maximum ecosystem compatibility</td></tr>
+  <tr><td>Wide Parquet transforms</td><td>Polars</td><td>Column pruning and lazy plans</td></tr>
+  <tr><td>Single-machine feature prep</td><td>Polars</td><td>Multi-core execution, low overhead</td></tr>
+  <tr><td>Distributed joins over TBs</td><td>Spark</td><td>Cluster execution and shuffle scale</td></tr>
+</table>
+<div class="hi">Polars is the middle lane: heavier than Pandas in capability, lighter than Spark in infrastructure.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Polars in a Data Pipeline</h2>
+<p>In production pipelines, Polars is strongest as a local transform engine: read raw Parquet or CSV, clean and type data, perform joins and aggregations, validate record counts, then write curated Parquet. It fits nicely inside Airflow tasks, Dagster assets, container jobs, Lambda-style batch jobs when data size allows, or developer-side data quality utilities.</p>
+<p>The design question is boundary size. If one machine can handle the data with comfortable memory headroom, Polars can be simpler and faster than standing up Spark. If the workload requires distributed storage scans, huge shuffles, or multi-node fault tolerance, use Spark, Flink, DuckDB plus object-store patterns, or a warehouse engine.</p>
+<pre><code>pipeline = (
+    pl.scan_parquet("raw/events/date=2026-04-25/*.parquet")
+      .with_columns(pl.col("event_ts").str.to_datetime())
+      .filter(pl.col("event_type").is_not_null())
+      .group_by(["event_type"])
+      .agg([
+          pl.len().alias("events"),
+          pl.n_unique("user_id").alias("users")
+      ])
+)
+
+pipeline.sink_parquet("curated/event_summary/date=2026-04-25.parquet")</code></pre>
+<div class="warn">Operational gotcha: treat Polars jobs like real pipelines. Log input paths, row counts, schema changes, null rates, output locations, and execution time.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why might Polars outperform Pandas on the same transformation?</div>
+  <div class="qa-a">A: Polars is built in Rust, uses columnar Arrow memory, and executes many operations in parallel across CPU cores. In lazy mode, it can also optimize the query plan before execution, pushing filters and column selection down into the scan. Pandas often pays more Python and object-memory overhead, especially with strings and row-wise operations.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose lazy Polars over eager Polars?</div>
+  <div class="qa-a">A: Use lazy Polars for repeatable pipelines, file scans, large transformations, and anything that benefits from optimization. Lazy mode lets Polars reorder work, prune columns, push filters, and inspect the execution plan. Eager mode is fine for small data exploration and debugging.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is predicate pushdown, and why does it matter for Parquet?</div>
+  <div class="qa-a">A: Predicate pushdown moves filters closer to the file scan. With Parquet, the engine can use metadata and statistics to skip row groups that cannot match the filter. This reduces I/O, memory pressure, and CPU work before the transformation even starts.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do Polars window expressions differ from group-by aggregations?</div>
+  <div class="qa-a">A: Group-by aggregation collapses many rows into fewer summary rows. A window expression computes over a partition but keeps the original row shape. That distinction matters for feature engineering, rankings, running totals, and adding group-level metrics back to individual records.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are the risks of replacing a mature Pandas codebase with Polars?</div>
+  <div class="qa-a">A: The main risks are API differences, downstream library compatibility, team familiarity, and subtle semantic changes around nulls, types, indexes, and joins. A safer migration targets hot paths first: heavy reads, expensive transformations, and memory-bound jobs. Keep conversion boundaries explicit so performance wins are not lost by bouncing between Pandas and Polars.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When is Polars not enough, and Spark or a warehouse is a better fit?</div>
+  <div class="qa-a">A: Polars is primarily a single-machine engine. If the workload needs distributed joins, large cluster-scale shuffles, long-running fault-tolerant execution, or governance inside a central warehouse, Spark or a warehouse engine may be better. Polars is excellent when the data comfortably fits the machine and the goal is fast local analytics.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">pl.DataFrame</div>
+    <div class="cd">Eager DataFrame; operations execute immediately.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pl.LazyFrame</div>
+    <div class="cd">Lazy query plan; optimized and executed on collect or sink.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">scan_parquet</div>
+    <div class="cd">Lazy Parquet scan; enables pushdown and avoids immediate loading.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">read_parquet</div>
+    <div class="cd">Eager Parquet read; useful for small data or quick inspection.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">.collect()</div>
+    <div class="cd">Executes a lazy plan and materializes the result.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pl.col()</div>
+    <div class="cd">References a column inside an expression.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">with_columns</div>
+    <div class="cd">Adds or replaces columns using expressions.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">group_by().agg()</div>
+    <div class="cd">Performs grouped aggregations using expression lists.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">.over()</div>
+    <div class="cd">Window expression over a partition while preserving row shape.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">semi join</div>
+    <div class="cd">Keeps left rows that have a match on the right.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">anti join</div>
+    <div class="cd">Keeps left rows that do not have a match on the right.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">to_arrow()</div>
+    <div class="cd">Exports to Arrow for columnar interop with other engines.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">sink_parquet</div>
+    <div class="cd">Executes a lazy plan directly into Parquet output when supported.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">explain()</div>
+    <div class="cd">Inspects the lazy plan to confirm pushdown and optimization behavior.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
