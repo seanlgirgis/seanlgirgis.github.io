@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DuckDB for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/duckdb.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / DuckDB for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>DuckDB for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">DuckDB</span>
+  <span class="tag">OLAP</span>
+  <span class="tag">Parquet</span>
+  <span class="tag">Python</span>
+  <span class="tag">Arrow</span>
+  <span class="tag">S3</span>
+  <span class="tag">SQL</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_duckdb.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What DuckDB Is &amp; Why It's Fast</a></li>
+    <li><a href="#s2">DuckDB vs SQLite vs Pandas vs Spark</a></li>
+    <li><a href="#s3">Reading Parquet &amp; CSV Directly</a></li>
+    <li><a href="#s4">Querying S3 with httpfs</a></li>
+    <li><a href="#s5">Python API &mdash; connect, execute, fetchdf, arrow</a></li>
+    <li><a href="#s6">Window Functions</a></li>
+    <li><a href="#s7">Writing Results &amp; In-Memory vs Persistent</a></li>
+    <li><a href="#s8">When to Use DuckDB &mdash; and When Not To</a></li>
+    <li><a href="#s9">Real-World Pipeline Patterns</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What DuckDB Is &amp; Why It's Fast</h2>
+<p>DuckDB is an in-process OLAP database. There is no server to run, no cluster to operate, and no daemon listening on a port. In Python, it feels like importing a library; in production, it behaves like a serious analytical SQL engine embedded inside your process.</p>
+<p>Its speed comes from the right architecture for analytical scans: columnar execution, vectorized processing, parallel query execution inside one machine, and strong pushdown into files such as Parquet. Instead of looping through Python objects row by row, DuckDB processes typed chunks close to the CPU.</p>
+<div class="hi">Key insight: DuckDB is not "SQLite for analytics" because it looks similar; it is a columnar OLAP engine that happens to be embedded like SQLite.</div>
+<div class="warn">Production gotcha: DuckDB removes infrastructure friction, not data engineering judgment. Bad file layout, tiny files, missing partition filters, and oversized local workloads can still make it slow.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">DuckDB vs SQLite vs Pandas vs Spark</h2>
+<p>DuckDB overlaps with several tools, but it does not replace all of them. SQLite is excellent for embedded transactional storage and point lookups. Pandas is flexible for DataFrame manipulation. Spark is built for distributed compute. DuckDB lives in the sweet spot where the data fits on one machine and SQL is the cleanest expression of the transformation.</p>
+<table>
+  <tr>
+    <th>Tool</th>
+    <th>Best Fit</th>
+    <th>Primary Tradeoff</th>
+  </tr>
+  <tr>
+    <td>DuckDB</td>
+    <td>Single-node analytical SQL over files, DataFrames, and local datasets</td>
+    <td>Not a multi-user database server or distributed engine</td>
+  </tr>
+  <tr>
+    <td>SQLite</td>
+    <td>Embedded OLTP, metadata, app state, small lookups</td>
+    <td>Row-store design is not ideal for large aggregations</td>
+  </tr>
+  <tr>
+    <td>Pandas</td>
+    <td>Python-native exploration and custom transformations</td>
+    <td>Can become memory-heavy and slow with Python-level operations</td>
+  </tr>
+  <tr>
+    <td>Spark</td>
+    <td>Distributed jobs, very large datasets, cluster-scale joins</td>
+    <td>Operational overhead and latency for smaller workloads</td>
+  </tr>
+</table>
+<div class="hi">Rule of thumb: under roughly laptop-to-workstation scale, DuckDB often beats "local Spark" because it avoids cluster overhead entirely.</div>
+<div class="warn">Do not use DuckDB as a drop-in replacement for a warehouse when many users need concurrent writes, governance, workload isolation, and shared serving semantics.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Reading Parquet &amp; CSV Directly</h2>
+<p>One of DuckDB's strongest data engineering use cases is querying files directly. You can run SQL against Parquet and CSV without first loading them into a database table. For Parquet, DuckDB can prune columns, push filters, inspect metadata, and avoid reading bytes that the query does not need.</p>
+<pre><code>SELECT region, count(*) AS endpoint_count
+FROM read_parquet('data/endpoints/*.parquet')
+WHERE status = 'ACTIVE'
+GROUP BY region
+ORDER BY endpoint_count DESC;
+
+SELECT *
+FROM read_csv_auto('landing/events_2026_04_25.csv')
+LIMIT 20;</code></pre>
+<p>CSV is convenient at the boundary of systems, but Parquet is the better analytical storage format. CSV forces parsing, type inference, and full row reads; Parquet gives DuckDB typed columns, compression, row-group statistics, and selective I/O.</p>
+<div class="warn">CSV type inference is useful for exploration, but risky for repeatable pipelines. Declare types explicitly when nulls, mixed date formats, leading zeros, or identifier columns matter.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Querying S3 with httpfs</h2>
+<p>With the <code>httpfs</code> extension, DuckDB can read remote objects from S3-compatible storage. This is powerful for lakehouse-style inspection: query a prefix, validate a partition, sample a file, or produce a small aggregate without spinning up Spark, Glue, or EMR.</p>
+<pre><code>INSTALL httpfs;
+LOAD httpfs;
+
+SET s3_region='us-east-1';
+
+SELECT event_date, count(*) AS rows
+FROM read_parquet('s3://my-bucket/events/date=*/part-*.parquet')
+WHERE event_date &gt;= DATE '2026-04-01'
+GROUP BY event_date
+ORDER BY event_date;</code></pre>
+<p>The main performance question is not "Can DuckDB read S3?" It can. The better question is whether your query shape minimizes remote I/O. Partition filters, column pruning, larger files, and Parquet statistics matter more over object storage than on local disk.</p>
+<div class="hi">Great use case: inspect and aggregate S3 lake data from Python notebooks, CI validation jobs, or lightweight data quality checks.</div>
+<div class="warn">S3 is not a local filesystem. Many small files, broad wildcard scans, and missing filters can turn a quick query into expensive network chatter.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Python API &mdash; connect, execute, fetchdf, arrow</h2>
+<p>The Python API is intentionally small: connect, execute SQL, and fetch results as Pandas, Arrow, Python tuples, or relations. That makes DuckDB easy to embed in ETL utilities, notebooks, validation scripts, and local analytical tools.</p>
+<pre><code>import duckdb
+import pandas as pd
+
+con = duckdb.connect("analytics.duckdb")
+
+df = pd.DataFrame({
+    "region": ["east", "east", "west"],
+    "cpu": [71.2, 63.5, 82.1],
+})
+
+result = con.execute("""
+    SELECT region, avg(cpu) AS avg_cpu
+    FROM df
+    GROUP BY region
+""").fetchdf()
+
+arrow_table = con.execute("""
+    SELECT * FROM read_parquet('data/metrics/*.parquet')
+    WHERE metric_name = 'cpu'
+""").arrow()</code></pre>
+<p>DuckDB can query Pandas DataFrames directly, which is a killer feature for data engineers who already live in Python. It lets you use SQL for joins, aggregations, windows, and filters while still handing results back to Pandas or Arrow when needed.</p>
+<div class="hi">Pattern: use Pandas for small ergonomic transforms, DuckDB for set-based SQL, and Arrow as the high-performance interchange layer.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Window Functions</h2>
+<p>DuckDB supports mature analytical SQL, including window functions. This matters because many pipeline questions are not simple group-bys: deduplication, latest-row selection, running totals, sessionization, ranking, and change detection all need row context.</p>
+<pre><code>SELECT
+    endpoint_id,
+    metric_ts,
+    cpu,
+    avg(cpu) OVER (
+        PARTITION BY endpoint_id
+        ORDER BY metric_ts
+        ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+    ) AS rolling_avg_cpu,
+    row_number() OVER (
+        PARTITION BY endpoint_id
+        ORDER BY metric_ts DESC
+    ) AS latest_rank
+FROM read_parquet('metrics/*.parquet');</code></pre>
+<p>For senior data engineering interviews, this is where DuckDB becomes more than a file reader. You can express production-grade logic locally using the same SQL patterns you would use in Snowflake, BigQuery, Redshift, Postgres, or Spark SQL.</p>
+<div class="warn">Window functions can be memory-intensive when partitions are huge or ordering keys are poorly distributed. Watch partition cardinality and sort pressure.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Writing Results &amp; In-Memory vs Persistent</h2>
+<p>DuckDB can run entirely in memory or persist to a <code>.duckdb</code> database file. In-memory mode is ideal for notebooks, tests, temporary transformations, and CI checks. Persistent mode is better when you want reusable local tables, indexes of metadata, cached intermediate results, or repeatable development datasets.</p>
+<pre><code>-- Write query results to Parquet
+COPY (
+    SELECT region, metric_name, avg(value) AS avg_value
+    FROM read_parquet('raw_metrics/*.parquet')
+    GROUP BY region, metric_name
+) TO 'curated/metric_summary.parquet' (FORMAT PARQUET);
+
+-- Persist a local table
+CREATE TABLE metric_summary AS
+SELECT * FROM 'curated/metric_summary.parquet';</code></pre>
+<p>Writing Parquet keeps the output portable across Python, Spark, Athena, Snowflake external tables, and other engines. Writing to a DuckDB file is useful for local acceleration and repeatability, but it is not the right artifact when the next consumer is a cloud data lake.</p>
+<div class="hi">Choose the output based on the next reader: Parquet for interoperability, <code>.duckdb</code> for local analytical state.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">When to Use DuckDB &mdash; and When Not To</h2>
+<p>Use DuckDB when you need fast single-node analytics over files, local extracts, Pandas DataFrames, or medium-sized pipeline artifacts. It is excellent for profiling, joining, validating, sampling, and aggregating data before deciding whether a workload deserves a warehouse or distributed engine.</p>
+<p>Avoid DuckDB when the requirements are multi-user serving, high-concurrency writes, distributed execution, strict enterprise governance, row-level security at organization scale, or operational dashboards that many teams hit all day. That is warehouse, lakehouse, or application database territory.</p>
+<div class="hi">DuckDB is a force multiplier for the engineer, not a universal serving platform.</div>
+<div class="warn">The dangerous anti-pattern is building a hidden production dependency on someone's laptop-grade embedded database and calling it a platform.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Real-World Pipeline Patterns</h2>
+<p>DuckDB shines as a sharp utility inside bigger data platforms. Common patterns include local Parquet inspection, smoke tests for landing files, schema drift checks, historical backfill validation, data quality aggregates, and fast joins between CSV extracts and lake data.</p>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>DuckDB Role</th>
+    <th>Why It Works</th>
+  </tr>
+  <tr>
+    <td>Landing zone validation</td>
+    <td>Count rows, inspect schema, detect null spikes</td>
+    <td>Fast file reads without loading to a database first</td>
+  </tr>
+  <tr>
+    <td>Local feature engineering</td>
+    <td>Aggregate Parquet into model-ready tables</td>
+    <td>SQL is clearer than nested DataFrame code</td>
+  </tr>
+  <tr>
+    <td>Backfill audit</td>
+    <td>Compare source and curated partitions</td>
+    <td>Cheap validation before expensive reruns</td>
+  </tr>
+  <tr>
+    <td>Notebook acceleration</td>
+    <td>Query Pandas, Arrow, CSV, and Parquet together</td>
+    <td>Reduces Python loops and memory churn</td>
+  </tr>
+</table>
+<p>In AWS-heavy environments, DuckDB is especially useful around S3, Glue/Athena-style lake layouts, and local developer workflows. It does not replace Glue, EMR, or Athena, but it can prevent you from using those services for every small inspection or validation task.</p>
+<div class="warn">Do not let local convenience bypass production controls. If DuckDB produces a dataset used downstream, version the SQL, log the inputs, and write portable outputs.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why is DuckDB often faster than Pandas for analytical operations?</div>
+  <div class="qa-a">A: DuckDB executes vectorized SQL over typed columnar data, while Pandas workflows can fall back into Python-level operations and object-heavy memory layouts. For filters, joins, aggregations, and windows, DuckDB can push work into optimized C++ execution. Pandas is still useful, but DuckDB is often cleaner and faster for relational transformations.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you decide between DuckDB and Spark for a pipeline?</div>
+  <div class="qa-a">A: I would start with data size, SLA, concurrency, and operational context. If the workload fits comfortably on one strong machine and is mostly analytical SQL over files, DuckDB is simpler and often faster. If the workload needs distributed compute, large shuffles, many executors, or managed production orchestration, Spark is the safer choice.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What makes DuckDB a good fit for Parquet?</div>
+  <div class="qa-a">A: Parquet is columnar, typed, compressed, and stores metadata such as row-group statistics. DuckDB can use that structure for column pruning and predicate pushdown, which reduces I/O. The combination is strong because both the engine and file format are designed for analytical access patterns.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are the risks of using DuckDB against S3?</div>
+  <div class="qa-a">A: The main risks are remote I/O, small-file overhead, broad wildcard scans, and missing partition filters. DuckDB can read S3 effectively, but object storage has different latency behavior than local disk. I would design queries to read fewer columns, fewer partitions, and appropriately sized files.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Is DuckDB a replacement for SQLite?</div>
+  <div class="qa-a">A: No. They are both embedded databases, but SQLite is a row-store OLTP database and DuckDB is a columnar OLAP engine. SQLite is better for application state, transactional writes, and point lookups. DuckDB is better for scans, joins, aggregations, and analytical queries.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you use DuckDB in a production data engineering workflow?</div>
+  <div class="qa-a">A: I would use it as a controlled utility for validation, profiling, local transforms, CI checks, and producing portable Parquet outputs. I would keep SQL versioned, make inputs explicit, and avoid hidden laptop-only dependencies. For shared serving or high-concurrency production workloads, I would promote the logic into the warehouse, lakehouse, or distributed engine.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">duckdb.connect()</div>
+    <div class="cd">Creates an in-memory or persistent DuckDB connection from Python.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">:memory:</div>
+    <div class="cd">Temporary database mode for notebooks, tests, and short-lived jobs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">.duckdb file</div>
+    <div class="cd">Persistent local database file for reusable tables and cached analysis state.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">read_parquet()</div>
+    <div class="cd">Queries Parquet directly with column pruning and predicate pushdown.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">read_csv_auto()</div>
+    <div class="cd">Reads CSV with automatic dialect and type inference; useful but risky for repeatable pipelines.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">COPY (...) TO</div>
+    <div class="cd">Writes query results to files such as Parquet or CSV.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">INSTALL httpfs</div>
+    <div class="cd">Installs the extension needed for HTTP and S3 object access.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">LOAD httpfs</div>
+    <div class="cd">Loads remote file access support into the current DuckDB session.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">fetchdf()</div>
+    <div class="cd">Returns query results as a Pandas DataFrame.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">arrow()</div>
+    <div class="cd">Returns query results as an Arrow table for efficient interchange.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Window functions</div>
+    <div class="cd">Supports ranking, deduplication, running totals, rolling metrics, and latest-row logic.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Predicate pushdown</div>
+    <div class="cd">Pushes filters into file scans so fewer rows or row groups are read.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Column pruning</div>
+    <div class="cd">Reads only referenced columns from columnar formats such as Parquet.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Best fit</div>
+    <div class="cd">Single-node analytical SQL over files, DataFrames, and medium-sized pipeline artifacts.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
