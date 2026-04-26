@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI/CD for Data Engineering - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/cicd-data-engineering.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / CI/CD for Data Engineering - Master Engineering Reference
+</div>
+
+<h1>CI/CD for Data Engineering</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">CI/CD</span>
+  <span class="tag">GitHub Actions</span>
+  <span class="tag">GitLab CI</span>
+  <span class="tag">dbt</span>
+  <span class="tag">Airflow</span>
+  <span class="tag">Docker</span>
+  <span class="tag">Terraform</span>
+  <span class="tag">AWS ECR</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_cicd-data-engineering.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What CI/CD Means for Data Pipelines</a></li>
+    <li><a href="#s2">GitLab CI / GitHub Actions Anatomy</a></li>
+    <li><a href="#s3">CI Stage Pipeline — lint, test, build, deploy</a></li>
+    <li><a href="#s4">Secrets Management in CI</a></li>
+    <li><a href="#s5">dbt CI &amp; Airflow DAG Validation</a></li>
+    <li><a href="#s6">Docker Build &amp; ECR Artifact Management</a></li>
+    <li><a href="#s7">Environment Promotion — dev &rarr; staging &rarr; production</a></li>
+    <li><a href="#s8">Deployment Strategies &amp; Rollback</a></li>
+    <li><a href="#s9">Terraform in CI &amp; Monitoring Pipeline Health</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What CI/CD Means for Data Pipelines</h2>
+<p>For data engineering, continuous integration is not just running unit tests. It validates pipeline code, SQL syntax, schemas, contracts, DAG definitions, dependency locks, container builds, and sometimes representative data quality checks on every change. The goal is to catch breakage before a bad transform, bad migration, or bad dependency lands in a shared branch.</p>
+<p>Continuous delivery is the automated promotion of tested pipeline artifacts into controlled environments. The artifact might be a Docker image, dbt package, Airflow DAG bundle, Terraform plan, Spark job wheel, Lambda package, or SQL migration. Production deployment still may require approval, but the build should be reproducible and traceable.</p>
+<div class="hi">CI/CD for data pipelines is about protecting three things at once: code correctness, data correctness, and operational safety.</div>
+<div class="warn">A green CI run that only checks Python syntax is theater. Senior teams gate on contracts, dependencies, deployability, and the blast radius of data changes.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">GitLab CI / GitHub Actions Anatomy</h2>
+<p>GitLab CI uses <code>.gitlab-ci.yml</code>; GitHub Actions uses workflow files under <code>.github/workflows/</code>. Both define events, jobs, stages or dependencies, runner images, environment variables, caches, artifacts, and permissions. Stages usually run sequentially, while jobs inside a stage can run in parallel to keep feedback fast.</p>
+<p>Runners execute the jobs on VMs, containers, or self-hosted machines. For data engineering, runner choice matters because integration tests may need Docker-in-Docker, database services, cloud credentials, private package access, or large memory for Spark and pandas tests.</p>
+<table>
+  <tr><th>Concept</th><th>GitLab CI</th><th>GitHub Actions</th></tr>
+  <tr><td>Workflow file</td><td><code>.gitlab-ci.yml</code></td><td><code>.github/workflows/*.yml</code></td></tr>
+  <tr><td>Execution unit</td><td>Job</td><td>Job with steps</td></tr>
+  <tr><td>Ordering</td><td><code>stages</code>, <code>needs</code></td><td><code>needs</code></td></tr>
+  <tr><td>Secrets</td><td>CI/CD variables</td><td>Repository or environment secrets</td></tr>
+  <tr><td>Reusable logic</td><td>Includes, templates</td><td>Reusable workflows, composite actions</td></tr>
+</table>
+<div class="hi">Treat workflow YAML as production code. Keep it small, versioned, reviewed, and boring.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">CI Stage Pipeline — lint, test, build, deploy</h2>
+<p>A practical data engineering pipeline usually flows through <code>lint</code>, <code>unit test</code>, <code>integration test</code>, <code>schema validation</code>, <code>build artifact</code>, and <code>deploy</code>. Linting with tools like <code>ruff</code>, <code>black</code>, or <code>flake8</code> catches cheap failures early so code review can focus on logic instead of formatting.</p>
+<p>Unit tests should be fast and deterministic. Integration tests should prove that the pipeline can talk to databases, object storage, queues, or local containers without touching production. Schema and contract checks are the data engineering-specific gate that prevents silent downstream breakage.</p>
+<pre><code>stages:
+  - lint
+  - test
+  - build
+
+lint:
+  image: python:3.11
+  script:
+    - pip install ruff
+    - ruff check .
+
+test:
+  image: python:3.11
+  script:
+    - pip install -r requirements.txt
+    - pytest --tb=short
+
+build:
+  script:
+    - docker build -t pipeline:${CI_COMMIT_SHA} .</code></pre>
+<div class="warn">Do not run expensive full-data validations on every commit. Use small representative fixtures in CI, then run heavier checks during scheduled validation or controlled promotion.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Secrets Management in CI</h2>
+<p>Secrets belong in CI/CD secret stores, not in YAML, code, logs, Docker images, or test fixtures. GitLab CI variables and GitHub secrets inject values at runtime as environment variables. In AWS-heavy stacks, the better pattern is often short-lived credentials through OIDC federation instead of long-lived access keys.</p>
+<p>Secrets should be scoped by environment and permission. A pull request validation job does not need production write access. Production deploy jobs should run only from protected branches or protected environments, and logs should be checked for accidental echoing of connection strings or tokens.</p>
+<pre><code>permissions:
+  id-token: write
+  contents: read
+
+steps:
+  - uses: aws-actions/configure-aws-credentials@v4
+    with:
+      role-to-assume: arn:aws:iam::123456789012:role/deploy-role
+      aws-region: us-east-1</code></pre>
+<div class="hi">The best CI secret is temporary, scoped, and useless outside the exact workflow that requested it.</div>
+<div class="warn">Never pass secrets with command-line flags if the runner logs commands. Prefer environment variables, masked secrets, and cloud-native identity.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">dbt CI &amp; Airflow DAG Validation</h2>
+<p>dbt CI should compile the project, run model-level tests, and use slim CI when possible so only modified models and their impacted dependencies are tested. Common gates include <code>dbt deps</code>, <code>dbt compile</code>, <code>dbt build --select state:modified+</code>, and contract checks for important published models.</p>
+<p>Airflow CI should parse DAGs without import failures, enforce naming conventions, validate schedules and owners, and catch risky top-level code. DAG files should not perform network calls, load huge configs, or hit databases at import time because the scheduler repeatedly parses them.</p>
+<pre><code>dbt deps
+dbt compile --target ci
+dbt build --select state:modified+ --defer --state ./prod_artifacts
+
+python -m compileall dags
+pytest tests/dags --tb=short</code></pre>
+<div class="warn">A DAG that imports successfully on a developer laptop can still fail in the scheduler if environment variables, provider packages, or connection IDs are missing.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Docker Build &amp; ECR Artifact Management</h2>
+<p>For modern data pipelines, the deployable artifact is often a Docker image pushed to ECR. CI should build the image from a clean checkout, tag it with the immutable commit SHA, optionally tag release names, scan it, and push it only after tests pass. Rebuilding the same commit differently in each environment is a reproducibility smell.</p>
+<p>Keep image layers intentional: install dependencies before copying frequently changing source files, use <code>.dockerignore</code>, and avoid baking secrets or large data samples into the image. For Python pipelines, pin dependencies and produce the smallest image that still has the native drivers required for Oracle, PostgreSQL, SQL Server, Spark, or cloud SDKs.</p>
+<pre><code>IMAGE="$ECR_REPO/pipeline:${GITHUB_SHA}"
+
+docker build -t "$IMAGE" .
+aws ecr get-login-password | docker login \
+  --username AWS --password-stdin "$ECR_REPO"
+docker push "$IMAGE"</code></pre>
+<div class="hi">Promote the same image digest across environments. Do not rebuild for staging and rebuild again for production unless the build itself is the thing being tested.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Environment Promotion — dev &rarr; staging &rarr; production</h2>
+<p>Promotion should move a proven artifact through environments, not copy-paste untracked code. Dev is for fast validation, staging should resemble production data shape and permissions, and production should add approvals, auditability, and rollback hooks. Each environment needs separate state, credentials, datasets, and blast-radius controls.</p>
+<p>Data pipeline promotion has a special hazard: schema changes and data backfills can be harder to roll back than stateless application code. Version tables, migration scripts, dbt manifests, and Airflow DAG versions should be kept with the artifact metadata so you can answer exactly what ran, when, and against which data contract.</p>
+<table>
+  <tr><th>Environment</th><th>Purpose</th><th>Typical Gate</th></tr>
+  <tr><td>Dev</td><td>Fast feedback and integration checks</td><td>Lint, unit tests, local containers</td></tr>
+  <tr><td>Staging</td><td>Production-like validation</td><td>Contract tests, dbt build, DAG parse</td></tr>
+  <tr><td>Production</td><td>Controlled release</td><td>Approval, immutable artifact, monitoring</td></tr>
+</table>
+<div class="warn">Using one shared database for every environment turns CI/CD into roulette. Isolation is not bureaucracy; it is how you prevent test writes from becoming incidents.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Deployment Strategies &amp; Rollback</h2>
+<p>Deployment strategy depends on the workload. Stateless API components can use blue/green or canary deployment. Batch pipelines usually need versioned jobs, safe reruns, idempotent writes, and clear recovery points. Streaming jobs need checkpoint compatibility, schema compatibility, and careful consumer lag monitoring.</p>
+<p>Rollback for data pipelines is rarely just redeploying the old code. You may need to stop schedules, revert a DAG version, restore a table snapshot, replay from a checkpoint, reverse a migration, or quarantine bad partitions. The rollback plan must be designed before deployment, not invented during the incident.</p>
+<div class="hi">The senior-level question is not "Can we deploy?" It is "Can we safely stop, retry, replay, or revert when the data is already partially written?"</div>
+<div class="warn">Breaking checkpoint state or changing event schema without compatibility planning can make a streaming rollback impossible without data loss or duplicate processing.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Terraform in CI &amp; Monitoring Pipeline Health</h2>
+<p>Terraform in CI normally separates <code>plan</code> and <code>apply</code>. Pull requests run formatting, validation, security checks, and a plan artifact. Protected branches or approved environments run apply. Remote state locking is mandatory because two applies racing against the same infrastructure can corrupt state or create conflicting resources.</p>
+<p>Monitoring closes the loop after deployment. A healthy CI/CD system tracks deployment success, pipeline duration, failed stages, rollback frequency, Airflow task failures, dbt test failures, data freshness, row-count anomalies, and cloud cost spikes. The deployment is not done when the workflow turns green; it is done when production is observable.</p>
+<pre><code>terraform fmt -check
+terraform init -backend-config=env/prod.backend
+terraform validate
+terraform plan -out=tfplan
+terraform apply tfplan</code></pre>
+<div class="warn">Never auto-apply infrastructure changes from untrusted pull requests. Plans can expose sensitive values, and applies can mutate real cloud resources.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: What makes CI/CD for data pipelines different from CI/CD for a normal web service?</div>
+  <div class="qa-a">A: Data pipelines have code risk plus data risk. A web service rollback usually restores behavior, but a bad pipeline may already have written corrupted rows, advanced checkpoints, or changed schemas. Strong CI/CD for data validates contracts, DAG importability, idempotency, and rollback mechanics, not just application tests.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you design a CI pipeline for a Python ETL repo?</div>
+  <div class="qa-a">A: I would start with linting, dependency installation, unit tests, and small fixture-based transformation tests. Then I would add integration tests using local containers for databases or object storage mocks. Finally, I would build a Docker artifact, tag it immutably, scan it, and promote that same artifact through environments.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you keep CI from becoming too slow for data projects?</div>
+  <div class="qa-a">A: Split tests by cost and feedback value. Run lint, unit tests, DAG parse checks, and slim dbt builds on pull requests. Move full-volume data quality checks, backfills, and exhaustive integration suites to scheduled or promotion gates.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the safest way to handle AWS credentials in GitHub Actions or GitLab CI?</div>
+  <div class="qa-a">A: Prefer OIDC federation into an AWS IAM role with short-lived credentials. Scope the role to the environment and job type, and restrict production deploy roles to protected branches or manual approvals. Avoid long-lived access keys whenever possible.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you validate Airflow DAGs in CI?</div>
+  <div class="qa-a">A: I would import and parse all DAG files in an environment close to the scheduler image. Tests should catch missing provider packages, invalid schedules, bad default args, and forbidden top-level side effects. I would also enforce conventions for owner, retries, tags, and alerting.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What does rollback mean for a data pipeline deployment?</div>
+  <div class="qa-a">A: Rollback may mean reverting code, but it also may require restoring table snapshots, replaying events, resetting checkpoints, or quarantining bad output partitions. The safest pipelines are idempotent and version their outputs so partial writes can be detected and repaired. Rollback is an operational design, not just a CI button.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">CI</div>
+    <div class="cd">Validates code, tests, schemas, contracts, and deployability on every change.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">CD</div>
+    <div class="cd">Promotes a tested artifact through environments with approval and audit controls.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ruff check .</div>
+    <div class="cd">Fast Python linting gate for obvious defects and style issues.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">pytest --tb=short</div>
+    <div class="cd">Runs tests with concise failure output suitable for CI logs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">dbt compile</div>
+    <div class="cd">Validates dbt project parsing, macros, refs, sources, and generated SQL.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">state:modified+</div>
+    <div class="cd">dbt slim CI selector for changed models and downstream dependents.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">DAG parse test</div>
+    <div class="cd">Ensures Airflow DAGs import without scheduler-breaking side effects.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">OIDC</div>
+    <div class="cd">Preferred cloud auth pattern for short-lived CI credentials.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ECR image SHA</div>
+    <div class="cd">Immutable Docker image tag tied to the exact source commit.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Promotion</div>
+    <div class="cd">Move the same tested artifact from dev to staging to production.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Terraform plan</div>
+    <div class="cd">Reviewable infrastructure diff generated before protected apply.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Idempotency</div>
+    <div class="cd">Pipeline property that makes retries safe after partial failure.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Rollback</div>
+    <div class="cd">Operational recovery plan for code, schema, checkpoints, and written data.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Freshness check</div>
+    <div class="cd">Monitoring signal that confirms data arrived within the expected SLA.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
