@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryption for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/encryption-data-engineering.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Encryption for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Encryption for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Encryption</span>
+  <span class="tag">AWS KMS</span>
+  <span class="tag">S3</span>
+  <span class="tag">RDS</span>
+  <span class="tag">TLS</span>
+  <span class="tag">Fernet</span>
+  <span class="tag">Compliance</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_encryption-data-engineering.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Symmetric vs Asymmetric</a></li>
+    <li><a href="#s2">Encryption at Rest vs In Transit</a></li>
+    <li><a href="#s3">S3 Encryption</a></li>
+    <li><a href="#s4">AWS KMS &amp; Envelope Encryption</a></li>
+    <li><a href="#s5">Database Encryption</a></li>
+    <li><a href="#s6">Field-Level Encryption</a></li>
+    <li><a href="#s7">Python cryptography Library</a></li>
+    <li><a href="#s8">Hashing vs Encryption</a></li>
+    <li><a href="#s9">Secrets Management, Key Rotation &amp; Compliance</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Symmetric vs Asymmetric &mdash; the decision rule</h2>
+<p>Symmetric encryption uses one secret key to encrypt and decrypt data. It is fast enough for bulk files, database pages, S3 objects, Parquet datasets, and pipeline payloads. AES-256 is the common production default because the algorithm is efficient and widely supported by managed cloud services.</p>
+<p>Asymmetric encryption uses a public/private key pair. It is slower, so data engineers normally encounter it for TLS handshakes, key exchange, digital signatures, and certificate infrastructure rather than encrypting terabytes of data directly.</p>
+<div class="hi">Decision rule: use symmetric encryption for the data itself; use asymmetric cryptography to establish trust, exchange keys, or prove identity.</div>
+<table>
+  <tr><th>Type</th><th>Best use</th><th>Data engineering angle</th></tr>
+  <tr><td>Symmetric</td><td>Bulk encryption</td><td>S3 objects, database storage, files, data lake zones</td></tr>
+  <tr><td>Asymmetric</td><td>Trust and exchange</td><td>TLS certificates, signing, secure key exchange</td></tr>
+  <tr><td>Hybrid</td><td>Production systems</td><td>Envelope encryption: fast data key plus protected master key</td></tr>
+</table>
+<div class="warn">Do not confuse encryption strength with key handling. Strong AES with leaked keys is still a production incident.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Encryption at Rest vs In Transit</h2>
+<p>Encryption at rest protects stored data if the storage layer is compromised. Examples include encrypted S3 buckets, encrypted EBS volumes, RDS storage encryption, Redshift encryption, encrypted backups, and encrypted local spill files produced during ETL jobs.</p>
+<p>Encryption in transit protects data moving across a network. For pipelines, that means TLS for API calls, JDBC/ODBC database connections, Kafka clients, S3 transfers, and service-to-service traffic. HTTP is not acceptable for sensitive pipeline traffic; require HTTPS/TLS and reject weak endpoints early.</p>
+<div class="hi">At rest and in transit solve different failure modes. A pipeline handling sensitive data needs both, not one or the other.</div>
+<pre><code># Typical pipeline controls
+S3 writes:       server-side encryption enabled
+API calls:       https:// only, certificate validation on
+DB connections: sslmode=require or vendor equivalent
+Secrets:         retrieved at runtime, never committed
+Temp files:      encrypted disk or avoided entirely</code></pre>
+<div class="warn">The weak link is often a side path: debug CSVs, failed-record dumps, Spark spill directories, local notebooks, or copied extracts sent outside the secured pipeline.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">S3 Encryption &mdash; SSE-S3, SSE-KMS, SSE-C</h2>
+<p>S3 server-side encryption protects objects after they are written to the bucket. The three practical options are SSE-S3, SSE-KMS, and SSE-C. Most data platforms should standardize on SSE-S3 for low-risk default encryption or SSE-KMS when auditability, key policy control, and separation of duties matter.</p>
+<p>SSE-KMS is the common enterprise choice because access to encrypted objects depends on both S3 permissions and KMS permissions. That is powerful, but it introduces KMS request volume, key policy complexity, and cross-account design work.</p>
+<table>
+  <tr><th>Option</th><th>Who manages keys?</th><th>When to use</th></tr>
+  <tr><td>SSE-S3</td><td>AWS</td><td>Default bucket encryption with minimal operational overhead</td></tr>
+  <tr><td>SSE-KMS</td><td>AWS KMS / customer policy</td><td>Regulated data, audit trail, fine-grained key access</td></tr>
+  <tr><td>SSE-C</td><td>You provide key per request</td><td>Rare cases requiring external key custody</td></tr>
+</table>
+<pre><code>aws s3api put-object \
+  --bucket secure-raw-zone \
+  --key inbound/orders.csv \
+  --body orders.csv \
+  --server-side-encryption aws:kms \
+  --ssekms-key-id alias/data-platform-prod</code></pre>
+<div class="warn">SSE-C sounds attractive until you own key delivery, loss risk, retry behavior, and operational support. Use it only when the custody requirement is real.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">AWS KMS &amp; Envelope Encryption</h2>
+<p>AWS KMS manages encryption keys, key policies, grants, audit events, and rotation controls. In older language you may hear Customer Master Key, or CMK; modern AWS language generally says KMS key. For data engineers, KMS is the control plane that decides who can encrypt, decrypt, generate data keys, and use a key across accounts.</p>
+<p>Envelope encryption is the production pattern for large data. KMS generates or protects a small data key, the application encrypts the actual payload locally with fast symmetric encryption, and the encrypted data key is stored beside the ciphertext.</p>
+<div class="hi">KMS does not encrypt your 500 GB dataset directly. It protects the data keys that encrypt the dataset.</div>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {"AWS": "arn:aws:iam::111122223333:role/etl-prod"},
+    "Action": ["kms:Encrypt", "kms:Decrypt", "kms:GenerateDataKey"],
+    "Resource": "*",
+    "Condition": {"StringEquals": {"kms:ViaService": "s3.us-east-1.amazonaws.com"}}
+  }]
+}</code></pre>
+<div class="warn">A bad KMS policy can either block production pipelines at runtime or silently grant decryption too broadly. Treat key policies as production code.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Database Encryption &mdash; TDE &amp; RDS</h2>
+<p>Transparent Data Encryption, or TDE, encrypts database files, logs, and backups at the storage layer without changing application SQL. Managed services such as Amazon RDS and many enterprise databases support encryption at rest using service-managed or KMS-backed keys.</p>
+<p>TDE is excellent for lost disk, snapshot, and backup exposure scenarios. It does not prevent a privileged database user, compromised application account, or leaked query result from reading plaintext data through normal database access paths.</p>
+<div class="hi">Database encryption at rest is necessary infrastructure hygiene, but it is not row-level security, column masking, or access governance.</div>
+<table>
+  <tr><th>Control</th><th>Protects against</th><th>Does not solve</th></tr>
+  <tr><td>TDE / RDS encryption</td><td>Compromised storage, snapshots, backups</td><td>Over-permissioned SQL users</td></tr>
+  <tr><td>TLS DB connection</td><td>Network interception</td><td>Bad query authorization</td></tr>
+  <tr><td>Column masking</td><td>Casual exposure in query results</td><td>Full admin misuse</td></tr>
+  <tr><td>Field-level encryption</td><td>Plaintext exposure inside database</td><td>Key misuse by application</td></tr>
+</table>
+<div class="warn">Turning on encrypted storage after a database already exists may require snapshot-copy-restore or migration, depending on the platform. Plan this before production launch.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Field-Level Encryption</h2>
+<p>Field-level encryption encrypts selected sensitive columns before they are stored, such as SSN, tax ID, card-adjacent tokens, API credentials, or high-risk customer identifiers. It reduces blast radius because a database dump no longer exposes those fields as readable plaintext.</p>
+<p>The tradeoff is queryability. Encrypted fields usually cannot be searched, joined, sorted, deduplicated, or aggregated without special design. Deterministic encryption can support equality joins, but it leaks repeated values; randomized encryption is safer but breaks most analytics operations.</p>
+<div class="hi">Use field-level encryption for high-risk fields that do not need normal analytical operations. Use tokenization or masking when pipelines need repeatable joins or display-safe values.</div>
+<pre><code># Pattern, not a full implementation
+record = {
+    "customer_id": "C1001",
+    "email_hash": sha256_email(email),
+    "ssn_ciphertext": encrypt_with_data_key(ssn),
+    "ssn_key_ref": "alias/pii-prod-v3"
+}</code></pre>
+<div class="warn">Encrypting every column sounds secure but can destroy data usability, indexing, deduping, and downstream quality checks. Classify fields first.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Python cryptography Library &mdash; Fernet</h2>
+<p>The Python <code>cryptography</code> package provides production-grade primitives and safer recipes. Fernet is a high-level symmetric encryption recipe that gives authenticated encryption, meaning tampering is detected instead of producing corrupted plaintext.</p>
+<p>Fernet is useful for small secrets, configuration values, local test payloads, and application-level fields. It is not the right tool for encrypting huge files row by row in a distributed Spark job without a key strategy, rotation design, and performance testing.</p>
+<pre><code>from cryptography.fernet import Fernet
+
+key = Fernet.generate_key()
+fernet = Fernet(key)
+
+token = fernet.encrypt(b"customer-ssn-123-45-6789")
+plain = fernet.decrypt(token)
+
+print(token.decode())
+print(plain.decode())</code></pre>
+<div class="hi">Use high-level recipes like Fernet unless you have a real reason to work with low-level crypto primitives.</div>
+<div class="warn">Never hard-code the generated key in source control. Store keys in Secrets Manager, KMS-backed systems, environment injection, or an approved vault.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Hashing vs Encryption</h2>
+<p>Encryption is reversible with the right key. Hashing is one-way and is used for fingerprints, deduplication, integrity checks, password verification, and privacy-preserving matching when plaintext recovery is not needed.</p>
+<p>For data engineering, hashing email or account identifiers can support joins across systems without exposing raw PII. But plain SHA-256 of predictable values is vulnerable to dictionary and rainbow-table attacks, especially for emails, phone numbers, and small identifier spaces.</p>
+<table>
+  <tr><th>Technique</th><th>Reversible?</th><th>Common use</th></tr>
+  <tr><td>Encryption</td><td>Yes</td><td>Recover sensitive values with controlled key access</td></tr>
+  <tr><td>Hashing</td><td>No</td><td>Fingerprinting, dedupe, integrity, privacy-preserving match</td></tr>
+  <tr><td>Salted hash</td><td>No</td><td>Reduce precomputed attack risk</td></tr>
+  <tr><td>HMAC</td><td>No</td><td>Keyed deterministic matching across trusted systems</td></tr>
+</table>
+<div class="hi">Use encryption when the business must recover the value. Use hashing or HMAC when the business only needs comparison or verification.</div>
+<div class="warn">Hashing is not anonymization by magic. Low-cardinality or guessable inputs can often be re-identified unless a keyed or salted design is used.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Secrets Management, Key Rotation &amp; Compliance</h2>
+<p>Secrets are database passwords, API tokens, private keys, service credentials, and encryption keys. They should not live in Git, Docker images, notebooks, shell history, Airflow variables in plaintext, or CI logs. Mature pipelines retrieve secrets at runtime from a managed vault and scope them to the minimum role required.</p>
+<p>Key rotation is both a security control and an operational test. Good rotation design separates key identifiers, key versions, encrypted payload metadata, and re-encryption jobs so old data remains readable while new data uses the current key.</p>
+<div class="hi">Compliance evidence matters: show who can decrypt, when keys rotate, where secrets are stored, and which logs prove access.</div>
+<pre><code># Environment variable points to the secret, not the secret value
+DB_SECRET_ID=prod/data-platform/orders-db
+KMS_KEY_ALIAS=alias/data-platform-prod
+
+# Runtime code resolves the secret through IAM-controlled access</code></pre>
+<div class="warn">Rotation without an inventory is theater. You need to know which datasets, tables, files, and applications depend on each key before rotating it.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: When would you choose symmetric encryption over asymmetric encryption in a data platform?</div>
+  <div class="qa-a">A: I would use symmetric encryption for bulk data because it is fast and supported by storage engines, databases, and object stores. Asymmetric encryption is better for identity, trust, signatures, and exchanging or protecting keys. In practice, production systems combine them through patterns like TLS and envelope encryption.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between encryption at rest and encryption in transit?</div>
+  <div class="qa-a">A: Encryption at rest protects stored data such as S3 objects, database files, snapshots, and backups. Encryption in transit protects data moving over networks using TLS or equivalent secure channels. A secure pipeline needs both because storage compromise and network interception are separate risks.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Why might a team choose SSE-KMS instead of SSE-S3 for S3 buckets?</div>
+  <div class="qa-a">A: SSE-KMS gives stronger access control, audit visibility, and key policy governance. It is useful when regulated datasets require proof of who can decrypt and when keys are used. The tradeoff is more operational complexity, including KMS permissions, request volume, cross-account access, and failure modes.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: Does database TDE protect sensitive data from application users?</div>
+  <div class="qa-a">A: No. TDE protects the physical storage layer, backups, and snapshots, but authorized queries still return plaintext. If the application role is over-permissioned, TDE will not save you. You still need least privilege, masking, row-level controls, auditing, and possibly field-level encryption.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What breaks when you apply field-level encryption to analytical columns?</div>
+  <div class="qa-a">A: Search, joins, sorting, grouping, deduplication, and indexing can break or become expensive. Deterministic encryption can preserve equality matching but leaks repeated values. Randomized encryption gives stronger protection but removes most analytical usefulness.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you explain hashing vs encryption to a business stakeholder?</div>
+  <div class="qa-a">A: Encryption is like locking data in a box: with the key, you can get the original value back. Hashing is like creating a fingerprint: you can compare it, but you should not be able to reverse it. If the business needs recovery, use encryption; if it only needs matching or integrity, hashing or HMAC may fit better.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">AES-256</div>
+    <div class="cd">Common symmetric encryption standard for bulk data at rest.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">RSA / ECC</div>
+    <div class="cd">Asymmetric cryptography used for trust, signatures, and key exchange.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TLS</div>
+    <div class="cd">Encryption in transit for APIs, database connections, and service traffic.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SSE-S3</div>
+    <div class="cd">S3 server-side encryption with AWS-managed keys and low operational overhead.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SSE-KMS</div>
+    <div class="cd">S3 encryption using AWS KMS keys, policies, grants, and audit events.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SSE-C</div>
+    <div class="cd">S3 encryption where the client supplies the key on each request; rare in most platforms.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">KMS key</div>
+    <div class="cd">Managed key resource controlling encrypt, decrypt, and data-key operations.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Envelope enc</div>
+    <div class="cd">Encrypt data with a data key; encrypt the data key with a master or KMS key.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TDE</div>
+    <div class="cd">Transparent database storage encryption for files, logs, and backups.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Field encrypt</div>
+    <div class="cd">Application-level encryption of selected sensitive fields before storage.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Fernet</div>
+    <div class="cd">High-level Python cryptography recipe for authenticated symmetric encryption.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Hash</div>
+    <div class="cd">One-way fingerprint used for comparison, dedupe, integrity, or non-reversible matching.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">HMAC</div>
+    <div class="cd">Keyed hash that supports deterministic matching without exposing raw values.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Rotation</div>
+    <div class="cd">Controlled replacement of keys or secrets while preserving access to existing data.</div>
+  </div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>

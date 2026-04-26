@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Stubbing and Synthetic Test Data for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/data-stubbing-synthetic.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Data Stubbing and Synthetic Test Data for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Data Stubbing and Synthetic Test Data for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">pytest</span>
+  <span class="tag">Faker</span>
+  <span class="tag">moto</span>
+  <span class="tag">SQLite</span>
+  <span class="tag">Data Quality</span>
+  <span class="tag">CI/CD</span>
+  <span class="tag">Testing</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_data-stubbing-synthetic.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">What Data Stubbing Is &amp; Why It Matters</a></li>
+    <li><a href="#s2">Faker Library — generating realistic fake data</a></li>
+    <li><a href="#s3">Building Test DataFrames &amp; Edge Case Coverage</a></li>
+    <li><a href="#s4">TestDataFactory Pattern</a></li>
+    <li><a href="#s5">S3 Stubs with moto</a></li>
+    <li><a href="#s6">Database Stubs — SQLite in-memory</a></li>
+    <li><a href="#s7">API Response Stubs</a></li>
+    <li><a href="#s8">Data Contract Testing &amp; Snapshot Testing</a></li>
+    <li><a href="#s9">Volume Testing with Synthetic Data</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">What Data Stubbing Is &amp; Why It Matters</h2>
+<p>Data stubbing means replacing real external dependencies with controlled fake versions during tests. For data engineers, that usually means stubbing databases, S3 buckets, APIs, message queues, partner feeds, and vendor extracts so pipeline tests run quickly, deterministically, and without production access.</p>
+<p>The goal is not to pretend fake data is production data. The goal is to isolate pipeline behavior: parsing, schema validation, joins, enrichment, deduplication, error handling, idempotency, and output contracts. A good stub makes failures explainable; a bad stub hides integration risk until production.</p>
+<div class="hi">Key insight: use stubs to test your code logic and contracts, not to prove that every upstream system behaves correctly.</div>
+<div class="warn">Production gotcha: copying real PII into dev or CI to make tests more realistic is a security failure, not a testing strategy.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Faker Library — generating realistic fake data</h2>
+<p><code>Faker</code> generates realistic-looking names, emails, addresses, phone numbers, companies, dates, IP addresses, UUIDs, and localized formats. It is useful when a test needs data that looks like business data without being copied from production.</p>
+<p>For pipeline testing, always seed Faker when deterministic output matters. CI should fail because behavior changed, not because a random fake record happened to produce an odd value this run.</p>
+<pre><code>from faker import Faker
+
+fake = Faker("en_US")
+Faker.seed(42)
+
+records = [
+    {
+        "customer_id": fake.uuid4(),
+        "name": fake.name(),
+        "email": fake.email(),
+        "company": fake.company(),
+        "signup_date": fake.date_between("-2y", "today").isoformat(),
+    }
+    for _ in range(5)
+]</code></pre>
+<div class="hi">Faker is best for realistic shape and variety; explicit hand-built records are still better for exact edge cases.</div>
+<div class="warn">Structurally valid is not semantically valid: a fake email can match an email regex without being deliverable, and a fake SSN format is not a real SSN.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Building Test DataFrames &amp; Edge Case Coverage</h2>
+<p>Most transformation tests should use small DataFrames: usually 10 to 100 rows. Small data makes failures readable while still covering nulls, duplicate keys, boundary timestamps, empty strings, encoding oddities, negative numbers, timezone differences, and out-of-order records.</p>
+<p>The best test DataFrame is intentionally ugly. Real pipelines break on the row that violates assumptions: a null join key, a duplicate primary key, a vendor timestamp in the wrong timezone, or a blank string that should have been treated as null.</p>
+<pre><code>import pandas as pd
+
+df = pd.DataFrame([
+    {"id": 1, "region": "US", "amount": 10.0},
+    {"id": 2, "region": None, "amount": 0.0},
+    {"id": 2, "region": "EU", "amount": -5.0},
+    {"id": 3, "region": "", "amount": 999999.99},
+])</code></pre>
+<table>
+  <tr><th>Edge Case</th><th>Why It Matters</th></tr>
+  <tr><td>Null join key</td><td>Tests enrichment loss and join coverage metrics.</td></tr>
+  <tr><td>Duplicate IDs</td><td>Validates dedupe, merge, and idempotency logic.</td></tr>
+  <tr><td>Empty string</td><td>Catches confusion between blank and missing values.</td></tr>
+  <tr><td>Boundary dates</td><td>Protects partition and timezone logic.</td></tr>
+  <tr><td>Encoding oddities</td><td>Surfaces CSV, API, and warehouse load failures.</td></tr>
+</table>
+<div class="hi">A tiny DataFrame with five dangerous rows often beats a thousand clean synthetic rows.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">TestDataFactory Pattern</h2>
+<p>A <code>TestDataFactory</code> centralizes reusable test records so every test file does not reinvent raw dictionaries. This keeps test data consistent across transformation, validation, enrichment, and output tests.</p>
+<p>Factories also make intent visible. A test that calls <code>customer(null_email=True)</code> or <code>orders(duplicate_key=True)</code> is easier to understand than a blob of inline dictionaries.</p>
+<pre><code>class TestDataFactory:
+    @staticmethod
+    def customer(customer_id=1, email="a@test.com", active=True):
+        return {
+            "customer_id": customer_id,
+            "email": email,
+            "active": active,
+        }
+
+    @staticmethod
+    def customers_df():
+        return pd.DataFrame([
+            TestDataFactory.customer(1),
+            TestDataFactory.customer(2, email=None),
+            TestDataFactory.customer(2, email="dup@test.com"),
+        ])</code></pre>
+<div class="hi">Factories reduce duplicated test literals and make edge case construction intentional.</div>
+<div class="warn">Do not hide all data behind clever factory defaults. Tests still need enough visible data to explain why the assertion should pass.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">S3 Stubs with moto</h2>
+<p><code>moto</code> mocks AWS services such as S3 so pipeline tests can create buckets, write objects, read objects, and validate paths without touching real AWS. This is ideal for testing file naming, partition paths, object existence checks, and read/write behavior.</p>
+<p>Use moto for logic that depends on S3 semantics, not for performance or IAM validation. Real AWS integration tests still matter when bucket policies, KMS encryption, VPC endpoints, cross-account roles, and lifecycle rules are part of the production path.</p>
+<pre><code>import boto3
+from moto import mock_aws
+
+@mock_aws
+def test_pipeline_reads_s3_object():
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="test-bucket")
+    s3.put_object(
+        Bucket="test-bucket",
+        Key="raw/orders/date=2026-04-25/data.csv",
+        Body=b"id,amount\n1,10\n",
+    )
+
+    obj = s3.get_object(Bucket="test-bucket", Key="raw/orders/date=2026-04-25/data.csv")
+    assert obj["Body"].read().startswith(b"id,amount")</code></pre>
+<div class="warn">moto can prove your code calls S3 correctly; it cannot prove your production IAM policy, network route, or KMS key is configured correctly.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Database Stubs — SQLite in-memory</h2>
+<p>SQLite in-memory databases are useful for fast tests around SQL shape, small reference tables, lookups, inserts, and simple transaction behavior. They are especially handy when a pipeline uses SQLAlchemy Core and the logic can run against different database engines.</p>
+<p>The tradeoff is dialect drift. SQLite is not PostgreSQL, Oracle, SQL Server, or Snowflake. Date functions, isolation behavior, merge syntax, JSON operations, window functions, and type enforcement may behave differently.</p>
+<pre><code>from sqlalchemy import create_engine, text
+
+engine = create_engine("sqlite:///:memory:")
+
+with engine.begin() as conn:
+    conn.execute(text("""
+        create table customer_ref (
+            customer_id integer primary key,
+            segment text
+        )
+    """))
+    conn.execute(
+        text("insert into customer_ref values (:id, :seg)"),
+        [{"id": 1, "seg": "enterprise"}, {"id": 2, "seg": "retail"}],
+    )</code></pre>
+<div class="hi">Use SQLite to test database-adjacent pipeline logic quickly; use real engine integration tests for dialect-specific SQL.</div>
+<div class="warn">A test passing in SQLite does not guarantee a production <code>MERGE</code>, isolation level, stored procedure, or warehouse load command will work.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">API Response Stubs</h2>
+<p>API stubs replace external HTTP calls with controlled responses. They let you test retry logic, pagination, bad status codes, malformed JSON, schema drift, rate limit handling, and partial payloads without depending on a vendor sandbox.</p>
+<p>For Python tests, common patterns include patching the HTTP client, using the <code>responses</code> library for <code>requests</code>, or injecting a fake client object. Dependency injection is often cleaner than patching because the pipeline receives an interface instead of hard-coding network calls.</p>
+<pre><code>class FakeVendorClient:
+    def fetch_orders(self, page):
+        if page == 1:
+            return {"orders": [{"id": 1, "amount": 10}], "next_page": 2}
+        return {"orders": [], "next_page": None}
+
+def test_vendor_pagination():
+    client = FakeVendorClient()
+    rows = collect_orders(client)
+    assert rows == [{"id": 1, "amount": 10}]</code></pre>
+<div class="hi">Stub both happy paths and hostile paths: 429 rate limits, 500 errors, missing fields, empty pages, and duplicate records.</div>
+<div class="warn">Do not let API stubs drift from vendor contracts. Pair them with contract tests or captured schema snapshots.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Data Contract Testing &amp; Snapshot Testing</h2>
+<p>Data contract tests verify that an input or output still matches expected columns, types, nullability, allowed values, key constraints, and freshness rules. They protect downstream jobs from silent schema drift and upstream feeds from breaking transformation assumptions.</p>
+<p>Snapshot testing stores an approved representation of output, such as a schema, JSON payload, or small result set, and compares future runs against it. It is powerful for catching unintended changes, but noisy when snapshots include volatile fields like timestamps, random IDs, or unordered rows.</p>
+<table>
+  <tr><th>Test Type</th><th>Best For</th><th>Watch Out</th></tr>
+  <tr><td>Schema contract</td><td>Columns, types, required fields</td><td>Loose warehouses may coerce types silently.</td></tr>
+  <tr><td>Value contract</td><td>Enums, ranges, null rules</td><td>Business rules change over time.</td></tr>
+  <tr><td>Snapshot</td><td>Stable small outputs</td><td>Volatile fields cause noisy failures.</td></tr>
+  <tr><td>Golden file</td><td>CSV or JSON parser behavior</td><td>Can become stale if nobody owns it.</td></tr>
+</table>
+<div class="hi">Contract tests answer: can this producer and consumer still safely talk to each other?</div>
+<div class="warn">Snapshot tests are not approvals by default. Review snapshot updates like code changes, because they can bless a bug.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Volume Testing with Synthetic Data</h2>
+<p>Volume testing uses generated data to expose memory pressure, slow joins, partition skew, serialization cost, file count explosions, and warehouse load bottlenecks. This is different from unit testing: the question is no longer "is this row correct?" but "does this design survive realistic size and shape?"</p>
+<p>Synthetic volume should mimic the distributions that hurt pipelines: hot customer IDs, late-arriving records, uneven partitions, wide rows, nested JSON, duplicated files, and high-cardinality dimensions. Uniform random data is easy to generate and often useless for performance testing.</p>
+<pre><code>def synthetic_orders(n=1_000_000):
+    for i in range(n):
+        yield {
+            "order_id": i,
+            "customer_id": 1 if i % 100 == 0 else i % 50_000,
+            "amount": round((i % 500) * 1.17, 2),
+            "event_date": f"2026-04-{(i % 25) + 1:02d}",
+        }</code></pre>
+<div class="hi">Good synthetic volume models bad distributions, not just big row counts.</div>
+<div class="warn">A million rows on a laptop is not a production benchmark. Use it to catch design smells early, then validate at platform scale.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you decide whether to use a stub, mock, fake, or real integration test?</div>
+  <div class="qa-a">A: I use stubs and fakes for fast deterministic tests of pipeline logic, mocks when I need to assert an interaction, and real integration tests when infrastructure behavior matters. For example, moto is fine for S3 object flow, but real AWS is needed for IAM, KMS, endpoint, and cross-account behavior. The key is matching the test double to the risk being tested.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What makes synthetic test data useful for data engineering?</div>
+  <div class="qa-a">A: Useful synthetic data covers the failure modes that production data creates: null keys, duplicates, skew, late records, schema drift, and boundary values. It should be deterministic in CI and intentionally shaped for assertions. Pretty fake names alone do not test a pipeline.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Why is using production data in lower environments risky?</div>
+  <div class="qa-a">A: Production data often contains PII, regulated fields, customer secrets, or commercially sensitive information. Moving it into dev or CI expands the blast radius and usually weakens access controls. Safer options are synthetic records, tokenized extracts, masked subsets, and contract-focused fixtures.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you test an ETL job that reads from S3, enriches from a database, and calls an API?</div>
+  <div class="qa-a">A: I would separate the transformation logic from the I/O adapters. Unit tests would use DataFrames and fake clients; S3 behavior could be covered with moto; database lookup logic could use SQLite or a containerized real engine depending on SQL complexity. A smaller integration test would validate the full wiring before production deployment.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What is the difference between structurally valid and semantically valid fake data?</div>
+  <div class="qa-a">A: Structurally valid data matches a pattern or schema, such as an email-shaped string or SSN-shaped value. Semantically valid data is meaningful in the real domain, such as a deliverable email, a known account, or a valid customer status. Tests should be clear about which type they require.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you prevent test fixtures from becoming stale?</div>
+  <div class="qa-a">A: I keep fixtures small, named by purpose, and tied to contract tests that fail when required fields or rules change. For API or file contracts, I review snapshot updates like code changes. I also avoid massive golden files that nobody wants to inspect.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Data stub</div>
+    <div class="cd">Controlled replacement for a real source such as S3, database, API, or feed.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Synthetic data</div>
+    <div class="cd">Generated non-production data used for tests, demos, and volume checks.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Faker.seed()</div>
+    <div class="cd">Makes fake data deterministic so CI failures are repeatable.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">TestDataFactory</div>
+    <div class="cd">Central factory for reusable records and edge-case fixtures.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">moto</div>
+    <div class="cd">Python library for mocking AWS services such as S3 in tests.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">sqlite:///:memory:</div>
+    <div class="cd">Fast temporary database useful for lightweight SQLAlchemy tests.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">responses</div>
+    <div class="cd">Common library for stubbing HTTP responses from code using requests.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Contract test</div>
+    <div class="cd">Verifies schema, types, nullability, allowed values, and producer-consumer expectations.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Snapshot test</div>
+    <div class="cd">Compares current output to an approved stored representation.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Golden file</div>
+    <div class="cd">Approved fixture file used to test parsers, serializers, or stable outputs.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Skew</div>
+    <div class="cd">Uneven key or partition distribution that can break joins and parallel processing.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">CI rule</div>
+    <div class="cd">No production PII, no live vendor dependency, deterministic test data.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Real integration</div>
+    <div class="cd">Use when validating IAM, KMS, network, dialect-specific SQL, or platform behavior.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Volume test</div>
+    <div class="cd">Generated data test focused on scale behavior, memory, skew, and throughput.</div>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>
