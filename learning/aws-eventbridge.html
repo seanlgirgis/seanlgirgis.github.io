@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EventBridge - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/aws-eventbridge.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / AWS EventBridge - Master Engineering Reference
+</div>
+
+<h1>AWS EventBridge</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated April 26, 2026 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">AWS</span>
+  <span class="tag">EventBridge</span>
+  <span class="tag">Event-Driven Architecture</span>
+  <span class="tag">Serverless</span>
+  <span class="tag">Lambda</span>
+  <span class="tag">Step Functions</span>
+  <span class="tag">SQS</span>
+  <span class="tag">Data Engineering</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_aws-eventbridge.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Mental Model and Architecture</a></li>
+    <li><a href="#s2">Event Flow and Core Components</a></li>
+    <li><a href="#s3">Rule Design and Pattern Precision</a></li>
+    <li><a href="#s4">Integration Patterns</a></li>
+    <li><a href="#s5">Scheduler Use Cases and Limits</a></li>
+    <li><a href="#s6">Cross-Account Event Bus Strategy</a></li>
+    <li><a href="#s7">Failure Handling and Replay</a></li>
+    <li><a href="#s8">Security and Governance</a></li>
+    <li><a href="#s9">Observability, Cost, and Scale</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">Mental Model and Architecture</h2>
+<p>AWS EventBridge is a managed event router. Producers publish events to an event bus, rules match selected events, and targets receive those events asynchronously. For data engineers, it is useful for decoupling ingestion triggers, orchestration starts, audit notifications, file-arrival workflows, and cross-account platform events.</p>
+<p>The default bus receives many AWS service events, custom buses isolate application domains, and partner buses accept events from SaaS integrations. A clean design treats the bus as a routing boundary, not as a durable analytical log.</p>
+<div class="hi">Use EventBridge when producers and consumers should evolve independently and the routing logic belongs outside the producer.</div>
+<div class="warn">EventBridge is not a replacement for Kafka, Kinesis, or SQS when you need high-throughput ordered streams, long retention, consumer offsets, or large payload handling.</div>
+<table>
+  <tr><th>Component</th><th>Purpose</th><th>Senior design note</th></tr>
+  <tr><td>Event bus</td><td>Receives events</td><td>Use separate buses for domain or account boundaries</td></tr>
+  <tr><td>Rule</td><td>Matches events</td><td>Keep patterns precise to avoid accidental fanout</td></tr>
+  <tr><td>Target</td><td>Consumes events</td><td>Prefer buffering with SQS for fragile workloads</td></tr>
+  <tr><td>Archive</td><td>Stores matched events</td><td>Useful for replay and incident recovery</td></tr>
+  <tr><td>Schema registry</td><td>Discovers event shapes</td><td>Helpful, but contracts should still be versioned deliberately</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Event Flow and Core Components</h2>
+<p>A typical flow is producer to bus, bus to rule, rule to target. The event envelope carries fields such as <code>source</code>, <code>detail-type</code>, <code>account</code>, <code>region</code>, <code>time</code>, and <code>detail</code>. Most custom business facts belong inside <code>detail</code>.</p>
+<p>For production systems, standardize event naming, versioning, correlation IDs, and idempotency keys before many teams publish events. Without those conventions, EventBridge becomes easy to connect but hard to govern.</p>
+<div class="hi">A good event says what happened, not what the consumer should do. Prefer <code>order.created</code> over <code>start-billing-lambda</code>.</div>
+<div class="warn">The producer does not know which rule matched or whether each target ultimately completed business processing. Design downstream observability accordingly.</div>
+<pre><code>{
+  "Source": "data.platform.ingestion",
+  "DetailType": "dataset.arrived.v1",
+  "EventBusName": "data-platform-bus",
+  "Detail": "{\"dataset\":\"orders\",\"batch_id\":\"2026-04-26-001\",\"idempotency_key\":\"orders#2026-04-26-001\"}"
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">Rule Design and Pattern Precision</h2>
+<p>Rules are where most EventBridge quality problems show up. A broad pattern can trigger expensive fanout, duplicate workflows, or consumers that were not meant to process the event. A narrow pattern improves cost, reliability, and auditability.</p>
+<p>Senior engineers should treat event patterns as production routing code. Review them like IAM policies: least privilege, explicit scope, and predictable blast radius.</p>
+<div class="hi">Match on stable envelope fields first, then use <code>detail</code> filters for business-specific routing.</div>
+<div class="warn">Avoid catch-all rules on shared buses unless the target is a controlled audit, archive, or monitoring consumer.</div>
+<pre><code>{
+  "source": ["data.platform.ingestion"],
+  "detail-type": ["dataset.arrived.v1"],
+  "detail": {
+    "dataset": ["orders", "customers"],
+    "environment": ["prod"],
+    "status": ["ready"]
+  }
+}</code></pre>
+<table>
+  <tr><th>Pattern choice</th><th>Good for</th><th>Risk</th></tr>
+  <tr><td><code>source</code></td><td>Domain isolation</td><td>Too generic if teams share source names</td></tr>
+  <tr><td><code>detail-type</code></td><td>Event contract versioning</td><td>Version sprawl without governance</td></tr>
+  <tr><td><code>detail</code></td><td>Business routing</td><td>Breaks if producers change payload shape</td></tr>
+  <tr><td>Prefix matching</td><td>Grouped event names</td><td>Can overmatch during naming changes</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Integration Patterns</h2>
+<p>EventBridge targets commonly include Lambda, Step Functions, SQS, SNS, Kinesis, API destinations, and other event buses. The right target depends on execution time, retry needs, fanout style, and operational ownership.</p>
+<p>For data workloads, EventBridge often starts orchestration, while SQS buffers work, Lambda performs lightweight routing, and Step Functions coordinates multi-step recovery-aware flows.</p>
+<div class="hi">A strong pattern is EventBridge rule to SQS queue to Lambda worker. This adds buffering, backpressure, and clearer failure isolation.</div>
+<div class="warn">Direct EventBridge to Lambda is simple, but it can hide downstream throttling until retries and concurrency limits collide.</div>
+<table>
+  <tr><th>Target</th><th>Use when</th><th>Production note</th></tr>
+  <tr><td>Lambda</td><td>Short stateless reaction</td><td>Control concurrency and idempotency</td></tr>
+  <tr><td>Step Functions</td><td>Multi-step workflow</td><td>Good for retries, waits, and branching</td></tr>
+  <tr><td>SQS</td><td>Buffer and absorb spikes</td><td>Best default for fragile consumers</td></tr>
+  <tr><td>SNS</td><td>Topic-style fanout</td><td>Use when subscribers own filtering</td></tr>
+  <tr><td>API destination</td><td>External HTTP target</td><td>Protect with rate limits and auth</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">Scheduler Use Cases and Limits</h2>
+<p>EventBridge Scheduler creates one-time or recurring schedules that invoke targets without running cron infrastructure. It is useful for daily data quality checks, delayed retries, SLA reminders, time-based workflow starts, and one-off future actions.</p>
+<p>Prefer Scheduler over old scheduled rules when you need flexible one-time schedules, large schedule counts, target-specific retry settings, or schedule groups. Keep business calendars, holiday logic, and complex dependency orchestration outside simple cron expressions.</p>
+<div class="hi">Scheduler is best for time-based invocation; Step Functions or a workflow engine is better for dependency-based orchestration.</div>
+<div class="warn">Cron does not prove upstream data is ready. For data pipelines, combine schedules with readiness checks or event-driven file/object arrival signals.</div>
+<table>
+  <tr><th>Use case</th><th>Good fit?</th><th>Why</th></tr>
+  <tr><td>Run daily Glue crawler</td><td>Yes</td><td>Simple time trigger</td></tr>
+  <tr><td>Start workflow after S3 landing</td><td>No</td><td>Use object/event signal instead</td></tr>
+  <tr><td>Delayed notification</td><td>Yes</td><td>One-time schedule works well</td></tr>
+  <tr><td>Complex DAG dependencies</td><td>No</td><td>Use Airflow, Step Functions, or similar</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">Cross-Account Event Bus Strategy</h2>
+<p>Cross-account EventBridge is common in multi-account AWS organizations. Workload accounts publish domain events to a central platform bus, or a central bus routes approved events into workload accounts. The strategy should align with your AWS account model and audit boundaries.</p>
+<p>Use bus resource policies to permit specific accounts, organizations, or roles to put events. Then use rules to forward only approved event types to downstream buses or targets.</p>
+<div class="hi">Central buses are useful for governance and observability, but domain-owned buses often reduce coupling and noisy shared ownership.</div>
+<div class="warn">Cross-account routing without event naming standards becomes a distributed ownership problem. Define source names, versions, and schema contracts before broad adoption.</div>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "AWS": "arn:aws:iam::111122223333:root" },
+    "Action": "events:PutEvents",
+    "Resource": "arn:aws:events:us-east-1:444455556666:event-bus/data-platform-bus"
+  }]
+}</code></pre>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Failure Handling and Replay</h2>
+<p>EventBridge retries delivery to many targets, but the retry only covers delivery, not the full business outcome after the target accepts the event. Configure dead-letter queues for targets where failed delivery must be investigated and recovered.</p>
+<p>Archives and replays help recover from bad deployments, missed consumers, or rule mistakes. Replays should be paired with idempotent consumers because a replay intentionally sends historical events again.</p>
+<div class="hi">Design every EventBridge consumer as at-least-once. Store processed event IDs or business idempotency keys where duplicate side effects would hurt.</div>
+<div class="warn">DLQ messages mean delivery failed, not necessarily that the business transaction failed. Consumer-level errors still need target-specific logs, metrics, and alarms.</div>
+<table>
+  <tr><th>Failure layer</th><th>Example</th><th>Mitigation</th></tr>
+  <tr><td>Rule mismatch</td><td>Event never routes</td><td>Test patterns and archive events</td></tr>
+  <tr><td>Target delivery</td><td>Permission denied</td><td>DLQ and alarm on failed invocations</td></tr>
+  <tr><td>Consumer processing</td><td>Lambda raises error</td><td>Consumer retries, logs, and idempotency</td></tr>
+  <tr><td>Replay duplicate</td><td>Workflow starts twice</td><td>Business idempotency key</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Security and Governance</h2>
+<p>EventBridge security spans identity policies, event bus resource policies, target permissions, encryption posture, tagging, and organizational boundaries. Producers need <code>events:PutEvents</code>, rule managers need rule permissions, and EventBridge needs permission to invoke each target.</p>
+<p>Governance should define who can create buses, who can create rules on shared buses, what event sources are allowed, and how schemas are versioned. This prevents accidental data leakage and surprise fanout.</p>
+<div class="hi">Apply least privilege at both sides: who can publish to the bus and what the rule is allowed to invoke.</div>
+<div class="warn">A permissive shared bus can become a lateral movement path for events, especially when targets invoke privileged compute or workflows.</div>
+<table>
+  <tr><th>Control</th><th>What it protects</th><th>Example</th></tr>
+  <tr><td>IAM policy</td><td>Caller actions</td><td>Allow only <code>events:PutEvents</code> to one bus</td></tr>
+  <tr><td>Bus policy</td><td>Cross-account publishing</td><td>Limit by account or organization</td></tr>
+  <tr><td>Target policy</td><td>Invocation</td><td>Lambda permission from specific rule ARN</td></tr>
+  <tr><td>Tags</td><td>Ownership</td><td>Cost center and data domain</td></tr>
+  <tr><td>SCP</td><td>Org guardrail</td><td>Deny wildcard bus policies</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">Observability, Cost, and Scale</h2>
+<p>Monitor matched events, triggered rules, failed invocations, throttles, DLQ depth, target errors, and end-to-end business outcomes. EventBridge tells you routing health; targets tell you processing health.</p>
+<p>Cost is usually driven by event volume, cross-account fanout, custom events, archives, replays, and Scheduler invocations. Performance issues often appear as downstream target throttling rather than EventBridge itself.</p>
+<div class="hi">Track event volume by source and detail-type. The fastest way to control cost and noise is to reduce unnecessary matches before they fan out.</div>
+<div class="warn">High event volume plus broad rules can multiply cost and downstream load quickly. Model fanout as events multiplied by matching rules multiplied by targets.</div>
+<table>
+  <tr><th>Signal</th><th>Why it matters</th><th>Action</th></tr>
+  <tr><td>FailedInvocations</td><td>Target delivery issue</td><td>Check permissions, target health, DLQ</td></tr>
+  <tr><td>TriggeredRules</td><td>Routing volume</td><td>Find broad or noisy rules</td></tr>
+  <tr><td>DLQ depth</td><td>Recoverable failures</td><td>Alarm and replay after fix</td></tr>
+  <tr><td>Target throttles</td><td>Backpressure</td><td>Add SQS or tune concurrency</td></tr>
+  <tr><td>Replay rate</td><td>Incident recovery load</td><td>Throttle replay and verify idempotency</td></tr>
+</table>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: How would you explain EventBridge architecture in a data platform?</div>
+  <div class="qa-a">A: EventBridge is a managed routing layer between event producers and consumers. Producers publish business or AWS service events to a bus, rules match event patterns, and targets receive selected events asynchronously. In a data platform, it is often used to trigger ingestion workflows, fan out operational events, or connect account boundaries without hard-coding consumers into producers.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What makes a good EventBridge event pattern?</div>
+  <div class="qa-a">A: A good pattern is precise, stable, and easy to audit. It should usually match on <code>source</code> and <code>detail-type</code>, then selectively filter on stable fields inside <code>detail</code>. Avoid broad wildcard-style rules on shared buses because they increase fanout, cost, and accidental coupling.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you put SQS between EventBridge and Lambda?</div>
+  <div class="qa-a">A: Use SQS when the consumer needs buffering, backpressure, controlled retries, or protection from bursty event volume. Direct EventBridge to Lambda is simpler, but SQS gives clearer failure isolation and lets workers process at a safe rate. It is a strong default for production data processing where downstream systems may throttle.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you design for duplicate events and replay?</div>
+  <div class="qa-a">A: Assume at-least-once delivery and make consumers idempotent. Use an event ID, business key, or producer-generated idempotency key to detect already processed work. Replays are powerful for recovery, but they deliberately resend historical events, so any workflow side effect must be safe to repeat or guarded by state.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What are the security concerns with cross-account event buses?</div>
+  <div class="qa-a">A: The main risks are overly broad publish permissions, weak target permissions, and unclear ownership of event contracts. Bus resource policies should allow only approved accounts, organizations, or roles. Rules on shared buses should be governed because a rule can route events into privileged targets or leak operational signals.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you troubleshoot an EventBridge workflow that stopped triggering?</div>
+  <div class="qa-a">A: First confirm the event is being emitted with the expected <code>source</code>, <code>detail-type</code>, and payload shape. Then test the event pattern, inspect rule metrics, check target permissions, and look at failed invocation metrics or DLQ messages. Finally, verify the target service logs because EventBridge delivery success does not prove business processing success.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Event bus</div>
+    <div class="cd">Routing boundary that receives events and evaluates rules.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Default bus</div>
+    <div class="cd">Receives many AWS service events in the account.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Custom bus</div>
+    <div class="cd">Use for domain, application, or platform-owned event contracts.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Rule</div>
+    <div class="cd">Pattern matcher that routes selected events to one or more targets.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">source</div>
+    <div class="cd">Top-level event producer identifier; keep names stable and domain-based.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">detail-type</div>
+    <div class="cd">Event type name; good place for semantic versioning such as <code>dataset.arrived.v1</code>.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">detail</div>
+    <div class="cd">Business payload used by consumers and optionally by event patterns.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">DLQ</div>
+    <div class="cd">Captures failed target deliveries for investigation and recovery.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Archive</div>
+    <div class="cd">Stores matched events so they can be replayed after fixes or missed processing.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Replay</div>
+    <div class="cd">Resends archived events; requires idempotent consumers.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Scheduler</div>
+    <div class="cd">Managed one-time or recurring time-based invocation service.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SQS target</div>
+    <div class="cd">Adds buffering, retry control, and backpressure between routing and processing.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Bus policy</div>
+    <div class="cd">Resource policy controlling who can publish to or manage an event bus.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">API destination</div>
+    <div class="cd">Routes events to external HTTP endpoints with connection and rate controls.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Fanout cost</div>
+    <div class="cd">Estimate as event volume times matching rules times target invocations.</div>
+  </div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+</div>
+</body>
+</html>
