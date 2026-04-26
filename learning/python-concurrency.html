@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Concurrency for Data Engineers - Master Engineering Reference | Sean Girgis</title>
+<link rel="canonical" href="https://seanlgirgis.github.io/learning/python-concurrency.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #004a99;
+    --accent:  #e67e22;
+    --text:    #222;
+    --muted:   #666;
+    --bg:      #f4f7f6;
+    --line:    #dde3ea;
+    --code-bg: #1e2a38;
+    --code-fg: #e8edf2;
+    --hi-bg:   #e8f4fd;
+    --warn-bg: #fff8e6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; font-size: 16px; }
+.doc { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 80px; min-height: 100vh; }
+@media (max-width: 680px) { .doc { padding: 28px 20px 60px; } }
+.topnav { font-size:0.88em; margin-bottom:32px; color:var(--muted); }
+.topnav a { color:var(--primary); text-decoration:none; }
+h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:0.9em; margin:0 0 24px; }
+.tag-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:32px; }
+.tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
+.audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
+.audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
+.toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
+.toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
+.toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
+.toc li { margin-bottom:6px; break-inside:avoid; }
+.toc a { color:var(--primary); text-decoration:none; font-size:0.93em; }
+.doc h2 { color:var(--primary); font-size:1.25em; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+.doc h3 { color:#333; font-size:1.02em; margin:28px 0 10px; }
+.back-top { display:block; text-align:right; font-size:0.82em; color:var(--muted); text-decoration:none; margin-top:28px; padding-top:10px; border-top:1px solid var(--line); }
+code { background:#eef2f7; color:var(--primary); padding:2px 6px; border-radius:3px; font-size:0.88em; font-family:'Consolas','Courier New',monospace; }
+pre { background:var(--code-bg); color:var(--code-fg); padding:18px 22px; border-radius:6px; overflow-x:auto; font-size:0.87em; line-height:1.6; margin:14px 0; font-family:'Consolas','Courier New',monospace; }
+pre code { background:none; color:inherit; padding:0; font-size:inherit; }
+table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.91em; }
+th { background:var(--primary); color:#fff; padding:9px 14px; text-align:left; font-weight:600; }
+td { padding:8px 14px; border-bottom:1px solid #eee; }
+tr:nth-child(even) td { background:#f8fafc; }
+.hi { background:var(--hi-bg); border-left:4px solid var(--primary); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.warn { background:var(--warn-bg); border-left:4px solid var(--accent); padding:13px 17px; border-radius:0 5px 5px 0; margin:16px 0; font-size:0.95em; }
+.qa { margin-bottom:22px; }
+.qa-q { font-weight:700; color:var(--primary); margin-bottom:6px; font-size:0.97em; }
+.qa-a { border-left:3px solid var(--accent); padding:10px 16px; background:#fffaf5; border-radius:0 5px 5px 0; font-style:italic; color:#444; line-height:1.75; }
+.cheat { background:var(--code-bg); color:var(--code-fg); border-radius:6px; padding:22px 26px; }
+.cheat-row { display:grid; grid-template-columns:170px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.9em; }
+.cheat-row:last-child { border-bottom:none; }
+.ct { color:#f5a623; font-family:monospace; font-weight:bold; }
+.cd { color:#c8d8e8; }
+</style>
+</head>
+<body id="top">
+<div class="doc">
+
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Python Concurrency for Data Engineers - Master Engineering Reference
+</div>
+
+<h1>Python Concurrency for Data Engineers</h1>
+<p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 10-12 min read</p>
+
+<div class="tag-row">
+  <span class="tag">Python</span>
+  <span class="tag">Concurrency</span>
+  <span class="tag">Threads</span>
+  <span class="tag">Multiprocessing</span>
+  <span class="tag">asyncio</span>
+  <span class="tag">ETL</span>
+  <span class="tag">Data Pipelines</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_python-concurrency.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">The GIL &mdash; why it matters for data engineers</a></li>
+    <li><a href="#s2">Threading vs Multiprocessing &mdash; the decision rule</a></li>
+    <li><a href="#s3">concurrent.futures &mdash; ThreadPoolExecutor &amp; ProcessPoolExecutor</a></li>
+    <li><a href="#s4">Exception Handling &amp; Pickling</a></li>
+    <li><a href="#s5">asyncio &mdash; event loop, async/await, when to use it</a></li>
+    <li><a href="#s6">asyncio for Data Engineering &mdash; aiohttp, aiobotocore, asyncpg</a></li>
+    <li><a href="#s7">Queue-Based Producer-Consumer Pattern</a></li>
+    <li><a href="#s8">Rate Limiting &amp; The Embarrassingly Parallel Pattern</a></li>
+    <li><a href="#s9">When to Move to Spark</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Quick Reference</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">The GIL &mdash; why it matters for data engineers</h2>
+<p>The Global Interpreter Lock allows only one thread at a time to execute Python bytecode in the standard CPython runtime. That does not mean Python cannot do concurrent work; it means CPU-bound Python code does not get true parallel speedup from threads. For data engineers, the distinction matters when deciding whether a slow pipeline is waiting on I/O or burning CPU.</p>
+<p>Threads can still help dramatically when work is blocked on network, disk, S3, APIs, databases, or remote services. While one thread waits for a response, another thread can run. But if your function is parsing JSON in pure Python, compressing files, hashing records, or applying row-level transformations, threads usually just fight over the GIL.</p>
+<div class="hi">Decision shortcut: use threads for waiting, processes for calculating, async for many cooperative I/O calls, and Spark when the data or compute no longer fits one machine.</div>
+<div class="warn">Many native libraries release the GIL during heavy work. NumPy, Pandas, PyArrow, and compression libraries may already parallelize internally, so adding Python-level concurrency can sometimes make performance worse.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">Threading vs Multiprocessing &mdash; the decision rule</h2>
+<p>Threading runs multiple execution paths inside one process and shares memory. That makes it cheap to start and convenient for I/O-heavy tasks such as calling 500 URLs, listing S3 keys, or querying many small database partitions. Shared memory is also the danger: you must protect mutable state or avoid sharing it.</p>
+<p>Multiprocessing starts separate Python processes with separate memory spaces. That bypasses the GIL and can use multiple CPU cores, but arguments and results must cross process boundaries. The overhead is worth it for expensive CPU-bound functions, not for tiny per-row operations where serialization costs dominate.</p>
+<table>
+  <tr><th>Workload</th><th>Best fit</th><th>Reason</th></tr>
+  <tr><td>HTTP/API calls</td><td>Threads or asyncio</td><td>Most time is network waiting</td></tr>
+  <tr><td>S3 object metadata scans</td><td>Threads or async SDK</td><td>Many independent I/O calls</td></tr>
+  <tr><td>CPU-heavy parsing</td><td>Processes</td><td>True parallelism across cores</td></tr>
+  <tr><td>Vectorized dataframe ops</td><td>Library engine first</td><td>Pandas, Polars, DuckDB, Arrow may already optimize</td></tr>
+  <tr><td>Large distributed joins</td><td>Spark</td><td>Needs cluster memory and shuffle management</td></tr>
+</table>
+<div class="warn">Do not choose multiprocessing just because it sounds faster. If each task sends a large DataFrame to a worker, pickling can cost more than the computation.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">concurrent.futures &mdash; ThreadPoolExecutor &amp; ProcessPoolExecutor</h2>
+<p><code>concurrent.futures</code> is the clean high-level API for Python concurrency. <code>ThreadPoolExecutor</code> is the usual choice for I/O-bound fan-out. <code>ProcessPoolExecutor</code> is the usual choice for CPU-bound fan-out when the function and data are safely picklable.</p>
+<p>Use <code>executor.map()</code> when every item is independent and you want ordered results. Use <code>executor.submit()</code> plus <code>as_completed()</code> when you need per-task error handling, progress logging, retries, or different arguments per task.</p>
+<pre><code>from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+def fetch_partition(partition_id):
+    # I/O-bound: API, S3, database, etc.
+    return partition_id, call_remote_service(partition_id)
+
+partitions = range(100)
+results = {}
+
+with ThreadPoolExecutor(max_workers=16) as executor:
+    futures = [executor.submit(fetch_partition, p) for p in partitions]
+    for future in as_completed(futures):
+        partition_id, data = future.result()
+        results[partition_id] = data</code></pre>
+<div class="hi"><code>submit()</code> + <code>as_completed()</code> is the production pattern because it lets you log and recover task by task instead of failing blindly at the end.</div>
+<div class="warn"><code>max_workers</code> is not a bragging number. Too many workers can overload APIs, saturate database connection pools, increase throttling, or make S3 calls slower through retries.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">Exception Handling &amp; Pickling</h2>
+<p>Exceptions raised inside workers are not raised at submission time. They are raised when you call <code>future.result()</code>. That is good: it lets a pipeline continue processing other independent tasks while collecting failures for retry, quarantine, or dead-letter handling.</p>
+<p>Process pools have an extra constraint: arguments, return values, and worker functions must be picklable. Lambdas, nested functions, open database connections, active file handles, and many class instances fail at the process boundary. Keep process-pool worker functions top-level, pass small serializable inputs, and create external clients inside the worker if needed.</p>
+<pre><code>from concurrent.futures import ProcessPoolExecutor, as_completed
+
+
+def score_file(path):
+    # Top-level function: safe for process pools.
+    return path, expensive_cpu_score(path)
+
+with ProcessPoolExecutor(max_workers=4) as executor:
+    futures = [executor.submit(score_file, p) for p in file_paths]
+    for future in as_completed(futures):
+        try:
+            path, score = future.result()
+        except Exception as exc:
+            log_failure(exc)
+        else:
+            persist_score(path, score)</code></pre>
+<div class="warn">Never pass a live database connection, boto3 client, logger with handlers, or giant DataFrame into a process worker unless you have measured the serialization cost and failure behavior.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">asyncio &mdash; event loop, async/await, when to use it</h2>
+<p><code>asyncio</code> uses a single-threaded event loop and cooperative multitasking. A coroutine yields control when it awaits an I/O operation, allowing other coroutines to run. This is excellent for thousands of lightweight I/O tasks, but it does not make CPU-bound Python code parallel.</p>
+<p>The async model shines when your client libraries are async-native: HTTP clients, async database drivers, queues, and cloud SDK wrappers. It is less useful when the underlying library is blocking, because one blocking call can freeze the event loop and ruin concurrency.</p>
+<pre><code>import asyncio
+
+
+async def fetch_one(session, url):
+    async with session.get(url) as resp:
+        resp.raise_for_status()
+        return await resp.json()
+
+async def fetch_many(session, urls):
+    tasks = [fetch_one(session, url) for url in urls]
+    return await asyncio.gather(*tasks)</code></pre>
+<div class="hi">Async is not faster because it uses more CPU. It is faster when it keeps one thread busy while many remote operations are waiting.</div>
+<div class="warn">Mixing blocking libraries into async code is the classic footgun. If a call has no <code>await</code> and performs network or disk I/O, assume it can block the whole loop.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">asyncio for Data Engineering &mdash; aiohttp, aiobotocore, asyncpg</h2>
+<p>For data pipelines, async is most useful at ingestion edges: hitting REST APIs with <code>aiohttp</code>, talking to AWS services through <code>aiobotocore</code>, or querying PostgreSQL with <code>asyncpg</code>. These tools can keep many requests in flight without the memory and context-switch overhead of hundreds of threads.</p>
+<p>The production concern is backpressure. Async makes it easy to create far more in-flight work than a downstream API, database, or object store can tolerate. Use semaphores, bounded queues, and connection pool limits so the pipeline controls pressure instead of discovering limits through throttling.</p>
+<pre><code>import asyncio
+
+sem = asyncio.Semaphore(20)
+
+async def bounded_fetch(session, url):
+    async with sem:
+        async with session.get(url) as resp:
+            resp.raise_for_status()
+            return await resp.text()</code></pre>
+<div class="hi">The best async ingestion jobs usually combine high fan-out with explicit limits: concurrency cap, timeout, retry policy, and a bounded output sink.</div>
+<div class="warn">Async database writes can still overwhelm the database. Fast clients do not remove transaction locks, index costs, WAL pressure, or connection pool limits.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">Queue-Based Producer-Consumer Pattern</h2>
+<p>The producer-consumer pattern separates fetching work from processing work. Producers discover or read tasks, push them into a queue, and consumers process them at a controlled rate. This keeps pipelines stable when one side is bursty and the other side is slow.</p>
+<p>In one Python process, use <code>queue.Queue</code> for threaded workers or <code>asyncio.Queue</code> for coroutines. Across machines or services, use SQS, Kafka, RabbitMQ, or a database-backed job table. The pattern is the same: bounded queue, idempotent worker, retry policy, poison-message handling, and observable lag.</p>
+<pre><code>from queue import Queue
+from threading import Thread
+
+q = Queue(maxsize=500)
+
+
+def worker():
+    while True:
+        item = q.get()
+        try:
+            process_item(item)
+        finally:
+            q.task_done()
+
+for _ in range(8):
+    Thread(target=worker, daemon=True).start()
+
+for item in discover_items():
+    q.put(item)
+q.join()</code></pre>
+<div class="warn">A queue without idempotency is only half a design. Retries can duplicate work, so writes need natural keys, upserts, checkpoints, or dedupe tables.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s8">Rate Limiting &amp; The Embarrassingly Parallel Pattern</h2>
+<p>An embarrassingly parallel workload splits into independent tasks with little or no communication between them: process 10,000 files, call one API per account, validate one partition per date, or compute one feature bundle per entity. These are ideal for threads, processes, async, AWS Batch, Lambda fan-out, ECS tasks, or Spark depending on size and dependencies.</p>
+<p>Rate limiting is what turns a cute concurrency demo into a reliable pipeline. External systems have quotas, retry budgets, connection limits, and fairness controls. Respecting them usually beats blindly increasing workers, especially when retries amplify traffic during incidents.</p>
+<table>
+  <tr><th>Control</th><th>Use when</th><th>Production value</th></tr>
+  <tr><td>Semaphore</td><td>Async or threaded fan-out</td><td>Caps in-flight requests</td></tr>
+  <tr><td>Token bucket</td><td>API has requests-per-second quota</td><td>Smooths traffic bursts</td></tr>
+  <tr><td>Exponential backoff</td><td>Transient failures or throttling</td><td>Reduces retry storms</td></tr>
+  <tr><td>Jitter</td><td>Many workers retry together</td><td>Avoids synchronized spikes</td></tr>
+  <tr><td>Batching</td><td>Sink has per-call overhead</td><td>Improves throughput and cost</td></tr>
+</table>
+<div class="hi">Concurrency increases pressure. Rate limiting shapes pressure. Senior pipeline design needs both.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s9">When to Move to Spark</h2>
+<p>Python concurrency is a single-machine scaling tool. It helps when the job is blocked on I/O, can use multiple CPU cores, or can split cleanly into independent tasks. It does not solve cluster-scale shuffles, terabyte joins, skewed aggregations, or memory pressure from data that cannot fit comfortably on one host.</p>
+<p>Move to Spark when the hard part is distributed data movement, not just local parallelism. Spark brings partitioning, shuffle management, fault recovery, executor memory isolation, cluster scheduling, and integration with Parquet, S3, Glue, EMR, and Databricks. That power comes with overhead, so DuckDB, Polars, or Python multiprocessing may be better for single-machine jobs under the right size.</p>
+<div class="hi">A good decision rule: optimize locally until the bottleneck is data volume, distributed joins, or fault-tolerant cluster execution. Then move to Spark.</div>
+<div class="warn">Do not wrap Spark jobs in Python thread pools to make them faster. Spark already parallelizes work across executors; extra driver-side concurrency often creates scheduling noise and operational confusion.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+<div class="qa">
+  <div class="qa-q">Q: Why do Python threads not speed up CPU-bound work in CPython?</div>
+  <div class="qa-a">A: The GIL allows only one thread to execute Python bytecode at a time. For CPU-bound Python code, multiple threads mostly take turns instead of running in parallel. Threads can still help when work releases the GIL or waits on I/O, but process pools are the safer choice for pure Python CPU work.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How would you choose between ThreadPoolExecutor and ProcessPoolExecutor in a pipeline?</div>
+  <div class="qa-a">A: I would start with the bottleneck. If the job waits on APIs, S3, or databases, I would use threads with bounded workers. If the job burns CPU in Python code, I would use processes, while keeping inputs and outputs small enough to avoid pickling overhead.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: What is the most common production bug in process-pool code?</div>
+  <div class="qa-a">A: Passing non-picklable or huge objects into workers. Lambdas, nested functions, open connections, and large DataFrames often fail or serialize slowly. I prefer top-level functions, small identifiers as inputs, and worker-local clients.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When is asyncio better than a thread pool?</div>
+  <div class="qa-a">A: Asyncio is strong when there are many lightweight I/O operations and async-native libraries are available. It can handle large fan-out with fewer OS threads and lower overhead. It is not a CPU acceleration tool, and blocking calls inside the event loop can erase the benefit.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: How do you make a concurrent ingestion job safe to retry?</div>
+  <div class="qa-a">A: I design writes to be idempotent using natural keys, upserts, checkpoints, or dedupe tables. I also isolate failed tasks, track retry counts, and send poison records to a dead-letter path. Concurrency without idempotency is fragile because partial failure is normal.</div>
+</div>
+<div class="qa">
+  <div class="qa-q">Q: When would you stop using local Python concurrency and move to Spark?</div>
+  <div class="qa-a">A: I would move when the bottleneck becomes distributed data volume, large joins, shuffles, skew, or memory pressure beyond one machine. Spark gives partitioned execution, retryable tasks, and cluster scheduling. For smaller single-node analytics, DuckDB, Polars, or local multiprocessing may be simpler and faster.</div>
+</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Quick Reference</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">GIL</div>
+    <div class="cd">CPython lock that prevents multiple threads from executing Python bytecode at the same time.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ThreadPool</div>
+    <div class="cd">Best for I/O-bound fan-out such as APIs, S3 calls, metadata scans, and database reads.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">ProcessPool</div>
+    <div class="cd">Best for CPU-bound pure Python work when inputs and outputs are picklable and not huge.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">executor.map</div>
+    <div class="cd">Simple ordered parallel mapping; less flexible for per-task error handling.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">submit()</div>
+    <div class="cd">Creates individual futures; useful for logging, retries, timeouts, and mixed arguments.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">as_completed()</div>
+    <div class="cd">Processes futures as they finish, which is ideal for long-tail tasks and partial failures.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">future.result()</div>
+    <div class="cd">Returns worker output or re-raises the worker exception in the caller.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Pickling</div>
+    <div class="cd">Serialization boundary required by process pools; avoid lambdas, nested functions, and live clients.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">asyncio</div>
+    <div class="cd">Single-threaded event loop for cooperative I/O concurrency using async and await.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Semaphore</div>
+    <div class="cd">Concurrency cap that prevents async or threaded jobs from overwhelming external systems.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Queue</div>
+    <div class="cd">Producer-consumer buffer that decouples discovery from processing and enables backpressure.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Idempotency</div>
+    <div class="cd">Required for safe retries; use natural keys, upserts, checkpoints, or dedupe tables.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Rate limit</div>
+    <div class="cd">Controls request pressure with caps, token buckets, backoff, jitter, and batching.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Move to Spark</div>
+    <div class="cd">Use when distributed joins, shuffles, data volume, or fault-tolerant cluster execution dominate.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
