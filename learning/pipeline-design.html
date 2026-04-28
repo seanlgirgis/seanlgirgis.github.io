@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Pipeline Architecture & Design - Master Engineering Reference | Sean Girgis</title>
+<title>Data Pipeline Design - Master Engineering Reference | Sean Girgis</title>
 <link rel="canonical" href="https://seanlgirgis.github.io/learning/pipeline-design.html">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -31,6 +31,7 @@ h1 { color:var(--primary); font-size:2em; margin:0 0 10px; line-height:1.25; }
 .tag { background:var(--hi-bg); color:var(--primary); padding:3px 10px; border-radius:12px; font-size:0.82em; font-weight:600; }
 .audio-box { border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:18px 22px; margin-bottom:36px; background:#fffdf9; }
 .audio-box .audio-label { font-weight:700; color:var(--accent); font-size:0.92em; margin-bottom:10px; }
+.video-hint { font-size:0.82em; color:#aaa; margin-top:8px; }
 .toc { background:#f7f9fc; border:1px solid var(--line); border-radius:6px; padding:22px 28px; margin-bottom:44px; }
 .toc h2 { margin:0 0 14px; font-size:0.82em; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; }
 .toc ol { margin:0; padding-left:20px; columns:2; column-gap:32px; }
@@ -61,512 +62,289 @@ tr:nth-child(even) td { background:#f8fafc; }
 <body id="top">
 <div class="doc">
 
-  <div class="topnav">
-    <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Data Pipeline Architecture &amp; Design
+<div class="topnav">
+  <a href="https://seanlgirgis.github.io/#learning">&#127968; Learning Hub</a> / Data Pipeline Design - Master Engineering Reference
+</div>
+
+<h1>Data Pipeline Design</h1>
+<p class="subtitle">Interview-Focused Guide for Data Engineers</p>
+
+<div class="tag-row">
+  <span class="tag">Data Engineering</span>
+  <span class="tag">Pipeline Design</span>
+  <span class="tag">Batch</span>
+  <span class="tag">Streaming</span>
+  <span class="tag">CDC</span>
+  <span class="tag">Medallion</span>
+  <span class="tag">Observability</span>
+</div>
+
+<div class="audio-box">
+  <div class="audio-label">&#127911; Audio Overview</div>
+  <audio controls preload="metadata" style="width:100%;margin-top:6px;">
+    <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_pipeline-design.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Foundations</a></li>
+    <li><a href="#s2">Requirements and Source Patterns</a></li>
+    <li><a href="#s3">Core Pipeline Architecture</a></li>
+    <li><a href="#s4">Reliability and Recovery</a></li>
+    <li><a href="#s5">Quality, Governance, and Security</a></li>
+    <li><a href="#s6">Performance and Cost</a></li>
+    <li><a href="#s7">System Design Walkthrough</a></li>
+    <li><a href="#qa">Interview Q&amp;A</a></li>
+    <li><a href="#cheat">Cheat Sheet</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">1. Foundations</h2>
+<p>A data pipeline moves, validates, transforms, and serves data from producers to consumers. In interviews, the goal is not just to name tools. The goal is to show that you can design a system that survives real production pressure.</p>
+<p>Strong answers cover ingestion, storage, transformation, serving, observability, reliability, security, and cost. A junior answer says, "I move data from source to warehouse." A senior answer explains how the system recovers, replays, scales, and protects the business from bad data.</p>
+<div class="hi">Key insight: pipeline design is reliability engineering applied to data movement.</div>
+<div class="warn">Gotcha: jumping straight to Kafka, Spark, Airflow, or dbt without first clarifying requirements usually sounds tool-driven instead of architecture-driven.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s2">2. Requirements and Source Patterns</h2>
+<p>Pipeline design starts with business requirements. Fraud detection may require seconds of latency, while finance reporting may only need a daily batch. The right architecture depends on latency, scale, retention, consumers, compliance, and recovery expectations.</p>
+<table>
+  <tr>
+    <th>Source Pattern</th>
+    <th>Best Use</th>
+    <th>Main Risk</th>
+  </tr>
+  <tr>
+    <td>Database CDC</td>
+    <td>Incremental changes from OLTP systems</td>
+    <td>Schema drift, ordering, duplicate events</td>
+  </tr>
+  <tr>
+    <td>APIs</td>
+    <td>SaaS, vendor, and partner data</td>
+    <td>Rate limits, pagination, auth expiration</td>
+  </tr>
+  <tr>
+    <td>Files</td>
+    <td>Batch exports, SFTP, CSV, JSON</td>
+    <td>Partial uploads, corrupted files, duplicates</td>
+  </tr>
+  <tr>
+    <td>Event Streams</td>
+    <td>Low-latency events and telemetry</td>
+    <td>Consumer lag, ordering, replay complexity</td>
+  </tr>
+</table>
+<div class="hi">Clarify latency, throughput, failure tolerance, and consumers before choosing technology.</div>
+<div class="warn">Never process files directly from an incoming drop zone. Land them first, validate completeness, then promote them for processing.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s3">3. Core Pipeline Architecture</h2>
+<p>A production pipeline usually separates ingestion, raw storage, validation, transformation, serving, and monitoring. This separation reduces blast radius and makes recovery easier when one stage fails.</p>
+<h3>Batch vs Streaming</h3>
+<table>
+  <tr>
+    <th>Choice</th>
+    <th>Use When</th>
+    <th>Tradeoff</th>
+  </tr>
+  <tr>
+    <td>Batch</td>
+    <td>Hourly, daily, or scheduled reporting is enough</td>
+    <td>Simpler and cheaper, but higher latency</td>
+  </tr>
+  <tr>
+    <td>Streaming</td>
+    <td>Low latency creates business value</td>
+    <td>Faster reaction, but more operational complexity</td>
+  </tr>
+  <tr>
+    <td>Hybrid</td>
+    <td>Real-time alerts plus heavy analytical reporting</td>
+    <td>Flexible, but requires clear ownership boundaries</td>
+  </tr>
+</table>
+<h3>Medallion Flow</h3>
+<p>Bronze stores raw immutable data. Silver applies validation, deduplication, normalization, and quality checks. Gold serves business-ready outputs such as dashboards, ML features, and reporting tables.</p>
+<div class="hi">The bronze layer is your recovery foundation. If downstream logic breaks, you replay from raw source truth.</div>
+<div class="warn">Avoid designing one giant workflow that handles ingestion, transformation, publishing, and alerting in a single tightly coupled job.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s4">4. Reliability and Recovery</h2>
+<p>Reliable pipelines assume failures, retries, duplicates, late data, and upstream changes are normal. Idempotency means the same operation can run more than once without corrupting results.</p>
+<p>Replayability depends on immutable raw storage, deterministic transformations, partition-aware writes, and versioned logic. Backfills should be isolated from production workloads and validated before merging into trusted datasets.</p>
+<pre><code>pipeline_recovery_checklist:
+  raw_storage: immutable
+  writes: idempotent
+  retries: bounded_with_backoff
+  failed_records: dead_letter_queue
+  transformations: versioned
+  backfills: partition_scoped
+  late_events: watermark_or_reconciliation</code></pre>
+<div class="hi">Senior interview phrase: "I design the pipeline so recovery is a normal workflow, not a heroic manual rescue."</div>
+<div class="warn">Infinite retries can amplify outages, overwhelm dependencies, and create duplicate writes if the pipeline is not idempotent.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s5">5. Quality, Governance, and Security</h2>
+<p>Data quality checks protect consumers from silent failures. Common checks include freshness, completeness, validity, uniqueness, consistency, schema compatibility, and drift detection.</p>
+<p>Governance makes data trustworthy across teams. Strong designs define owners, lineage, retention rules, audit trails, access controls, and data contracts between producers and consumers.</p>
+<table>
+  <tr>
+    <th>Control</th>
+    <th>Purpose</th>
+  </tr>
+  <tr>
+    <td>Freshness check</td>
+    <td>Detect late or missing loads</td>
+  </tr>
+  <tr>
+    <td>Completeness check</td>
+    <td>Catch missing partitions, regions, or records</td>
+  </tr>
+  <tr>
+    <td>Schema contract</td>
+    <td>Prevent unexpected producer changes</td>
+  </tr>
+  <tr>
+    <td>Lineage</td>
+    <td>Trace impact from source to consumer</td>
+  </tr>
+  <tr>
+    <td>Least privilege</td>
+    <td>Limit pipeline access to required resources</td>
+  </tr>
+  <tr>
+    <td>PII masking</td>
+    <td>Protect sensitive data in analytical layers</td>
+  </tr>
+</table>
+<div class="hi">Data contracts turn pipeline reliability into a shared responsibility between producer and consumer teams.</div>
+<div class="warn">Hardcoded credentials, broad IAM permissions, and unmasked PII are serious production and interview red flags.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s6">6. Performance and Cost</h2>
+<p>Performance and cost are architectural concerns, not cleanup tasks. Senior engineers think about partition pruning, incremental processing, file sizing, shuffle reduction, compaction, retention, and storage tiering early.</p>
+<p>Full-table reloads may work at small scale, but they become expensive and fragile as volume grows. Streaming everything may sound impressive, but it can be wasteful if the business does not need low latency.</p>
+<div class="hi">Prefer incremental processing when possible. It reduces compute, narrows recovery scope, and improves pipeline predictability.</div>
+<div class="warn">Small files hurt query performance by increasing metadata overhead and reducing scan efficiency.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="s7">7. System Design Walkthrough</h2>
+<p>Scenario: design a pipeline for a food delivery platform with near real-time order tracking, daily financial reporting, ML recommendation support, historical analytics, and millions of daily events.</p>
+<h3>Architecture Answer</h3>
+<p>Start by clarifying throughput, latency, regions, retention, recovery expectations, and consumers. Ingest order database changes through CDC, driver mobile events through streaming, payment data through APIs, and restaurant updates through controlled file ingestion.</p>
+<p>Land all raw payloads in bronze storage. Use silver for deduplication, schema normalization, validation, timestamp standardization, and PII masking. Use gold for operational dashboards, finance tables, and ML feature datasets.</p>
+<p>Add retries, DLQs, watermarks, replay support, schema validation, freshness metrics, failed record counts, lineage, and runbooks. Close by saying that replayability and operational simplicity matter early because reliability failures hurt the business faster than temporary scale limits.</p>
+<div class="hi">A strong design answer has a beginning, middle, and finish: clarify requirements, present architecture, then explain failure recovery.</div>
+<div class="warn">Do not draw a happy-path-only system. Interviewers are usually listening for what breaks and how you recover.</div>
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="qa">Interview Q&amp;A</h2>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you choose batch over streaming?</div>
+  <div class="qa-a">A: Choose batch when the business can tolerate higher latency and operational simplicity matters more than real-time response. Batch is usually easier to debug, cheaper to operate, and simpler to recover. Streaming should be justified by clear low-latency business value.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Why is idempotency critical in pipeline design?</div>
+  <div class="qa-a">A: Distributed systems retry work constantly. Without idempotent writes, retries and replays can create duplicates, inflate metrics, or corrupt downstream tables. Deterministic keys, MERGE operations, and deduplication windows are common controls.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you recover from corrupted transformation logic?</div>
+  <div class="qa-a">A: I would stop downstream publishing, identify the affected partitions or time range, fix and version the transformation, then replay from immutable raw storage into silver and gold. I would validate row counts, quality rules, and consumer impact before releasing corrected outputs.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What pipeline metrics would you monitor?</div>
+  <div class="qa-a">A: I would monitor freshness, latency, throughput, failure rate, queue lag, data quality violations, row-count anomalies, and downstream SLA impact. Logs help with debugging, but metrics and alerts are what detect operational failure early.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you handle late-arriving events?</div>
+  <div class="qa-a">A: For streaming, I would use event-time processing, watermarks, grace windows, and reconciliation jobs. For batch, I would design partition-aware reprocessing so late records can update the correct business period safely.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What separates a junior answer from a senior pipeline design answer?</div>
+  <div class="qa-a">A: Junior answers focus on tools and happy-path movement. Senior answers discuss replayability, idempotency, data contracts, observability, incident response, governance, cost, and long-term maintainability. The senior mindset is about how the system behaves under failure.</div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
+
+<h2 id="cheat">Cheat Sheet</h2>
+<div class="cheat">
+  <div class="cheat-row">
+    <div class="ct">Pipeline</div>
+    <div class="cd">System that moves, validates, transforms, and serves data.</div>
   </div>
-
-  <h1>Data Pipeline Architecture &amp; Design</h1>
-  <p class="subtitle">Engineering reference &middot; Senior Data Engineer &middot; Last updated 2026-04-25 &middot; 35–50 min read</p>
-
-  <div class="tag-row">
-    <span class="tag">Architecture</span>
-    <span class="tag">Pipeline Design</span>
-    <span class="tag">Microservices</span>
-    <span class="tag">Testing</span>
-    <span class="tag">Idempotency</span>
-    <span class="tag">Observability</span>
-    <span class="tag">Data Contracts</span>
-    <span class="tag">Interview Prep</span>
+  <div class="cheat-row">
+    <div class="ct">CDC</div>
+    <div class="cd">Captures database inserts, updates, and deletes incrementally.</div>
   </div>
-
-  <div class="audio-box">
-    <div class="audio-label">&#127911; Audio Overview</div>
-    <audio controls preload="metadata" style="width:100%;margin-top:6px;">
-      <source src="https://pub-174bd65326be4562b4618ccf6a4a8864.r2.dev/final_pipeline-design.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
+  <div class="cheat-row">
+    <div class="ct">Batch</div>
+    <div class="cd">Scheduled processing; simpler, cheaper, and higher latency.</div>
   </div>
-
-  <div class="toc">
-    <h2>Contents</h2>
-    <ol>
-      <li><a href="#s1">Architecture-First Thinking</a></li>
-      <li><a href="#s2">Architecting from Scratch</a></li>
-      <li><a href="#s3">Batch vs Streaming</a></li>
-      <li><a href="#s4">Designing for Idempotency</a></li>
-      <li><a href="#s5">Microservices Boundaries</a></li>
-      <li><a href="#s6">Sync vs Async Communication</a></li>
-      <li><a href="#s7">Data Contracts &amp; Schema Evolution</a></li>
-      <li><a href="#s8">Testing — The Full Pyramid</a></li>
-      <li><a href="#s9">Data Quality Validation</a></li>
-      <li><a href="#s10">Observability &amp; SLAs</a></li>
-      <li><a href="#s11">Late Data &amp; Watermarking</a></li>
-      <li><a href="#s12">Backfill Strategy</a></li>
-      <li><a href="#s13">Failure Modes &amp; Recovery</a></li>
-      <li><a href="#s14">Build vs Buy</a></li>
-      <li><a href="#qa">Interview Q&amp;A</a></li>
-      <li><a href="#cheat">Quick Reference</a></li>
-    </ol>
+  <div class="cheat-row">
+    <div class="ct">Streaming</div>
+    <div class="cd">Continuous processing; lower latency with higher operational complexity.</div>
   </div>
-
-  <!-- S1 -->
-  <h2 id="s1">Architecture-First Thinking</h2>
-  <p>The most common mistake in data pipeline design is starting with the tool. An engineer reaches for Kafka, Glue, or Spark before answering the questions that determine whether those tools are appropriate. Architecture-first thinking means you understand the problem constraints before you commit to any implementation.</p>
-  <p>Four questions define every pipeline before any technology choice:</p>
-  <table>
-    <tr><th>Question</th><th>Why it comes first</th></tr>
-    <tr><td>Who consumes this data, and what SLA do they need?</td><td>Determines whether you need real-time, near-real-time, or batch delivery</td></tr>
-    <tr><td>What is the volume and velocity of the source?</td><td>Determines compute scale, partitioning strategy, and cost model</td></tr>
-    <tr><td>What happens when the pipeline fails?</td><td>Determines durability requirements, replay strategy, and DLQ design</td></tr>
-    <tr><td>How often does the source schema change?</td><td>Determines how much schema evolution protection you need to build in</td></tr>
-  </table>
-  <div class="hi">Start from the consumer, not the source. The consumer's SLA is the constraint that drives every upstream decision about latency, durability, and compute.</div>
-  <div class="warn">Starting with a tool instead of requirements is how teams end up with a real-time Kafka pipeline serving a dashboard that is only refreshed daily, or a batch Glue job for a consumer that needs sub-minute freshness.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S2 -->
-  <h2 id="s2">Architecting a New Pipeline from Scratch</h2>
-  <p>When asked this question in an interview — or facing a real design session — the answer is a structured process, not a list of tools. Here is the process that separates senior engineers from those who jump straight to implementation.</p>
-
-  <h3>Step 1 — Define the consumer contract</h3>
-  <p>What does the downstream system need? Freshness (how old can the data be?), completeness (can rows arrive late?), format (Parquet, JSON, SQL table?), and access pattern (query by key, scan a range, subscribe to a stream?). Every upstream decision flows from this.</p>
-
-  <h3>Step 2 — Characterize the source</h3>
-  <p>Is the source a database, an API, a message queue, files dropped to S3, or a CDC stream? What is the volume per hour/day? Does it emit deletes and updates or only inserts? Does it have a reliable cursor for incremental reads? Can it be replayed if you miss a window?</p>
-
-  <h3>Step 3 — Design the data model at each stage</h3>
-  <p>Sketch the schema at ingestion, after transformation, and at serving. Identify where data is enriched, filtered, aggregated, or joined. Make schema contracts explicit between stages rather than allowing them to drift.</p>
-
-  <h3>Step 4 — Design for failure before designing for the happy path</h3>
-  <p>What happens at each stage if it fails? Is the failure transient or fatal? How does the pipeline retry without producing duplicates? Where does bad data go? What is the replay path if a stage needs to be rerun from a checkpoint?</p>
-
-  <h3>Step 5 — Choose compute to fit the constraints</h3>
-  <p>Only now do you choose tools. The consumer SLA, source volume, and failure model together determine whether you need streaming (Kafka + Flink), micro-batch (Spark Streaming), or batch (Glue, EMR, Lambda). Match the tool to the problem, not the other way around.</p>
-
-  <pre><code>Consumer SLA: 15-minute freshness, SQL query access, daily aggregate reports
-Source: operational RDS database, 50 GB/day, inserts and updates
-
-Decision path:
-  - 15 min SLA --> micro-batch is sufficient, full streaming is overkill and costly
-  - Updates exist --> need CDC or MERGE strategy, not append-only
-  - SQL access --> land in Redshift or Athena on S3
-  - Daily aggregates --> materialized views or scheduled dbt runs on top of raw load
-
-Architecture: DMS CDC --> S3 (Parquet, partitioned by date) --> Glue crawler
-             --> Athena for ad-hoc + Redshift Spectrum for aggregate reports
-             --> dbt for business-layer transformations</code></pre>
-
-  <div class="hi">In interviews, walk the interviewer through your decision process out loud. Say "I'm asking about the consumer SLA first because that determines whether we need streaming." This demonstrates seniority — you're reasoning, not just listing tools.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S3 -->
-  <h2 id="s3">Batch vs Streaming — The First Decision</h2>
-  <p>The choice between batch and streaming is the highest-leverage architectural decision in any pipeline. Getting it wrong is expensive to fix. The decision is not about which is more modern — it is about matching the architecture to what the consumer actually needs.</p>
-
-  <table>
-    <tr><th>Dimension</th><th>Batch</th><th>Streaming</th></tr>
-    <tr><td>Latency</td><td>Minutes to hours</td><td>Milliseconds to seconds</td></tr>
-    <tr><td>Complexity</td><td>Lower — simpler orchestration</td><td>Higher — state, watermarks, replay</td></tr>
-    <tr><td>Cost</td><td>Lower at moderate volume</td><td>Higher — always-on infrastructure</td></tr>
-    <tr><td>Fault tolerance</td><td>Simple — re-run the job</td><td>Complex — checkpointing and offset management</td></tr>
-    <tr><td>Late data handling</td><td>Easy — next batch picks it up</td><td>Requires watermarks and grace periods</td></tr>
-    <tr><td>Right for</td><td>Daily reports, ETL, ML features</td><td>Fraud detection, live dashboards, CDC</td></tr>
-  </table>
-
-  <h3>The Micro-Batch Middle Ground</h3>
-  <p>Most production pipelines that appear to need "real-time" actually need near-real-time — freshness of 1 to 15 minutes is acceptable. Micro-batch with Spark Structured Streaming or a short-interval Glue job achieves this at far lower operational cost than a full streaming architecture. Before committing to Kafka and Flink, ask whether micro-batch solves the problem.</p>
-
-  <div class="hi">The question to ask is: "What is the business impact of data being 5 minutes stale vs 15 minutes stale vs 1 hour stale?" If the answer is "no real difference," batch or micro-batch is the correct architecture. Streaming is a cost you pay for a latency requirement.</div>
-  <div class="warn">Streaming architectures are significantly harder to test, debug, reprocess, and backfill than batch. Never choose streaming for its own sake. Make the consumer justify the complexity cost.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S4 -->
-  <h2 id="s4">Designing for Idempotency</h2>
-  <p>Idempotency means running the same pipeline job twice produces the same result as running it once. It is not an optimization — it is a correctness constraint that must be designed in from the start. Without it, retries and reruns create duplicate data, inflated metrics, and corrupted aggregations.</p>
-
-  <h3>Why idempotency matters</h3>
-  <p>Every production pipeline will be retried. Networks fail. EC2 instances are terminated. Glue jobs time out. Lambda functions hit concurrency limits. The pipeline will run twice for the same input, and it must produce correct output in that case without manual intervention.</p>
-
-  <h3>Idempotency patterns</h3>
-  <table>
-    <tr><th>Pattern</th><th>How it works</th><th>When to use</th></tr>
-    <tr><td>Overwrite partition</td><td>Write output to a deterministic S3 prefix, overwrite on rerun</td><td>Batch jobs writing partitioned Parquet to S3</td></tr>
-    <tr><td>MERGE / UPSERT</td><td>Use primary key to insert new rows and update existing ones</td><td>CDC loads into Redshift, DynamoDB, or Delta Lake</td></tr>
-    <tr><td>Idempotency key</td><td>Hash of input fields stored to detect and skip duplicates</td><td>Event processing in Lambda or Flink</td></tr>
-    <tr><td>Transactional write</td><td>Write to staging table, commit atomically to target</td><td>Relational database loads requiring consistency</td></tr>
-    <tr><td>Checkpointing</td><td>Record last processed offset or watermark, resume from checkpoint on restart</td><td>Kafka consumers, Spark Structured Streaming</td></tr>
-  </table>
-
-  <pre><code># Idempotent S3 partition overwrite pattern
-# Each run writes to the same deterministic prefix and overwrites it
-
-output_prefix = f"s3://data-lake/processed/events/year={year}/month={month}/day={day}/"
-
-# Delete existing objects at the prefix first (or use spark overwrite mode)
-spark.write \
-    .mode("overwrite") \
-    .partitionBy("year", "month", "day") \
-    .parquet(output_prefix)
-
-# Running this twice for the same date produces the same result</code></pre>
-
-  <div class="hi">Test idempotency explicitly: run the job, record the row count and a checksum of the output, run the job again with identical input, verify the row count and checksum are identical. If they differ, the pipeline is not idempotent.</div>
-  <div class="warn">At-least-once delivery from Kafka or SQS is the norm. Your consumer must be idempotent because the same message will arrive more than once under normal operating conditions — not just during failure scenarios.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S5 -->
-  <h2 id="s5">Microservices Boundaries for Data Engineering</h2>
-  <p>In data engineering, microservices are components with a single, well-defined responsibility and a stable interface. The question of where to draw boundaries is one of the most consequential architectural decisions, because the wrong cut creates tight coupling that makes individual components impossible to deploy, scale, or debug independently.</p>
-
-  <h3>Principles for drawing boundaries</h3>
-  <p><strong>Separate by rate of change.</strong> If ingestion logic changes frequently but transformation logic is stable, they should be separate services. Coupling them means a change in one triggers redeployment of the other.</p>
-  <p><strong>Separate by failure domain.</strong> If a downstream enrichment service can fail without affecting ingestion, keep them separate. A failure in one should not cascade into the other.</p>
-  <p><strong>Separate by scale requirement.</strong> Ingestion of high-volume events and serving of low-volume query results have different scaling characteristics. They should scale independently.</p>
-  <p><strong>Separate by team ownership.</strong> A service boundary that crosses team ownership creates coordination cost. Align service boundaries with team responsibility where possible.</p>
-
-  <table>
-    <tr><th>Service</th><th>Responsibility</th><th>Interface</th></tr>
-    <tr><td>Ingestion service</td><td>Read from source, validate, write raw to S3 or Kafka</td><td>Publishes raw events to topic or S3 prefix</td></tr>
-    <tr><td>Transformation service</td><td>Apply business logic, enrich, normalize</td><td>Consumes raw, publishes processed</td></tr>
-    <tr><td>Quality gate service</td><td>Validate row counts, nulls, schema, freshness</td><td>Passes or fails a batch before it reaches serving</td></tr>
-    <tr><td>Serving layer</td><td>Expose data to consumers via SQL, API, or file export</td><td>Query interface or scheduled delivery</td></tr>
-    <tr><td>Orchestrator</td><td>Trigger, sequence, monitor, retry</td><td>DAG definition, no business logic</td></tr>
-  </table>
-
-  <div class="hi">A service should be independently deployable. If you cannot deploy, restart, or scale one component without touching another, the boundary is in the wrong place.</div>
-  <div class="warn">Too many fine-grained services create distributed system complexity without benefit. The goal is the right granularity — not the most services. A monolithic pipeline that can be deployed as one unit is often the right answer for small teams or early-stage data products.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S6 -->
-  <h2 id="s6">Sync vs Async Communication</h2>
-  <p>How services communicate is as important as where the boundaries are. Synchronous communication (REST, gRPC) creates temporal coupling — the caller waits for the callee and fails if the callee is unavailable. Asynchronous communication (queues, event streams) decouples availability but introduces complexity around ordering, delivery guarantees, and error handling.</p>
-
-  <table>
-    <tr><th>Pattern</th><th>Latency</th><th>Coupling</th><th>Best for</th></tr>
-    <tr><td>Synchronous REST/gRPC</td><td>Immediate</td><td>High — caller blocks</td><td>Query APIs, real-time lookups, user-facing requests</td></tr>
-    <tr><td>Async queue (SQS)</td><td>Seconds</td><td>Low — caller continues</td><td>Work distribution, retryable tasks, fan-out</td></tr>
-    <tr><td>Event stream (Kafka/Kinesis)</td><td>Milliseconds</td><td>Very low — pub/sub</td><td>CDC, high-volume event pipelines, replay</td></tr>
-    <tr><td>S3 file drop</td><td>Minutes</td><td>Very low — polling</td><td>Batch handoff between teams or systems</td></tr>
-  </table>
-
-  <p>For data pipelines, asynchronous patterns dominate because they allow each stage to run at its own pace, buffer during traffic spikes, and retry independently. The source does not need to wait for the transformation, and the transformation does not need the serving layer to be healthy before it can write results.</p>
-
-  <div class="hi">Use synchronous communication when you need an immediate answer (lookups, validations, user-facing APIs). Use asynchronous communication when you need durability, scale, or independence between stages.</div>
-  <div class="warn">Async patterns shift errors from immediate failures to deferred failures visible only in dead letter queues or consumer lag metrics. You must invest in observability proportional to the asynchrony you introduce.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S7 -->
-  <h2 id="s7">Data Contracts and Schema Evolution</h2>
-  <p>A data contract is an explicit agreement between a producer and its consumers about the structure, semantics, and quality of the data being exchanged. In most pipelines, contracts are implicit — an upstream team changes a field name and two downstream pipelines break silently on the next run. Making contracts explicit is how you prevent this.</p>
-
-  <h3>What a data contract covers</h3>
-  <table>
-    <tr><th>Dimension</th><th>Example</th></tr>
-    <tr><td>Schema</td><td>Field names, types, nullability, nesting structure</td></tr>
-    <tr><td>Semantics</td><td>What does <code>event_time</code> mean — UTC, local, server receipt time?</td></tr>
-    <tr><td>Freshness SLA</td><td>Data will arrive within 15 minutes of the source event</td></tr>
-    <tr><td>Completeness</td><td>Row count will not drop more than 5% versus previous day</td></tr>
-    <tr><td>Uniqueness</td><td>No duplicate <code>event_id</code> values within a partition</td></tr>
-  </table>
-
-  <h3>Schema evolution compatibility modes</h3>
-  <pre><code>Backward compatible  -- new schema can read data written with old schema
-                        Safe: add optional fields, remove fields with defaults
-                        Breaks: rename fields, change types, make optional fields required
-
-Forward compatible   -- old schema can read data written with new schema
-                        Safe: remove fields, add fields with defaults
-                        Breaks: add required fields, change types
-
-Full compatible      -- both backward and forward
-                        Only safe change: add optional fields with defaults
-
-Breaking change      -- requires consumer migration before producer deploys
-                        Any rename, type change, or removal of a required field</code></pre>
-
-  <div class="hi">Treat a schema change like a database migration. Announce it to consumers, provide a migration timeline, use expand-and-contract: add the new field first while keeping the old one, migrate consumers, then remove the old field.</div>
-  <div class="warn">Schema Registry (Confluent, AWS Glue, or Apicurio) enforces compatibility rules automatically on every produce call. Without it, a producer can publish an incompatible schema and break consumers before anyone notices.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S8 -->
-  <h2 id="s8">Testing — The Full Pyramid</h2>
-  <p>Testing a data pipeline is different from testing application code. A test can pass — the job completed, returned exit code 0, wrote files to S3 — while the data is wrong. The testing strategy must prove correctness of the data, not just execution of the code.</p>
-
-  <h3>The five test layers</h3>
-  <table>
-    <tr><th>Layer</th><th>What it proves</th><th>When it runs</th><th>Tool</th></tr>
-    <tr><td>Unit tests</td><td>Individual transformation functions produce correct output for known input</td><td>Every commit, fast</td><td>pytest, unittest</td></tr>
-    <tr><td>Integration tests</td><td>Components work together — job reads from source, writes correct output to sink</td><td>Pull request, staging deploy</td><td>pytest + moto, localstack</td></tr>
-    <tr><td>Contract tests</td><td>Producer output matches the schema and semantics consumers expect</td><td>Before every deploy</td><td>Great Expectations, dbt tests, custom validators</td></tr>
-    <tr><td>End-to-end tests</td><td>The full pipeline path produces the correct serving-layer result</td><td>Staging environment</td><td>Custom harness with known input fixtures</td></tr>
-    <tr><td>Data quality tests</td><td>Production data meets freshness, completeness, uniqueness, and value-range expectations</td><td>After every pipeline run in production</td><td>dbt tests, Great Expectations, custom SQL checks</td></tr>
-  </table>
-
-  <h3>Testing large transformations</h3>
-  <p>You cannot run a 500 GB Spark job in a CI pipeline. The practical approach is to extract transformation logic into pure functions that take DataFrames and return DataFrames, then test those functions against small representative samples. The schema, edge cases, and business logic can all be validated on 1000 rows. The scale-specific behavior (shuffle correctness, partition skew) is tested separately in a staging environment with a representative data sample.</p>
-
-  <pre><code># Separate transform logic from Spark job scaffolding
-# So it can be tested without a Spark cluster
-
-def normalize_event_timestamps(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert all timestamp fields to UTC ISO-8601 strings."""
-    df['event_time'] = pd.to_datetime(df['event_time'], utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-    return df
-
-# Test with 10 rows — no Spark cluster needed
-def test_timestamp_normalization():
-    input_df = pd.DataFrame({'event_time': ['2026-04-25 10:00:00-05:00']})
-    result = normalize_event_timestamps(input_df)
-    assert result['event_time'][0] == '2026-04-25T15:00:00Z'</code></pre>
-
-  <h3>Testing idempotency</h3>
-  <pre><code># Idempotency test pattern
-def test_pipeline_is_idempotent():
-    run_pipeline(date='2026-04-25', input_path='s3://test/raw/2026-04-25/')
-    first_run_checksum = compute_checksum('s3://test/processed/2026-04-25/')
-    first_run_count = count_rows('s3://test/processed/2026-04-25/')
-
-    run_pipeline(date='2026-04-25', input_path='s3://test/raw/2026-04-25/')  # run again
-    second_run_checksum = compute_checksum('s3://test/processed/2026-04-25/')
-    second_run_count = count_rows('s3://test/processed/2026-04-25/')
-
-    assert first_run_checksum == second_run_checksum
-    assert first_run_count == second_run_count</code></pre>
-
-  <div class="hi">The most valuable tests for data pipelines are the data quality tests that run in production after every job. A green CI pipeline only tells you the code ran. Production data quality checks tell you the output was correct.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S9 -->
-  <h2 id="s9">Data Quality Validation</h2>
-  <p>Data quality is a pipeline concern, not just a consumer concern. By the time a downstream analyst notices wrong data, it has propagated through multiple pipeline stages and potentially into production reports. Quality gates embedded in the pipeline catch problems at the earliest possible point.</p>
-
-  <h3>The five data quality dimensions</h3>
-  <table>
-    <tr><th>Dimension</th><th>What to check</th><th>Example assertion</th></tr>
-    <tr><td>Completeness</td><td>Required fields are not null, row counts are within expected range</td><td>Row count today &ge; 95% of row count yesterday</td></tr>
-    <tr><td>Uniqueness</td><td>Primary key fields have no duplicates within a partition</td><td><code>COUNT(DISTINCT event_id) = COUNT(*)</code></td></tr>
-    <tr><td>Freshness</td><td>Latest record timestamp is within the SLA window</td><td>MAX(event_time) within last 30 minutes</td></tr>
-    <tr><td>Validity</td><td>Values are within expected range or enumeration</td><td>All <code>status</code> values in {active, inactive, pending}</td></tr>
-    <tr><td>Consistency</td><td>Relationships between fields hold, totals reconcile with source</td><td>SUM(line_items) = order_total for each order</td></tr>
-  </table>
-
-  <h3>Where to put quality gates</h3>
-  <p>Place a quality gate between each major pipeline stage — after ingestion (validate raw data arrived correctly), after transformation (validate business logic produced correct output), and before serving (validate what consumers will query is trustworthy). A failing quality gate should halt the pipeline and alert, not silently pass bad data downstream.</p>
-
-  <pre><code># dbt test examples — run after each model build
--- schema.yml
-models:
-  - name: fct_orders
-    columns:
-      - name: order_id
-        tests:
-          - not_null
-          - unique
-      - name: order_total
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      - name: status
-        tests:
-          - accepted_values:
-              values: ['placed', 'shipped', 'delivered', 'cancelled']</code></pre>
-
-  <div class="warn">A pipeline that completes successfully but produces wrong data is more dangerous than a pipeline that fails. A failure alerts immediately. Wrong data can propagate silently for days before a consumer notices.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S10 -->
-  <h2 id="s10">Observability and SLAs</h2>
-  <p>A pipeline without observability is a black box. You cannot tell if it is healthy, falling behind, or silently producing wrong data. Observability means you can answer three questions at any moment: is the pipeline running, is it on time, and is the output correct?</p>
-
-  <h3>The three pillars for pipelines</h3>
-  <table>
-    <tr><th>Pillar</th><th>What to instrument</th><th>Tool</th></tr>
-    <tr><td>Metrics</td><td>Records processed per minute, consumer lag, job duration, error rate, row count per partition</td><td>CloudWatch, Prometheus, Datadog</td></tr>
-    <tr><td>Logs</td><td>Job start/end events, transformation errors, quality gate pass/fail, retry events</td><td>CloudWatch Logs, ELK, Splunk</td></tr>
-    <tr><td>Traces</td><td>End-to-end latency from source event to serving layer write</td><td>X-Ray, OpenTelemetry</td></tr>
-  </table>
-
-  <h3>Pipeline SLOs</h3>
-  <p>A Service Level Objective for a data pipeline is a measurable target on data freshness, completeness, or availability. Without explicit SLOs, "the pipeline is slow" cannot be evaluated objectively. Common pipeline SLOs:</p>
-  <pre><code>Freshness SLO:     Data in serving layer is no more than 15 minutes behind source
-Completeness SLO:  Row count for any partition is within 2% of source count
-Availability SLO:  Pipeline runs complete successfully 99.5% of scheduled executions
-Latency SLO:       P99 processing time per event < 30 seconds (streaming pipeline)</code></pre>
-
-  <div class="hi">Define SLOs before you build the pipeline, not after. SLOs drive the monitoring, alerting thresholds, and retry design. A pipeline built without SLOs in mind is usually under-instrumented and over-alerting on noise.</div>
-  <div class="warn">Consumer lag is one of the most important metrics for streaming pipelines. Rising lag means the consumer is falling behind the producer — it is a leading indicator of freshness SLO breach, not a lagging one. Alert on lag, not on output delay.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S11 -->
-  <h2 id="s11">Late Data and Watermarking</h2>
-  <p>Late data is data that arrives at the pipeline after the time window it belongs to has nominally closed. In batch pipelines this is usually handled by the next scheduled run picking it up. In streaming pipelines it requires explicit handling because windows are computed incrementally and results may have already been emitted.</p>
-
-  <h3>Watermarks</h3>
-  <p>A watermark is a declaration: "I believe I have seen all events with event_time up to timestamp T." Events with timestamps before T that arrive after the watermark is advanced are considered late. The watermark advances as new events arrive with later timestamps, minus a configurable lag allowance.</p>
-
-  <pre><code># Spark Structured Streaming watermark example
-from pyspark.sql.functions import window
-
-events_with_watermark = (
-    events_stream
-    .withWatermark("event_time", "10 minutes")   # allow 10-min late arrivals
-    .groupBy(window("event_time", "5 minutes"))   # 5-min tumbling windows
-    .count()
-)
-# Events up to 10 minutes late are included in the correct window
-# Events later than 10 minutes are dropped (or routed to a late-data sink)</code></pre>
-
-  <h3>Handling late data in batch</h3>
-  <p>For daily batch pipelines, the standard approach is to reprocess the last N days on each run using a lookback window. This catches late-arriving events without requiring watermark logic. The tradeoff is compute cost — you process N days of data instead of one day, but the pipeline stays simple and correct.</p>
-
-  <div class="hi">The right watermark lag is a business decision, not a technical one. Ask: how late can data realistically arrive, and what is the cost of missing it vs the cost of holding windows open longer?</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S12 -->
-  <h2 id="s12">Backfill Strategy</h2>
-  <p>Backfilling means reprocessing historical data — because the pipeline was fixed, the business logic changed, a new derived field was added, or the historical data was corrupted. A poorly designed pipeline makes backfill slow, expensive, and risky. A well-designed one makes backfill a routine operational task.</p>
-
-  <h3>Requirements for a backfillable pipeline</h3>
-  <table>
-    <tr><th>Requirement</th><th>Why it matters</th></tr>
-    <tr><td>Immutable raw source</td><td>You need the original data to still exist and be replayable</td></tr>
-    <tr><td>Idempotent writes</td><td>Reprocessing the same partition must overwrite cleanly, not duplicate</td></tr>
-    <tr><td>Parameterized date range</td><td>You must be able to run the job for any arbitrary date range, not just "today"</td></tr>
-    <tr><td>Independent of downstream state</td><td>Backfill should not break consumers reading current data while historical data is being reprocessed</td></tr>
-  </table>
-
-  <h3>Backfilling 2 years of data safely</h3>
-  <pre><code># Strategy: parallel monthly batches, not a single 2-year run
-# Avoids a single job failure losing all progress
-
-for year_month in generate_months('2024-01', '2025-12'):
-    submit_backfill_job(
-        date_range=year_month,
-        output_prefix=f"s3://data-lake/processed/backfill/{year_month}/",
-        parallelism=20
-    )
-    wait_for_completion()
-    validate_quality_gate(year_month)
-
-# After all months pass quality gates, atomic swap:
-promote_backfill_to_production()</code></pre>
-
-  <div class="hi">Run the backfill to a separate output prefix first, validate it, then atomically swap it into the production path. Never backfill directly over production data in place — a failed backfill should leave production untouched.</div>
-  <div class="warn">Backfilling can consume significant compute and incur unexpected costs. Rate-limit your backfill jobs, monitor S3 request costs, and consider running during off-peak hours if the backfill competes with production workloads.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S13 -->
-  <h2 id="s13">Failure Modes and Recovery</h2>
-  <p>Every pipeline failure falls into one of two categories: transient or fatal. The recovery strategy must match the failure category. Retrying a fatal error wastes compute and delays alerting. Failing permanently on a transient error causes unnecessary data loss.</p>
-
-  <table>
-    <tr><th>Failure type</th><th>Examples</th><th>Correct response</th></tr>
-    <tr><td>Transient</td><td>Network timeout, throttling, temporary service unavailability</td><td>Exponential backoff retry with jitter, up to a limit</td></tr>
-    <tr><td>Fatal</td><td>Schema mismatch, malformed record, permission denied, source data missing</td><td>Move to dead letter queue, alert, do not retry</td></tr>
-    <tr><td>Partial</td><td>Some records fail in a batch job while others succeed</td><td>Route failed records to DLQ, complete the successful batch, alert on DLQ depth</td></tr>
-    <tr><td>Silent</td><td>Job completes but output is wrong — wrong count, wrong values</td><td>Catch with data quality gates post-run, not retry logic</td></tr>
-  </table>
-
-  <h3>Dead Letter Queue pattern</h3>
-  <pre><code># SQS DLQ pattern for Lambda event processor
-# Records that fail after maxReceiveCount retries go to DLQ automatically
-
-resource "aws_sqs_queue" "events_dlq" {
-  name = "pipeline-events-dlq"
-  message_retention_seconds = 1209600  # 14 days to investigate
-}
-
-resource "aws_sqs_queue" "events_queue" {
-  name = "pipeline-events"
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.events_dlq.arn
-    maxReceiveCount     = 3   # retry 3 times before DLQ
-  })
-}
-
-# Alert when DLQ depth > 0 -- every DLQ message needs investigation</code></pre>
-
-  <div class="hi">A dead letter queue is your safety net for partial failures. Without it, failed records either block the pipeline indefinitely or are silently dropped. Always wire up a DLQ, always alert on its depth, always have a replay mechanism.</div>
-  <div class="warn">Distributed transactions are nearly impossible to implement correctly in data pipelines. Use the saga pattern — a sequence of local transactions with compensating transactions for rollback — rather than attempting two-phase commit across services.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- S14 -->
-  <h2 id="s14">Build vs Buy</h2>
-  <p>Every pipeline component can be built from scratch or sourced from a managed service or open-source tool. The build vs buy decision is not just about upfront development cost — it is about the total cost of ownership over the lifetime of the pipeline, including operational burden, scaling, security patching, and the engineering time consumed by maintenance.</p>
-
-  <table>
-    <tr><th>Component</th><th>Build</th><th>Buy / Managed</th><th>When to build</th></tr>
-    <tr><td>Message queue</td><td>Self-managed Kafka on EC2</td><td>MSK, Kinesis, SQS</td><td>Specific Kafka features MSK doesn't expose, cost at extreme scale</td></tr>
-    <tr><td>ETL</td><td>Custom PySpark on EMR</td><td>AWS Glue</td><td>Complex dependency management, cost sensitivity at high DPU usage</td></tr>
-    <tr><td>Orchestration</td><td>Custom scheduler</td><td>Airflow, Step Functions, MWAA</td><td>Almost never — orchestrators are solved problems</td></tr>
-    <tr><td>Data quality</td><td>Custom SQL checks</td><td>Great Expectations, dbt tests</td><td>Very specific domain rules not expressible in standard frameworks</td></tr>
-    <tr><td>Transformation logic</td><td>Always custom</td><td>N/A</td><td>Always — business logic is yours, no tool replaces it</td></tr>
-  </table>
-
-  <p>The honest cost of building includes: initial development time, operational runbooks, on-call burden, security patching, scaling incidents, and the opportunity cost of not building product features. Managed services shift operational burden to the vendor at a cost premium. The right answer depends on your team size, scale, and whether the component is differentiating.</p>
-
-  <div class="hi">Default to managed services for undifferentiated infrastructure (queues, orchestrators, catalogs). Build custom for your actual business logic. The closer a component is to raw infrastructure, the less likely it is that building it yourself creates competitive advantage.</div>
-  <div class="warn">Technical debt from build decisions is compounded. A custom Kafka deployment that needs upgrading in year two will consume engineering time proportional to your cluster size. Factor the 3-year total cost of ownership into the build vs buy decision, not just the sprint estimate.</div>
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- Q&A -->
-  <h2 id="qa">Interview Q&amp;A</h2>
-
-  <div class="qa">
-    <div class="qa-q">How do you approach architecting a new data pipeline from scratch?</div>
-    <div class="qa-a">I start from the consumer, not the source. The first questions are: what SLA does the downstream system need, what format does it need the data in, and what happens to their business if the pipeline is late or wrong? Those answers define the constraints — freshness requirement drives the batch vs streaming decision, format drives the transformation design, and the business impact of failure drives the durability and retry requirements. Only after I understand the consumer contract do I characterize the source — its volume, velocity, whether it emits deletes and updates, and whether it can be replayed. Then I design the schema at each stage, explicitly document the data contract between stages, and design failure handling before I design the happy path. Tool selection comes last — I choose the compute that fits the already-defined constraints, not the other way around.</div>
+  <div class="cheat-row">
+    <div class="ct">Bronze</div>
+    <div class="cd">Raw immutable ingestion layer used for replay and auditing.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">How do you decide where to draw microservice boundaries in a data platform?</div>
-    <div class="qa-a">The three principles I use are: separate by rate of change, separate by failure domain, and separate by scale requirement. Rate of change means if ingestion logic and transformation logic evolve independently, coupling them forces joint deployments and mutual risk. Failure domain means a failure in an enrichment service should not take down the core ingestion path. Scale requirement means components with different throughput profiles should scale independently. Practically, most data platforms need at least four distinct services: ingestion (source to raw), transformation (raw to processed), quality gate (validation between stages), and serving (processed to consumers). The orchestrator is a fifth service that should contain sequencing logic only and no business logic. I resist over-splitting until there is a concrete operational reason — two services have a coordination cost that a single well-structured service does not.</div>
+  <div class="cheat-row">
+    <div class="ct">Silver</div>
+    <div class="cd">Validated, cleaned, deduplicated, and normalized data.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">How do you test a data pipeline, and how do you handle the fact that it runs on hundreds of gigabytes?</div>
-    <div class="qa-a">I use five test layers. Unit tests on pure transformation functions — these have no Spark dependency and run in milliseconds against small DataFrames. Integration tests using moto or localstack to mock AWS services and validate that the job reads from the source and writes correct output to the sink. Contract tests that validate the output schema and semantics match what consumers declared they need. End-to-end tests in a staging environment with a representative sample of production data. And data quality tests that run in production after every job to validate freshness, completeness, uniqueness, and value ranges. The scale problem is solved by separating logic from scaffolding — transformation functions are pure functions testable on 1000 rows in CI. Scale-specific behavior like partition skew is caught in staging. The most important insight is that a pipeline test proving the job ran is not the same as a test proving the data is correct — you need both.</div>
+  <div class="cheat-row">
+    <div class="ct">Gold</div>
+    <div class="cd">Business-ready serving layer for dashboards, reports, and ML features.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">A pipeline ran successfully but the output data was wrong. How does that happen and how do you prevent it?</div>
-    <div class="qa-a">This is one of the most dangerous categories of failure in data engineering because there is no alert — the job returned exit code 0. It happens in several ways: a source schema changed silently and a field that was parsed as one type is now parsed as another with no error, just wrong values; a transformation has a logic bug that produces plausible-looking but incorrect output; an idempotency failure doubled rows in the output; or a JOIN on the wrong key produced a cartesian product that passes row count checks but has wrong data. Prevention requires data quality gates that run after every job and test the actual data values, not just the job status — row count reconciliation against the source, uniqueness checks on primary keys, freshness checks on the latest timestamp, and range or enumeration checks on key fields. The quality gate must be a blocking step that fails the pipeline and alerts before bad data reaches consumers.</div>
+  <div class="cheat-row">
+    <div class="ct">Idempotency</div>
+    <div class="cd">Safe repeated execution without duplicate or corrupted results.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">How do you handle a backfill of 2 years of historical data without disrupting the production pipeline?</div>
-    <div class="qa-a">The prerequisites are an immutable raw source that can be replayed, idempotent writes so reprocessing a partition overwrites cleanly, and a parameterized date range so the job can process any arbitrary window. For the backfill execution I split it into monthly batches rather than one 2-year run — this contains the blast radius if any month fails and makes progress tracking concrete. Each batch writes to a separate staging prefix, runs the standard quality gate, and only after all months pass does an atomic swap promote the backfill to the production path. During the backfill, the production pipeline continues running for new data unaffected. The key rule is never write the backfill directly over production data in place — a failed backfill mid-run should leave production in the last known good state, not in a partially overwritten state.</div>
+  <div class="cheat-row">
+    <div class="ct">Replay</div>
+    <div class="cd">Rebuild downstream outputs from trusted raw data.</div>
   </div>
-
-  <div class="qa">
-    <div class="qa-q">How do you decide between batch, micro-batch, and streaming for a new pipeline?</div>
-    <div class="qa-a">The decision comes from the consumer SLA and the business impact of latency, not from a preference for modern technology. I start by asking what the business consequence is of data being 5 minutes stale versus 15 minutes stale versus 1 hour stale. If the answer is "no real difference," batch or micro-batch is the right architecture — streaming is a cost and complexity premium you pay for a latency requirement that does not actually exist. Most pipelines that appear to need real-time actually need near-real-time, which micro-batch achieves at far lower operational cost. I recommend streaming only when the consumer has a hard sub-minute freshness requirement, when the source emits high-volume events that need per-event processing (fraud detection, CDC fan-out), or when stateful windowed aggregations over event-time streams are genuinely required. Streaming architectures are harder to test, debug, backfill, and replay than batch — that complexity needs to be justified by a real business requirement.</div>
+  <div class="cheat-row">
+    <div class="ct">Backfill</div>
+    <div class="cd">Historical reprocessing after logic, schema, or business rule changes.</div>
   </div>
-
-  <a href="#top" class="back-top">&uarr; Back to top</a>
-
-  <!-- Cheat Sheet -->
-  <h2 id="cheat">Quick Reference</h2>
-  <div class="cheat">
-    <div class="cheat-row"><div class="ct">Architecture rule</div><div class="cd">Start from the consumer SLA, work backwards to the source. Never start with the tool.</div></div>
-    <div class="cheat-row"><div class="ct">Batch vs stream</div><div class="cd">Choose streaming only when the consumer has a hard sub-minute freshness requirement. Micro-batch covers most "real-time" needs.</div></div>
-    <div class="cheat-row"><div class="ct">Idempotency</div><div class="cd">Running the pipeline twice on the same input produces the same output. Design this in from day one — retrofitting is painful.</div></div>
-    <div class="cheat-row"><div class="ct">Test idempotency</div><div class="cd">Run the job, checksum the output, run again, assert checksums match.</div></div>
-    <div class="cheat-row"><div class="ct">Service boundary</div><div class="cd">Separate by rate of change, failure domain, and scale requirement. A service must be independently deployable.</div></div>
-    <div class="cheat-row"><div class="ct">Sync vs async</div><div class="cd">Sync for immediate answers (lookups, APIs). Async for durability, fan-out, and independent scaling between stages.</div></div>
-    <div class="cheat-row"><div class="ct">Data contract</div><div class="cd">Explicit schema, semantics, freshness SLA, completeness, and uniqueness agreement between producer and consumers.</div></div>
-    <div class="cheat-row"><div class="ct">Schema evolution</div><div class="cd">Backward: new schema reads old data. Forward: old schema reads new data. Breaking change = consumer migration required first.</div></div>
-    <div class="cheat-row"><div class="ct">Testing pyramid</div><div class="cd">Unit → Integration → Contract → End-to-end → Data quality in production. Each layer catches different failure modes.</div></div>
-    <div class="cheat-row"><div class="ct">Silent failure</div><div class="cd">Job exits 0 but data is wrong. Only caught by post-run data quality checks — row counts, uniqueness, freshness, value ranges.</div></div>
-    <div class="cheat-row"><div class="ct">Quality gate</div><div class="cd">Blocking validation step between pipeline stages. Fail and alert rather than passing bad data downstream.</div></div>
-    <div class="cheat-row"><div class="ct">Watermark</div><div class="cd">Streaming declaration: "all events before timestamp T have arrived." Late data beyond the grace period is dropped or routed to DLQ.</div></div>
-    <div class="cheat-row"><div class="ct">Backfill rule</div><div class="cd">Write to a staging prefix, validate each partition, then atomic swap to production. Never overwrite production in place during a backfill.</div></div>
-    <div class="cheat-row"><div class="ct">Transient error</div><div class="cd">Retry with exponential backoff and jitter. Examples: network timeout, throttling, temporary service unavailability.</div></div>
-    <div class="cheat-row"><div class="ct">Fatal error</div><div class="cd">Move to DLQ, alert, do not retry. Examples: schema mismatch, permission denied, source data missing.</div></div>
-    <div class="cheat-row"><div class="ct">Dead letter queue</div><div class="cd">Sink for unprocessable records after max retries. Alert when depth &gt; 0. Always have a replay mechanism.</div></div>
-    <div class="cheat-row"><div class="ct">Build vs buy</div><div class="cd">Default to managed services for undifferentiated infrastructure. Build custom only for business logic that is genuinely yours.</div></div>
-    <div class="cheat-row"><div class="ct">SLO</div><div class="cd">Measurable target: freshness ≤ 15 min, completeness ≥ 98%, availability ≥ 99.5%. Define before building, not after.</div></div>
+  <div class="cheat-row">
+    <div class="ct">DLQ</div>
+    <div class="cd">Dead letter queue that isolates failed records for review and replay.</div>
   </div>
+  <div class="cheat-row">
+    <div class="ct">Watermark</div>
+    <div class="cd">Streaming control for deciding how long to wait for late events.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Data Contract</div>
+    <div class="cd">Agreement on schema, ownership, freshness, and quality expectations.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Lineage</div>
+    <div class="cd">Traceability from source data through downstream consumers.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">SLO</div>
+    <div class="cd">Internal operational target, such as pipeline completion by 7:30 AM.</div>
+  </div>
+  <div class="cheat-row">
+    <div class="ct">Cost Control</div>
+    <div class="cd">Use incremental processing, partition pruning, compaction, and tiered storage.</div>
+  </div>
+</div>
+
+<a href="#top" class="back-top">&uarr; Back to top</a>
 
 </div>
 </body>
